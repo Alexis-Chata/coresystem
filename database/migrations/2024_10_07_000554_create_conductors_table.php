@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('direccion')->nullable();
             $table->string('celular')->nullable();
-            $table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos');
+            //$table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos');
             $table->string('numero_documento')->nullable();
             $table->string('numero_brevete')->nullable();
             $table->timestamps();

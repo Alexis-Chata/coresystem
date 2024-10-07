@@ -12,6 +12,6 @@ class ConductorSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        \App\Models\Conductor::factory()->count(60)->create();
     }
 }

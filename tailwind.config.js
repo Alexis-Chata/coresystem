@@ -5,6 +5,10 @@ import colors from "tailwindcss/colors";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    presets: [
+        require("./vendor/wireui/wireui/tailwind.config.js"),
+        require("./vendor/power-components/livewire-powergrid/tailwind.config.js"),
+    ],
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./vendor/laravel/jetstream/**/*.blade.php",
@@ -44,7 +48,9 @@ export default {
                 bodydark1: "#DEE4EE",
                 bodydark2: "#8A99AF",
                 primary: "#3C50E0",
-                secondary: "#80CAEE",
+                secondary: {
+                    500: '#tucolorhexadecimal',
+                },
                 stroke: "#E2E8F0",
                 gray: {
                     ...colors.gray,
