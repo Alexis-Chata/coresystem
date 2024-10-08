@@ -2,10 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Vendedor extends Model
+class Vendedor extends Empleado
 {
-    use HasFactory;
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('tipo', function ($query) {
+            $query->where('tipo_empleado', 'vendedor');
+        });
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($vendedor) {
+            $vendedor->tipo_empleado = 'vendedor';
+        });
+    }
 }

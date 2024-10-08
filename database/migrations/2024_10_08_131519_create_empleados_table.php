@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conductors', function (Blueprint $table) {
+        Schema::create('empleados', function (Blueprint $table) {
             $table->id();
             $table->string('codigo')->nullable();
             $table->string('name')->nullable();
             $table->string('direccion')->nullable();
             $table->string('celular')->nullable();
-            $table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos')->nullable();
+            $table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos');
             $table->string('numero_documento')->nullable();
-            $table->string('tipo_empleado'); // Agregado
+            $table->string('tipo_empleado'); // 'conductor', 'vendedor', 'almacenero', etc
             $table->string('numero_brevete')->nullable();
             $table->timestamps();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conductors');
+        Schema::dropIfExists('empleados');
     }
 };

@@ -3,24 +3,20 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Conductor;
+use App\Models\Empleado;
 use App\Models\F_tipo_documento;
 
-class ConductorSeeder extends Seeder
+class EmpleadoSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $tipoDocumento = \App\Models\F_tipo_documento::inRandomOrder()->first();
+        $tipoDocumento = F_tipo_documento::inRandomOrder()->first();
         
         if (!$tipoDocumento) {
             throw new \Exception('No hay tipos de documento en la base de datos. Asegúrate de ejecutar FTipoDocumentoSeeder primero.');
         }
 
-        \App\Models\Conductor::factory()->count(10)->create([
-            'tipo_empleado' => 'conductor',
+        Empleado::factory()->count(10)->create([
             'f_tipo_documento_id' => $tipoDocumento->id,
         ]);
     }

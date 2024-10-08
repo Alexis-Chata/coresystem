@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Conductor extends Model
+class Conductor extends Empleado
 {
-    use HasFactory;
-    protected $fillable = [
-        'name',
-        'direccion',
-        'celular',
-        //'f_tipo_documento_id',
-        'numero_documento',
-        'numero_brevete',
-    ];
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('tipo', function ($query) {
+            $query->where('tipo_empleado', 'conductor');
+        });
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($conductor) {
+            $conductor->tipo_empleado = 'conductor';
+        });
+    }
 }

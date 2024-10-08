@@ -41,10 +41,13 @@ final class ConductorTable extends PowerGridComponent
     {
         return PowerGrid::fields()
             ->add('id')
+            ->add('codigo')
             ->add('name')
             ->add('direccion')
             ->add('celular')
+            ->add('f_tipo_documento_id')
             ->add('numero_documento')
+            ->add('tipo_empleado')
             ->add('numero_brevete')
             ->add('created_at');
     }
@@ -53,6 +56,10 @@ final class ConductorTable extends PowerGridComponent
     {
         return [
             Column::make('Id', 'id'),
+            Column::make('Codigo', 'codigo')
+                ->sortable()
+                ->searchable(),
+                
             Column::make('Name', 'name')
                 ->sortable()
                 ->searchable(),
@@ -65,8 +72,13 @@ final class ConductorTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-
+                
+            Column::make('F tipo documento id', 'f_tipo_documento_id'),
             Column::make('Numero documento', 'numero_documento')
+                ->sortable()
+                ->searchable(),
+                
+            Column::make('Tipo empleado', 'tipo_empleado')
                 ->sortable()
                 ->searchable(),
 
