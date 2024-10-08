@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 
-Route::get('/', [UserRoleController::class, 'index']);
+Route::get('/user-roles', [UserRoleController::class, 'index']);
 
 Route::middleware([
     'auth:sanctum',
@@ -19,3 +19,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/roles', [UserRoleController::class, 'index'])->name('users.roles');
     Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');
 });
+
+Route::get('/user-roles', [UserRoleController::class, 'index'])->name('user-roles.index');
+Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');

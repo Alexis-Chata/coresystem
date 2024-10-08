@@ -12,7 +12,7 @@ class UserRoleController extends Controller
     {
         $users = User::with('roles')->get();
         $roles = Role::all();
-        return view('welcome', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles'));
     }
 
     public function assignRole(Request $request, User $user)
