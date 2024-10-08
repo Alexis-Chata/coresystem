@@ -18,8 +18,6 @@ final class ConductorTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        $this->showCheckBox();
-
         return [
             PowerGrid::header()
                 ->showSearchInput(),
@@ -66,7 +64,7 @@ final class ConductorTable extends PowerGridComponent
             Column::make('Celular', 'celular')
                 ->sortable()
                 ->searchable()
-                ->editOnClick(hasPermission:true),
+                ->editOnClick(),
 
             Column::make('Numero documento', 'numero_documento')
                 ->sortable()
@@ -89,18 +87,26 @@ final class ConductorTable extends PowerGridComponent
     #[\Livewire\Attributes\On('edit')]
     public function edit($rowId): void
     {
-        $this->js('alert('.$rowId.')');
+        if (auth()->user()->can('edit conductors')) {
+            $this->js('alert('.$rowId.')');
+        } else {
+            $this->addError('unauthorized', 'No tienes permiso para editar este conductor.');
+        }
     }
 
     public function actions(Conductor $row): array
     {
-        return [
-            Button::add('edit')
+        $actions = [];
+
+        if (auth()->user()->can('edit conductors')) {
+            $actions[] = Button::add('edit')
                 ->slot('Edit: '.$row->id)
                 ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('edit', ['rowId' => $row->id])
-        ];
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-primary-700')
+                ->dispatch('edit', ['rowId' => $row->id]);
+        }
+
+        return $actions;
     }
 
     /*
@@ -116,8 +122,24 @@ final class ConductorTable extends PowerGridComponent
     */
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
-        Conductor::query()->find($id)->update([
-            $field => $value
-        ]);
+        try {
+            if (!auth()->user()->can('edit conductors')) {
+                $this->addError('unauthorized', 'No tienes permiso para editar este campo.');
+                $this->dispatch('showAlert', message: 'No tienes permiso para editar este campo.', type: 'error');
+                return;
+            }
+
+            $conductor = Conductor::find($id);
+            if ($conductor) {
+                $conductor->update([$field => $value]);
+                $this->dispatch('showAlert', message: 'Campo actualizado con éxito.', type: 'success');
+            } else {
+                $this->addError('notFound', 'No se encontró el conductor.');
+                $this->dispatch('showAlert', message: 'No se encontró el conductor.', type: 'error');
+            }
+        } catch (\Exception $e) {
+            $this->addError('updateError', 'Error al actualizar el campo: ' . $e->getMessage());
+            $this->dispatch('showAlert', message: 'Error al actualizar el campo: ' . $e->getMessage(), type: 'error');
+        }
     }
 }

@@ -1,10 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserRoleController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [UserRoleController::class, 'index']);
 
 Route::middleware([
     'auth:sanctum',
@@ -14,4 +13,9 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/users/roles', [UserRoleController::class, 'index'])->name('users.roles');
+    Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');
 });
