@@ -3,21 +3,26 @@
 namespace App\Livewire;
 
 use App\Models\Empleado;
+use App\Models\F_tipo_documento;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
+use Illuminate\Support\Facades\Blade;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
+use Livewire\Attributes\On;
 
-final class ConductorTable extends PowerGridComponent
+final class EmpleadosTable extends PowerGridComponent
 {
-    public string $tableName = 'conductor-table-ldc2rg-table';
+    public string $tableName = 'empleados-table-4jmu5i-table';
 
     public function setUp(): array
     {
+        $this->showCheckBox();
+
         return [
             PowerGrid::header()
                 ->showSearchInput(),
@@ -29,23 +34,26 @@ final class ConductorTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Conductor::query();
-    }
-
-    public function relationSearch(): array
-    {
-        return [];
+        return Empleado::query()->with('tipoDocumento');
     }
 
     public function fields(): PowerGridFields
     {
+        $options = $this->tipoDocumentoSelectOptions();
+
         return PowerGrid::fields()
             ->add('id')
             ->add('codigo')
             ->add('name')
             ->add('direccion')
             ->add('celular')
-            ->add('f_tipo_documento_id')
+            ->add('tipo_documento', function ($empleado) use ($options) {
+                return Blade::render('<x-select-tipo-documento :options=$options :empleadoId=$empleadoId :selected=$selected/>', [
+                    'options' => $options,
+                    'empleadoId' => $empleado->id,
+                    'selected' => $empleado->f_tipo_documento_id
+                ]);
+            })
             ->add('numero_documento')
             ->add('tipo_empleado')
             ->add('numero_brevete')
@@ -59,35 +67,44 @@ final class ConductorTable extends PowerGridComponent
             Column::make('Codigo', 'codigo')
                 ->sortable()
                 ->searchable(),
-                
             Column::make('Name', 'name')
                 ->sortable()
                 ->searchable(),
-
             Column::make('Direccion', 'direccion')
                 ->sortable()
                 ->searchable(),
-
             Column::make('Celular', 'celular')
                 ->sortable()
-                ->searchable()
-                ->editOnClick(),
-                
-            Column::make('F tipo documento id', 'f_tipo_documento_id'),
+                ->searchable(),
+            Column::make('Tipo documento', 'tipo_documento'),
             Column::make('Numero documento', 'numero_documento')
                 ->sortable()
                 ->searchable(),
-                
             Column::make('Tipo empleado', 'tipo_empleado')
                 ->sortable()
                 ->searchable(),
-
             Column::make('Numero brevete', 'numero_brevete')
                 ->sortable()
                 ->searchable(),
-
             Column::action('Action')
         ];
+    }
+
+    public function tipoDocumentoSelectOptions()
+    {
+        return F_tipo_documento::all(['id', 'tipo_documento'])->mapWithKeys(function ($item) {
+            return [$item->id => $item->tipo_documento];
+        });
+    }
+
+    #[On('tipoDocumentoChanged')]
+    public function tipoDocumentoChanged($tipoDocumentoId, $empleadoId): void
+    {
+        $empleado = Empleado::find($empleadoId);
+        if ($empleado) {
+            $empleado->f_tipo_documento_id = $tipoDocumentoId;
+            $empleado->save();
+        }
     }
 
     public function filters(): array
@@ -99,26 +116,18 @@ final class ConductorTable extends PowerGridComponent
     #[\Livewire\Attributes\On('edit')]
     public function edit($rowId): void
     {
-        if (auth()->user()->can('edit conductors')) {
-            $this->js('alert('.$rowId.')');
-        } else {
-            $this->addError('unauthorized', 'No tienes permiso para editar este conductor.');
-        }
+        $this->js('alert('.$rowId.')');
     }
 
-    public function actions(Conductor $row): array
+    public function actions(Empleado $row): array
     {
-        $actions = [];
-
-        if (auth()->user()->can('edit conductors')) {
-            $actions[] = Button::add('edit')
+        return [
+            Button::add('edit')
                 ->slot('Edit: '.$row->id)
                 ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-primary-700')
-                ->dispatch('edit', ['rowId' => $row->id]);
-        }
-
-        return $actions;
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('edit', ['rowId' => $row->id])
+        ];
     }
 
     /*
@@ -148,6 +157,13 @@ final class ConductorTable extends PowerGridComponent
             } else {
                 $this->addError('notFound', 'No se encontró el conductor.');
                 $this->dispatch('showAlert', message: 'No se encontró el conductor.', type: 'error');
+            }
+            if ($field === 'tipo_documento') {
+                $empleado = Empleado::find($id);
+                if ($empleado) {
+                    $empleado->f_tipo_documento_id = $value;
+                    $empleado->save();
+                }
             }
         } catch (\Exception $e) {
             $this->addError('updateError', 'Error al actualizar el campo: ' . $e->getMessage());

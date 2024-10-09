@@ -3,7 +3,7 @@
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <h2>Esto siempre va a cambiar</h2>
-    <livewire:conductor-table/>
+    <livewire:empleados-table/>
     <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('showAlert', (data) => {

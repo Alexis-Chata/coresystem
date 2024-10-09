@@ -19,35 +19,38 @@ class EmpleadoFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
+    {   
+        $tipoEmpleado = $this->faker->randomElement(['conductor', 'vendedor']);
+        $casos = [];
+        if ($tipoEmpleado === 'conductor') {
+            $casos= $this->conductor();
+        }
+        if ($tipoEmpleado === 'vendedor') {
+            $casos= $this->vendedor();
+        }
         return [
             'name' => $this->faker->name,
             'direccion' => $this->faker->address,
             'celular' => $this->faker->phoneNumber,
             'f_tipo_documento_id' => F_tipo_documento::inRandomOrder()->first()->id,
             'numero_documento' => $this->faker->unique()->numerify('########'),
-            'tipo_empleado' => $this->faker->randomElement(['conductor', 'vendedor']),
             // ... otros campos que sean necesarios
-        ];
+        ]+$casos;
     }
 
     public function conductor()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'tipo_empleado' => 'conductor',
-                'numero_brevete' => $this->faker->numberBetween(1000000, 9999999),
-            ];
-        });
+        return [
+            'tipo_empleado' => 'conductor',
+            'numero_brevete' => $this->faker->numberBetween(1000000, 9999999),
+        ];
     }
 
     public function vendedor()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'tipo_empleado' => 'vendedor',
-                'numero_brevete' => null,
-            ];
-        });
+        return [
+            'tipo_empleado' => 'vendedor',
+            'numero_brevete' => null,
+        ];
     }
 }

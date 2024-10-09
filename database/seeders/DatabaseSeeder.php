@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             EmpleadoSeeder::class,
             // ... otros seeders
         ]);
-        $this->call(ConductorSeeder::class);
 
         User::factory()->create([
             'name' => 'Test User',

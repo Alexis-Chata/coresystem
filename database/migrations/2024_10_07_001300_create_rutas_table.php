@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->nullable();
             $table->string('name')->nullable();
-            $table->foreignId('vendedor_id')->constrained('vendedors');
+            $table->foreignId('vendedor_id')->constrained('empleados')->where('tipo_empleado', 'vendedor');
             $table->timestamps();
         });
     }
