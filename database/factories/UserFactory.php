@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Empresa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -36,6 +37,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'profile_photo_path' => null,
             'current_team_id' => null,
+            'empresa_id' => Empresa::inRandomOrder()->first()->id,
         ];
     }
 

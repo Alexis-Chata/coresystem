@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->nullable();
             $table->string('name')->nullable();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->timestamps();
         });
     }

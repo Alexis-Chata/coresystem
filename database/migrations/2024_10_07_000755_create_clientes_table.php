@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
+            //$table->string('name')->nullable();
+            $table->string('razon_social')->nullable();
+            $table->string('direccion')->nullable();
+            $table->string('clientecol')->nullable();
+            $table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos');
+            $table->string('numero_documento')->nullable();
+            $table->string('celular')->nullable();
+            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->foreignId('lista_precio_id')->constrained('lista_precios');
             $table->timestamps();
         });
     }
