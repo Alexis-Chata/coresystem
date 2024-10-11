@@ -12,8 +12,13 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        Permission::create(['name' => 'edit conductors']);
-        Permission::create(['name' => 'view conductors']);
-        // Añade más permisos según sea necesario para otras tablas
+        $permissions = [
+            'edit conductors',
+            // ... otros permisos ...
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
     }
 }

@@ -4,6 +4,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <h2>Esto siempre va a cambiar</h2>
     <livewire:empleados-table/>
+    <livewire:pedido-table/>
     <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('showAlert', (data) => {

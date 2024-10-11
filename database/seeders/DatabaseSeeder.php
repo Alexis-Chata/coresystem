@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Empresa;
 use Illuminate\Database\Seeder;
 
@@ -18,17 +17,32 @@ class DatabaseSeeder extends Seeder
         $this->call([
             EmpresaSeeder::class,
             FTipoDocumentoSeeder::class,
+            VehiculoSeeder::class,  // Añade esta línea
             EmpleadoSeeder::class,
-            // ... otros seeders
+            RutaSeeder::class,
+            FTipoComprobanteSeeder::class,
+            ListaPrecioSeeder::class,  // Añade esta línea
+            ClienteSeeder::class,
+            MarcaSeeder::class,
+            CategoriaSeeder::class,
+            FTipoAfectacionSeeder::class,
+            ProductoSeeder::class,
+            PedidoSeeder::class,
+            PermissionSeeder::class,
         ]);
 
         $empresa = Empresa::first();
         if ($empresa) {
-            User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'empresa_id' => $empresa->id,
-            ]);
+            // Verifica si el usuario ya existe
+            $testUser = User::where('email', 'test@example.com')->first();
+
+            if (!$testUser) {
+                User::factory()->create([
+                    'name' => 'Test User',
+                    'email' => 'test@example.com',
+                    'empresa_id' => $empresa->id,
+                ]);
+            }
         } else {
             throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
         }

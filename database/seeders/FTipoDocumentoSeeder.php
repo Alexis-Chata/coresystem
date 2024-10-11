@@ -15,6 +15,7 @@ class FTipoDocumentoSeeder extends Seeder
         F_tipo_documento::create(['tipo_documento' => 'DNI', 'name' => 'Documento Nacional de Identidad']);
         F_tipo_documento::create(['tipo_documento' => 'CE', 'name' => 'Carnet de Extranjería']);
         F_tipo_documento::create(['tipo_documento' => 'PAS', 'name' => 'Pasaporte']);
+        F_tipo_documento::create(['tipo_documento' => 'RUC', 'name' => 'Registro Único de Contribuyentes']);
         // Agrega más tipos de documentos según sea necesario
     }
 }

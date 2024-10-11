@@ -8,4 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class F_tipo_comprobante extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'tipo_comprobante',
+        'name',
+        'estado',
+    ];
+
+    // Si quieres que el campo 'estado' sea siempre un booleano, puedes agregar este cast:
+    protected $casts = [
+        'estado' => 'boolean',
+    ];
 }

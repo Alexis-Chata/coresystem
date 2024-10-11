@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\F_tipo_afectacion;
 
 class FTipoAfectacionSeeder extends Seeder
 {
@@ -12,6 +12,33 @@ class FTipoAfectacionSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $tiposAfectacion = [
+            [
+                'name' => 'Gravado',
+                'descripcion' => 'Operación Gravada',
+                'letra' => 'G',
+                'codigo' => '10',
+                'tipo' => 'Gravado'
+            ],
+            [
+                'name' => 'Exonerado',
+                'descripcion' => 'Operación Exonerada',
+                'letra' => 'E',
+                'codigo' => '20',
+                'tipo' => 'Exonerado'
+            ],
+            [
+                'name' => 'Inafecto',
+                'descripcion' => 'Operación Inafecta',
+                'letra' => 'I',
+                'codigo' => '30',
+                'tipo' => 'Inafecto'
+            ],
+            // Puedes agregar más tipos de afectación según sea necesario
+        ];
+
+        foreach ($tiposAfectacion as $tipo) {
+            F_tipo_afectacion::create($tipo);
+        }
     }
 }

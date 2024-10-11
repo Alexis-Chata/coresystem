@@ -18,6 +18,8 @@ class Empleado extends Model
         'numero_documento',
         'tipo_empleado',
         'numero_brevete',
+        'empresa_id',
+        'vehiculo_id',
     ];
 
     public function tipoDocumento()
