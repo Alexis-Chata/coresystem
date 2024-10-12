@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\MarcaController;
 
 Route::get('/user-roles', [UserRoleController::class, 'index']);
 
@@ -22,3 +23,5 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/user-roles', [UserRoleController::class, 'index'])->name('user-roles.index');
 Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');
+
+Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');

@@ -75,7 +75,7 @@
                                 </div>
                                 <!-- Dropdown Menu End -->
                             </li>
-                            <!-- Menu Item Dashboard -->
+                            <!-- Menu Item Gestión de Roles -->
                             <li>
                                 <a href="{{ route('user-roles.index') }}" class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if(request()->routeIs('user-roles.index')) bg-graydark dark:bg-meta-4 @endif">
                                     <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,6 +83,15 @@
                                         <path d="M10.8283 9.05627H7.17207C4.16269 9.05627 1.71582 11.5313 1.71582 14.5406V16.875C1.71582 17.2125 1.99707 17.5219 2.3627 17.5219C2.72832 17.5219 3.00957 17.2407 3.00957 16.875V14.5406C3.00957 12.2344 4.89394 10.3219 7.22832 10.3219H10.8564C13.1627 10.3219 15.0752 12.2063 15.0752 14.5406V16.875C15.0752 17.2125 15.3564 17.5219 15.7221 17.5219C16.0877 17.5219 16.3689 17.2407 16.3689 16.875V14.5406C16.2846 11.5313 13.8377 9.05627 10.8283 9.05627Z" fill=""></path>
                                     </svg>
                                     Gestión de Roles
+                                </a>
+                            </li>
+                            <!-- Menu Item Gestión de Marcas -->
+                            <li>
+                                <a href="{{ route('marcas.index') }}" class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if(request()->routeIs('marcas.index')) bg-graydark dark:bg-meta-4 @endif">
+                                    <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M15.7499 2.9812H14.2874V2.36245C14.2874 2.02495 14.0062 1.71558 13.6405 1.71558C13.2749 1.71558 12.9937 1.99683 12.9937 2.36245V2.9812H4.97803V2.36245C4.97803 2.02495 4.69678 1.71558 4.33115 1.71558C3.96553 1.71558 3.68428 1.99683 3.68428 2.36245V2.9812H2.2499C1.29365 2.9812 0.478027 3.7687 0.478027 4.75308V14.5406C0.478027 15.4968 1.26553 16.3125 2.2499 16.3125H15.7499C16.7062 16.3125 17.5218 15.525 17.5218 14.5406V4.72495C17.5218 3.7687 16.7062 2.9812 15.7499 2.9812ZM16.2562 14.5406C16.2562 14.8218 16.0312 15.0468 15.7499 15.0468H2.2499C1.96865 15.0468 1.74365 14.8218 1.74365 14.5406V4.72495C1.74365 4.44371 1.96865 4.21871 2.2499 4.21871H3.7124V4.83745C3.7124 5.17495 3.99365 5.48433 4.35928 5.48433C4.7249 5.48433 5.00615 5.20308 5.00615 4.83745V4.21871H13.0499V4.83745C13.0499 5.17495 13.3312 5.48433 13.6968 5.48433C14.0624 5.48433 14.3437 5.20308 14.3437 4.83745V4.21871H15.7499C16.0312 4.21871 16.2562 4.44371 16.2562 4.72495V14.5406Z" fill=""/>
+                                    </svg>
+                                    Gestión de Marcas
                                 </a>
                             </li>
                             <!-- Menu Item Calendar -->
