@@ -58,5 +58,15 @@
 
         @livewireScripts
         {{-- <script defer src="bundle.js"></script> --}}
+        <style>
+            span.absolute.inset-y-0.left-0.flex.items-center.pl-1 {
+                pointer-events: none;
+                justify-content: flex-end;
+                right: 0;
+            }
+            .overflow-x-auto {
+                overflow-x: initial !important;
+            }
+        </style>
     </body>
 </html>

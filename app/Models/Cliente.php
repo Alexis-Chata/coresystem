@@ -32,6 +32,6 @@ class Cliente extends Model
 
     public function listaPrecio()
     {
-        return $this->belongsTo(ListaPrecio::class);
+        return $this->belongsTo(Lista_precio::class);
     }
 }

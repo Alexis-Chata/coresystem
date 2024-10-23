@@ -25,3 +25,7 @@ Route::get('/user-roles', [UserRoleController::class, 'index'])->name('user-role
 Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');
 
 Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');
+
+Route::get('/cliente', function () {
+    return view('cliente');
+})->name('cliente.index');
