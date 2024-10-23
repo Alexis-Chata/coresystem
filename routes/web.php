@@ -33,3 +33,7 @@ Route::get('/cliente', function () {
 Route::get('/producto', function () {
     return view('producto');
 })->name('producto.index');
+
+Route::get('/categoria', function () {
+    return view('categoria');
+})->name('categoria.index');
