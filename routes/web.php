@@ -29,3 +29,7 @@ Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');
 Route::get('/cliente', function () {
     return view('cliente');
 })->name('cliente.index');
+
+Route::get('/producto', function () {
+    return view('producto');
+})->name('producto.index');
