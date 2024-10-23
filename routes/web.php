@@ -41,3 +41,7 @@ Route::get('/categoria', function () {
 Route::get('/proveedor', function () {
     return view('proveedor');
 })->name('proveedor.index');
+
+Route::get('/empleado', function () {
+    return view('empleado');
+})->name('empleado.index');
