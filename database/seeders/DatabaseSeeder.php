@@ -17,11 +17,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             EmpresaSeeder::class,
             FTipoDocumentoSeeder::class,
-            VehiculoSeeder::class,  // Añade esta línea
+            VehiculoSeeder::class,
             EmpleadoSeeder::class,
             RutaSeeder::class,
             FTipoComprobanteSeeder::class,
-            ListaPrecioSeeder::class,  // Añade esta línea
+            ListaPrecioSeeder::class,
             ClienteSeeder::class,
             MarcaSeeder::class,
             CategoriaSeeder::class,
@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             ProductoSeeder::class,
             PedidoSeeder::class,
             PermissionSeeder::class,
+            ProveedorSeeder::class,
         ]);
 
         $empresa = Empresa::first();
