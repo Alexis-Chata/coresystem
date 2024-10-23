@@ -14,6 +14,7 @@ class Ruta extends Model
         'name',
         'vendedor_id',
         'empresa_id',
+        'lista_precio_id',
     ];
 
     public function vendedor()
@@ -24,5 +25,10 @@ class Ruta extends Model
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);
+    }
+
+    public function listaPrecio()
+    {
+        return $this->belongsTo(Lista_precio::class);
     }
 }

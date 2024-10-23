@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Ruta;
 use App\Models\Empleado;
 use App\Models\Empresa;
+use App\Models\Lista_precio;
 
 class RutaSeeder extends Seeder
 {
@@ -24,6 +25,11 @@ class RutaSeeder extends Seeder
             throw new \Exception('No hay vendedores en la base de datos. Asegúrate de ejecutar EmpleadoSeeder primero.');
         }
 
+        $listaPrecio = Lista_precio::first();
+        if (!$listaPrecio) {
+            throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
+        }
+
         $rutas = [
             ['codigo' => 'R001', 'name' => 'Ruta Lima Norte'],
             ['codigo' => 'R002', 'name' => 'Ruta Lima Sur'],
@@ -36,6 +42,7 @@ class RutaSeeder extends Seeder
                 'name' => $ruta['name'],
                 'vendedor_id' => $vendedores[$index % $vendedores->count()]->id,
                 'empresa_id' => $empresa->id,
+                'lista_precio_id' => $listaPrecio->id,
             ]);
         }
     }

@@ -45,3 +45,7 @@ Route::get('/proveedor', function () {
 Route::get('/empleado', function () {
     return view('empleado');
 })->name('empleado.index');
+
+Route::get('/ruta', function () {
+    return view('ruta');
+})->name('ruta.index');
