@@ -52,6 +52,15 @@
                 <label for="password_confirmation" class="block text-gray-700 text-sm font-semibold mb-2">Confirmar Contraseña</label>
                 <input type="password" name="password_confirmation" id="password_confirmation" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
             </div>
+            <div class="mb-6">
+                <label for="empresa_id" class="block text-gray-700 text-sm font-semibold mb-2">Empresa</label>
+                <select name="empresa_id" id="empresa_id" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <option value="">Seleccione una empresa</option>
+                    @foreach(App\Models\Empresa::all() as $empresa)
+                        <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
+                    @endforeach
+                </select>
+            </div>
             
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mb-6">

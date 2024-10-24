@@ -30,6 +30,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'empresa_id' => $input['empresa_id'] ?? null, // Asegúrate de que este campo esté presente en el formulario
         ]);
     }
 }

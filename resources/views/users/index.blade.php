@@ -36,7 +36,7 @@
                             Rol Actual
                         </th>
                         <th class="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                            Asignar Rol
+                            Asignar/Cambiar Rol
                         </th>
                     </tr>
                 </thead>
@@ -55,15 +55,24 @@
                                 <form action="{{ route('users.assign-role', $user) }}" method="POST">
                                     @csrf
                                     @method('PUT')
-                                    <div class="flex items-center space-x-3.5">
-                                        <select name="role" class="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary">
-                                            @foreach ($roles as $role)
-                                                <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <button type="submit" class="flex items-center justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90">
-                                            Asignar
+                                    <div x-data="{ open: false }" class="relative">
+                                        <button @click="open = !open" type="button" class="flex items-center justify-between w-full rounded border border-stroke bg-white py-3 px-5 text-left text-black dark:bg-form-input dark:text-white">
+                                            <span>{{ $user->roles->isEmpty() ? 'Asignar Rol' : 'Cambiar Rol' }}</span>
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
                                         </button>
+                                        <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-full rounded-md bg-white shadow-lg dark:bg-boxdark">
+                                            <ul class="py-1">
+                                                @foreach ($roles as $role)
+                                                    <li>
+                                                        <button type="submit" name="role" value="{{ $role->name }}" class="block w-full px-4 py-2 text-left text-black hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                                                            {{ $role->name }}
+                                                        </button>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     </div>
                                 </form>
                             </td>
@@ -78,30 +87,12 @@
 </div>
 @endsection
 
+<style>
+    .max-w-full.overflow-x-auto {
+        overflow-x: auto !important;
+    }
+</style>
+
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¿Quieres asignar este rol al usuario?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, asignar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit();
-                    }
-                });
-            });
-        });
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 @endpush
