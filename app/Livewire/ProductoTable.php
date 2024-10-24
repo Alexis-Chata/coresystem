@@ -64,7 +64,7 @@ final class ProductoTable extends PowerGridComponent
         return [
             'empresa' => ['razon_social'],
             'marca' => ['name'],
-            'categoria' => ['name'],
+            'categoria' => ['nombre'],
             'tipoAfectacion' => ['tipo_afectacion'],
         ];
     }
