@@ -25,10 +25,13 @@ final class ProveedorTable extends PowerGridComponent
         'name' => '',
         'empresa_id' => '',
     ];
+    
+    // Nombre del recurso para las validaciones de permisos
+    public string $resource = 'proveedors';
 
     public function setUp(): array
     {
-        $this->showCheckBox();
+        //$this->showCheckBox();
 
         return [
             PowerGrid::header()
@@ -100,6 +103,11 @@ final class ProveedorTable extends PowerGridComponent
         ];
     }
 
+    public function getEditOnClickAttribute()
+    {
+        return $this->checkPermission('edit');
+    }
+
     public function filters(): array
     {
         return [
@@ -109,23 +117,36 @@ final class ProveedorTable extends PowerGridComponent
 
     public function actions(Proveedor $row): array
     {
-        return [
-            Button::add('delete')
+        $actions = [];
+
+        if ($this->checkPermission('delete')) {
+            $actions[] = Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deleteProveedor', ['proveedorId' => $row->id])
-        ];
+                ->dispatch('deleteProveedor', ['proveedorId' => $row->id]);
+        }
+
+        return $actions;
     }
 
     #[On('deleteProveedor')]
     public function deleteProveedor($proveedorId): void
     {
-        Proveedor::destroy($proveedorId);
+        if ($this->checkPermission('delete')) {
+            Proveedor::destroy($proveedorId);
+        } else {
+            $this->showError('No tienes permiso para eliminar proveedores.');
+        }
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
+        if (!$this->checkPermission('edit')) {
+            $this->showError('No tienes permiso para editar proveedores.');
+            return;
+        }
+
         Proveedor::query()->find($id)->update([
             $field => $value,
         ]);
@@ -144,17 +165,21 @@ final class ProveedorTable extends PowerGridComponent
 
     public function createProveedor()
     {
-        $this->validate([
-            'newProveedor.codigo' => 'required',
-            'newProveedor.name' => 'required',
-            'newProveedor.empresa_id' => 'required|exists:empresas,id',
-        ]);
+        if ($this->checkPermission('create')) {
+            $this->validate([
+                'newProveedor.codigo' => 'required',
+                'newProveedor.name' => 'required',
+                'newProveedor.empresa_id' => 'required|exists:empresas,id',
+            ]);
 
-        Proveedor::create($this->newProveedor);
+            Proveedor::create($this->newProveedor);
 
-        $this->reset('newProveedor');
-        $this->dispatch('pg:eventRefresh-default');
-        $this->dispatch('proveedor-created', 'Proveedor creado exitosamente');
+            $this->reset('newProveedor');
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('proveedor-created', 'Proveedor creado exitosamente');
+        } else {
+            $this->showError('No tienes permiso para crear proveedores.');
+        }
     }
 
     public function empresaSelectOptions()
@@ -170,5 +195,15 @@ final class ProveedorTable extends PowerGridComponent
             $proveedor->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
         }
+    }
+
+    private function checkPermission(string $action): bool
+    {
+        return auth()->user()->can("$action {$this->resource}");
+    }
+
+    private function showError(string $message): void
+    {
+        $this->dispatch('showAlert', ['message' => $message, 'type' => 'error']);
     }
 }

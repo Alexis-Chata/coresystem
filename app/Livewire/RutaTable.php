@@ -32,7 +32,7 @@ final class RutaTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        $this->showCheckBox();
+        //$this->showCheckBox();
 
         return [
             PowerGrid::header()
@@ -102,10 +102,6 @@ final class RutaTable extends PowerGridComponent
     {
         return [
             Column::make('Id', 'id'),
-            Column::make('Código', 'codigo')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
             Column::make('Nombre', 'name')
                 ->sortable()
                 ->searchable()
@@ -115,8 +111,6 @@ final class RutaTable extends PowerGridComponent
             Column::make('Empresa', 'empresa_id')
                 ->sortable(),
             Column::make('Lista de Precios', 'lista_precio_id')
-                ->sortable(),
-            Column::make('Creado', 'created_at_formatted', 'created_at')
                 ->sortable(),
             Column::action('Acción')
         ];

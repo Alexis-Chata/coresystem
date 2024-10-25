@@ -14,6 +14,17 @@
                 confirmButtonText: 'OK'
             });
         });
+
+        Livewire.on('showAlert', data => {
+            const alertData = Array.isArray(data) ? data[0] : data;
+            Swal.fire({
+                title: alertData.type === 'error' ? '¡Error!' : '¡Atención!',
+                text: alertData.message,
+                icon: alertData.type,
+                confirmButtonText: 'OK'
+            });
+        });
+        
     });
 </script>
 @endsection

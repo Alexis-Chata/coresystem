@@ -82,7 +82,9 @@ final class EmpleadoTable extends PowerGridComponent
                 return $this->selectComponent('f_tipo_documento_id', $empleado->id, $empleado->f_tipo_documento_id, $this->tipoDocumentoSelectOptions());
             })
             ->add('numero_documento')
-            ->add('tipo_empleado')
+            ->add('tipo_empleado', function ($empleado) {
+                return $this->selectComponent('tipo_empleado', $empleado->id, $empleado->tipo_empleado, $this->tipoEmpleadoSelectOptions());
+            })
             ->add('numero_brevete')
             ->add('empresa_id', function ($empleado) {
                 return $this->selectComponent('empresa_id', $empleado->id, $empleado->empresa_id, $this->empresaSelectOptions());
@@ -135,9 +137,7 @@ final class EmpleadoTable extends PowerGridComponent
                 ->searchable()
                 ->editOnClick(),
             Column::make('Tipo de Empleado', 'tipo_empleado')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
+                ->sortable(),
             Column::make('Número de Brevete', 'numero_brevete')
                 ->sortable()
                 ->searchable()
@@ -213,6 +213,11 @@ final class EmpleadoTable extends PowerGridComponent
     public function tipoDocumentoSelectOptions()
     {
         return F_tipo_documento::all()->pluck('name', 'id');
+    }
+
+    public function tipoEmpleadoSelectOptions()
+    {
+        return Empleado::distinct()->pluck('tipo_empleado', 'tipo_empleado')->toArray();
     }
 
     public function empresaSelectOptions()
