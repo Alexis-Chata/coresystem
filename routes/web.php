@@ -48,6 +48,10 @@ Route::middleware([
     Route::get('/ruta', function () {
         return view('ruta');
     })->name('ruta.index');
+
+    Route::get('/padron', function () {
+        return view('padron');
+    })->name('padron.index');
 });
 
 // ... código existente ...

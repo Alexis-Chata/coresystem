@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+{{-- @section('title', 'Mi Título Personalizado') --}}
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <livewire:cliente-table/>

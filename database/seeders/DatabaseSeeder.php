@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ProductoSeeder::class,
             PedidoSeeder::class,
             ProveedorSeeder::class,
+            PadronSeeder::class,
         ]);
 
         $empresa = Empresa::first();
