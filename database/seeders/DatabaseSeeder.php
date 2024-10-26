@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
             FTipoAfectacionSeeder::class,
             ProductoSeeder::class,
             PedidoSeeder::class,
-            PermissionSeeder::class,
             ProveedorSeeder::class,
         ]);
 

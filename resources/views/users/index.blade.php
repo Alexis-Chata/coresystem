@@ -90,6 +90,7 @@
 <style>
     .max-w-full.overflow-x-auto {
         overflow-x: auto !important;
+        padding-bottom: 99px;
     }
 </style>
 
