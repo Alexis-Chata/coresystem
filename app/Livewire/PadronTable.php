@@ -44,6 +44,7 @@ final class PadronTable extends PowerGridComponent
     public function datasource(): Builder
     {
         return Padron::query()
+            ->withTrashed() // Incluye registros eliminados suavemente
             ->join('clientes', 'padrons.cliente_id', '=', 'clientes.id')
             ->join('rutas', 'padrons.ruta_id', '=', 'rutas.id')
             ->select('padrons.*', 'clientes.razon_social as cliente_nombre', 'rutas.name as ruta_nombre');
@@ -68,7 +69,11 @@ final class PadronTable extends PowerGridComponent
                 return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $this->rutaSelectOptions());
             })
             ->add('nro_secuencia')
-            ->add('created_at_formatted', fn (Padron $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+            ->add('created_at_formatted', fn (Padron $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
+            ->add('estado', function (Padron $model) {
+                return $model->deleted_at ? 'Eliminado' : 'Activo';
+            })
+            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null);
     }
 
     private function selectComponent($field, $padronId, $selected, $options)
@@ -88,8 +93,7 @@ final class PadronTable extends PowerGridComponent
 
     public function columns(): array
     {
-        return [
-            //Column::make('Id', 'id'),
+        $columns = [
             Column::make('Ruta', 'ruta_id')
                 ->sortable(),
             Column::make('Nro. Secuencia', 'nro_secuencia')
@@ -98,32 +102,101 @@ final class PadronTable extends PowerGridComponent
                 ->editOnClick(),
             Column::make('Cliente', 'cliente_id')
                 ->sortable(),
-            Column::action('Acción')
+            Column::make('Estado', 'estado')
+                ->sortable()
+                ->bodyAttribute('class', 'text-center'),
         ];
+
+        // Agregar la columna solo si el usuario es admin
+        //if (auth()->user()->can('view menuEmpleado')) {
+            //$columns[] = Column::make('Fecha de eliminación', 'deleted_at_formatted')
+                //->sortable();
+        //}
+
+        $columns[] = Column::action('Acción');
+
+        return $columns;
     }
 
     public function filters(): array
     {
         return [
-            Filter::datetimepicker('created_at'),
+            Filter::select('estado', 'estado')
+                ->dataSource([
+                    ['value' => 'activos', 'label' => 'Activos'],
+                    ['value' => 'eliminados', 'label' => 'Eliminados']
+                ])
+                ->optionValue('value')
+                ->optionLabel('label')
+                ->builder(function (Builder $query, string $value) {
+                    if ($value === 'eliminados') {
+                        $query->onlyTrashed();
+                    } elseif ($value === 'activos') {
+                        $query->whereNull('padrons.deleted_at');
+                    }
+                }),
         ];
     }
 
     public function actions(Padron $row): array
     {
-        return [
-            Button::add('delete')
+        $actions = [];
+        
+        if ($row->deleted_at) {
+            $actions[] = Button::add('restore')
+                ->slot('Restaurar')
+                ->id()
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('restorePadron', ['padronId' => $row->id]);
+            if (auth()->user()->can('view menuEmpleado')) {
+                $actions[] = Button::add('forceDelete')
+                    ->slot('Eliminar permanentemente')
+                    ->id()
+                    ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                    ->dispatch('forceDeletePadron', ['padronId' => $row->id]);
+            }
+        } else {
+            $actions[] = Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deletePadron', ['padronId' => $row->id])
-        ];
+                ->dispatch('deletePadron', ['padronId' => $row->id]);
+        }
+        
+        return $actions;
     }
 
     #[On('deletePadron')]
     public function deletePadron($padronId): void
     {
-        Padron::destroy($padronId);
+        $padron = Padron::find($padronId);
+        if ($padron) {
+            $padron->delete(); // Esto ahora realizará una eliminación suave
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('padron-deleted', 'Padrón eliminado exitosamente');
+        }
+    }
+
+    #[On('restorePadron')]
+    public function restorePadron($padronId): void
+    {
+        $padron = Padron::withTrashed()->find($padronId);
+        if ($padron) {
+            $padron->restore();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('padron-restored', 'Padrón restaurado exitosamente');
+        }
+    }
+
+    #[On('forceDeletePadron')]
+    public function forceDeletePadron($padronId): void
+    {
+        $padron = Padron::withTrashed()->find($padronId);
+        if ($padron) {
+            $padron->forceDelete();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('padron-force-deleted', 'Padrón eliminado permanentemente');
+        }
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void

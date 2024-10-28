@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->foreignId('ruta_id')->constrained('rutas');
             $table->integer('nro_secuencia');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -26,5 +27,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('padrons');
+        Schema::table('padrons', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };
