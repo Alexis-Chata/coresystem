@@ -36,7 +36,8 @@ final class PadronTable extends PowerGridComponent
         return [
             PowerGrid::header()
                 ->showSearchInput()
-                ->includeViewOnTop('components.create-padron-form'),
+                ->includeViewOnTop('components.create-padron-form')
+                ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -118,26 +119,6 @@ final class PadronTable extends PowerGridComponent
         $columns[] = Column::action('Acción');
 
         return $columns;
-    }
-
-    public function filters(): array
-    {
-        return [
-            Filter::select('estado', 'estado')
-                ->dataSource([
-                    ['value' => 'activos', 'label' => 'Activos'],
-                    ['value' => 'eliminados', 'label' => 'Eliminados']
-                ])
-                ->optionValue('value')
-                ->optionLabel('label')
-                ->builder(function (Builder $query, string $value) {
-                    if ($value === 'eliminados') {
-                        $query->onlyTrashed();
-                    } elseif ($value === 'activos') {
-                        $query->whereNull('padrons.deleted_at');
-                    }
-                }),
-        ];
     }
 
     public function actions(Padron $row): array
