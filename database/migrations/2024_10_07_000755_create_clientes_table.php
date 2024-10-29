@@ -16,11 +16,11 @@ return new class extends Migration
             //$table->string('name')->nullable();
             $table->string('razon_social')->nullable();
             $table->string('direccion')->nullable();
-            $table->string('clientecol')->nullable();
             $table->foreignId('f_tipo_documento_id')->constrained('f_tipo_documentos');
             $table->string('numero_documento')->nullable();
             $table->string('celular')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
+            $table->foreignId('ruta_id')->constrained('rutas');
             $table->foreignId('lista_precio_id')->constrained('lista_precios');
             $table->timestamps();
         });

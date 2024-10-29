@@ -11,14 +11,16 @@ class PadronSeeder extends Seeder
 {
     public function run(): void
     {
+        // Obtener todos los clientes y rutas
         $clientes = Cliente::all();
         $rutas = Ruta::all();
 
-        foreach ($clientes as $index => $cliente) {
+        // Crear 10 padrones aleatorios
+        for ($i = 0; $i < 10; $i++) {
             Padron::create([
-                'cliente_id' => $cliente->id,
+                'cliente_id' => $clientes->random()->id,
                 'ruta_id' => $rutas->random()->id,
-                'nro_secuencia' => $index + 1,
+                'nro_secuencia' => $i + 1,
             ]);
         }
     }

@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Empresa;
 use App\Models\F_tipo_documento;
 use App\Models\Lista_precio;
+use App\Models\Ruta;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -14,6 +15,7 @@ use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
+use PowerComponents\LivewirePowerGrid\Responsive;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\On;
 
@@ -25,18 +27,16 @@ final class ClienteTable extends PowerGridComponent
     public $newCliente = [
         'razon_social' => '',
         'direccion' => '',
-        'clientecol' => '',
         'f_tipo_documento_id' => '',
         'numero_documento' => '',
         'celular' => '',
         'empresa_id' => '',
         'lista_precio_id' => '',
+        'ruta_id' => '',
     ];
 
     public function setUp(): array
     {
-        $this->showCheckBox();
-
         return [
             PowerGrid::header()
                 ->showSearchInput()
@@ -44,6 +44,8 @@ final class ClienteTable extends PowerGridComponent
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
+            PowerGrid::responsive()
+                ->fixedColumns('id', 'razon_social'),
         ];
     }
 
@@ -53,10 +55,12 @@ final class ClienteTable extends PowerGridComponent
         ->join('f_tipo_documentos', 'clientes.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
         ->join('empresas', 'clientes.empresa_id', '=', 'empresas.id')
         ->join('lista_precios', 'clientes.lista_precio_id', '=', 'lista_precios.id')
+        ->join('rutas', 'clientes.ruta_id', '=', 'rutas.id')
         ->select('clientes.*', 
                  'f_tipo_documentos.tipo_documento as tipo_documento_nombre', 
                  'empresas.razon_social as empresa_nombre',
-                 'lista_precios.name as lista_precio_nombre');
+                 'lista_precios.name as lista_precio_nombre',
+                 'rutas.name as ruta_nombre');
 }
 
     public function relationSearch(): array
@@ -73,12 +77,13 @@ final class ClienteTable extends PowerGridComponent
         $tipoDocumentoOptions = $this->tipoDocumentoSelectOptions();
         $empresaOptions = $this->empresaSelectOptions();
         $listaPrecioOptions = $this->listaPrecioSelectOptions();
+        $rutaOptions = $this->rutaSelectOptions();
 
         return PowerGrid::fields()
             ->add('id')
+            ->add('id_formatted', fn (Cliente $model) => str_pad($model->id, 8, '0', STR_PAD_LEFT))
             ->add('razon_social')
             ->add('direccion')
-            ->add('clientecol')
             ->add('f_tipo_documento_id', function ($cliente) use ($tipoDocumentoOptions) {
                 return $this->selectComponent('f_tipo_documento_id', $cliente->id, $cliente->f_tipo_documento_id, $tipoDocumentoOptions);
             })
@@ -89,6 +94,9 @@ final class ClienteTable extends PowerGridComponent
             })
             ->add('lista_precio_id', function ($cliente) use ($listaPrecioOptions) {
                 return $this->selectComponent('lista_precio_id', $cliente->id, $cliente->lista_precio_id, $listaPrecioOptions);
+            })
+            ->add('ruta_id', function ($cliente) use ($rutaOptions) {
+                return $this->selectComponent('ruta_id', $cliente->id, $cliente->ruta_id, $rutaOptions);
             })
             ->add('created_at_formatted', fn (Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
@@ -110,7 +118,7 @@ final class ClienteTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
+            Column::make('Cod', 'id_formatted'),
             Column::make('Razón social', 'razon_social')
                 ->sortable()
                 ->searchable()
@@ -119,14 +127,10 @@ final class ClienteTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Clientecol', 'clientecol')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Tipo documento', 'f_tipo_documento_id')
+            Column::make('Tipo Doc.', 'f_tipo_documento_id')
                 ->sortable()
                 ->searchable(),
-            Column::make('Número documento', 'numero_documento')
+            Column::make('Número Doc.', 'numero_documento')
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
@@ -135,6 +139,9 @@ final class ClienteTable extends PowerGridComponent
                 ->searchable()
                 ->editOnClick(),
             Column::make('Empresa', 'empresa_id')
+                ->sortable()
+                ->searchable(),
+            Column::make('Ruta', 'ruta_id')
                 ->sortable()
                 ->searchable(),
             Column::make('Lista precio', 'lista_precio_id')
@@ -149,6 +156,8 @@ final class ClienteTable extends PowerGridComponent
         Cliente::query()->find($id)->update([
             $field => $value,
         ]);
+        $this->editingField = null;
+        $this->dispatch('pg:closeEditor-default');
     }
 
     public function actions(Cliente $row): array
@@ -181,13 +190,28 @@ final class ClienteTable extends PowerGridComponent
 
     public function createCliente()
     {
+        $messages = [
+            'newCliente.razon_social.required' => 'La razón social es obligatoria',
+            'newCliente.f_tipo_documento_id.required' => 'El tipo de documento es obligatorio',
+            'newCliente.f_tipo_documento_id.exists' => 'El tipo de documento seleccionado no es válido',
+            'newCliente.numero_documento.required' => 'El número de documento es obligatorio',
+            'newCliente.numero_documento.unique' => 'Este número de documento ya está registrado',
+            'newCliente.empresa_id.required' => 'Debe seleccionar una empresa',
+            'newCliente.empresa_id.exists' => 'La empresa seleccionada no es válida',
+            'newCliente.lista_precio_id.required' => 'Debe seleccionar una lista de precios',
+            'newCliente.lista_precio_id.exists' => 'La lista de precios seleccionada no es válida',
+            'newCliente.ruta_id.required' => 'Debe seleccionar una ruta',
+            'newCliente.ruta_id.exists' => 'La ruta seleccionada no es válida',
+        ];
+
         $this->validate([
             'newCliente.razon_social' => 'required',
             'newCliente.f_tipo_documento_id' => 'required|exists:f_tipo_documentos,id',
             'newCliente.numero_documento' => 'required|unique:clientes,numero_documento',
             'newCliente.empresa_id' => 'required|exists:empresas,id',
             'newCliente.lista_precio_id' => 'required|exists:lista_precios,id',
-        ]);
+            'newCliente.ruta_id' => 'required|exists:rutas,id',
+        ], $messages);
 
         Cliente::create($this->newCliente);
 
@@ -211,6 +235,11 @@ final class ClienteTable extends PowerGridComponent
         return Lista_precio::all()->pluck('name', 'id');
     }
 
+    public function rutaSelectOptions()
+    {
+        return Ruta::all()->pluck('name', 'id');
+    }
+
     #[On('updateField')]
     public function updateField($field, $value, $clienteId)
     {
@@ -219,5 +248,14 @@ final class ClienteTable extends PowerGridComponent
             $cliente->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
         }
+    }
+
+    #[On('edit-field')]
+    public function editField($field, $id): void
+    {
+        if ($this->editingField && $this->editingField !== $field . '_' . $id) {
+            $this->dispatch('pg:closeEditor-default');
+        }
+        $this->editingField = $field . '_' . $id;
     }
 }

@@ -20,6 +20,8 @@ final class PadronTable extends PowerGridComponent
 {
     public string $tableName = 'padron-table-ay3rv1-table';
     public bool $showCreateForm = false;
+    public string $sortField = 'nro_secuencia'; 
+    public string $sortDirection = 'asc';
 
     public $newPadron = [
         'cliente_id' => '',
@@ -44,7 +46,7 @@ final class PadronTable extends PowerGridComponent
     public function datasource(): Builder
     {
         return Padron::query()
-            ->withTrashed() // Incluye registros eliminados suavemente
+            //->withTrashed() // Incluye registros eliminados suavemente
             ->join('clientes', 'padrons.cliente_id', '=', 'clientes.id')
             ->join('rutas', 'padrons.ruta_id', '=', 'rutas.id')
             ->select('padrons.*', 'clientes.razon_social as cliente_nombre', 'rutas.name as ruta_nombre');
@@ -171,7 +173,13 @@ final class PadronTable extends PowerGridComponent
     {
         $padron = Padron::find($padronId);
         if ($padron) {
-            $padron->delete(); // Esto ahora realizará una eliminación suave
+            $secuenciaEliminada = $padron->nro_secuencia;
+            $padron->delete(); // Soft delete
+
+            // Reorganizar las secuencias después de eliminar
+            Padron::where('nro_secuencia', '>', $secuenciaEliminada)
+                  ->decrement('nro_secuencia');
+
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('padron-deleted', 'Padrón eliminado exitosamente');
         }
@@ -182,7 +190,13 @@ final class PadronTable extends PowerGridComponent
     {
         $padron = Padron::withTrashed()->find($padronId);
         if ($padron) {
+            // Obtener la última secuencia
+            $ultimaSecuencia = Padron::max('nro_secuencia');
+            
+            // Restaurar con la siguiente secuencia disponible
+            $padron->nro_secuencia = $ultimaSecuencia + 1;
             $padron->restore();
+            
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('padron-restored', 'Padrón restaurado exitosamente');
         }
@@ -201,9 +215,30 @@ final class PadronTable extends PowerGridComponent
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
-        Padron::query()->find($id)->update([
-            $field => $value,
-        ]);
+        if ($field === 'nro_secuencia') {
+            $padron = Padron::find($id);
+            $oldSequence = $padron->nro_secuencia;
+            $newSequence = (int)$value;
+
+            // Si la nueva secuencia es mayor que la anterior
+            if ($newSequence > $oldSequence) {
+                Padron::where('nro_secuencia', '>', $oldSequence)
+                      ->where('nro_secuencia', '<=', $newSequence)
+                      ->decrement('nro_secuencia');
+            }
+            // Si la nueva secuencia es menor que la anterior
+            else if ($newSequence < $oldSequence) {
+                Padron::where('nro_secuencia', '>=', $newSequence)
+                      ->where('nro_secuencia', '<', $oldSequence)
+                      ->increment('nro_secuencia');
+            }
+
+            $padron->update(['nro_secuencia' => $newSequence]);
+        } else {
+            Padron::query()->find($id)->update([
+                $field => $value,
+            ]);
+        }
     }
 
     public function openCreateForm()

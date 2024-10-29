@@ -21,13 +21,6 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="clientecol">
-                    Clientecol
-                </label>
-                <input wire:model="newCliente.clientecol" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="clientecol" type="text" placeholder="Clientecol">
-            </div>
-
-            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="f_tipo_documento_id">
                     Tipo de Documento
                 </label>
@@ -66,6 +59,19 @@
                     @endforeach
                 </select>
                 @error('newCliente.empresa_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="ruta_id">
+                    Ruta
+                </label>
+                <select wire:model="newCliente.ruta_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="ruta_id">
+                    <option value="">Seleccione una ruta</option>
+                    @foreach(App\Models\Ruta::all() as $ruta)
+                        <option value="{{ $ruta->id }}">{{ $ruta->name }}</option>
+                    @endforeach
+                </select>
+                @error('newCliente.ruta_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
             <div class="mb-4">

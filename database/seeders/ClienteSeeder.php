@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\F_tipo_documento;
 use App\Models\Empresa;
 use App\Models\Lista_precio;
+use App\Models\Ruta;
 
 class ClienteSeeder extends Seeder
 {
@@ -31,18 +32,21 @@ class ClienteSeeder extends Seeder
             throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
         }
 
+        $ruta = Ruta::first();
+        if (!$ruta) {
+            throw new \Exception('No hay rutas en la base de datos. Asegúrate de ejecutar RutaSeeder primero.');
+        }
+
         $clientes = [
             [
                 'razon_social' => 'Empresa A S.A.C.',
                 'direccion' => 'Av. Principal 123, Lima',
-                'clientecol' => 'Cliente A',
                 'numero_documento' => '20123456789',
                 'celular' => '987654321',
             ],
             [
                 'razon_social' => 'Comercial B E.I.R.L.',
                 'direccion' => 'Jr. Comercio 456, Lima',
-                'clientecol' => 'Cliente B',
                 'numero_documento' => '20987654321',
                 'celular' => '123456789',
             ],
@@ -53,12 +57,12 @@ class ClienteSeeder extends Seeder
             Cliente::create([
                 'razon_social' => $cliente['razon_social'],
                 'direccion' => $cliente['direccion'],
-                'clientecol' => $cliente['clientecol'],
                 'f_tipo_documento_id' => $tipoDocumento->id,
                 'numero_documento' => $cliente['numero_documento'],
                 'celular' => $cliente['celular'],
                 'empresa_id' => $empresa->id,
                 'lista_precio_id' => $listaPrecio->id,
+                'ruta_id' => $ruta->id,
             ]);
         }
     }
