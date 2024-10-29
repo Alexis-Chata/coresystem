@@ -54,4 +54,8 @@ Route::middleware([
     })->name('padron.index');
 });
 
+Route::get('/', function () {
+    return redirect(route('dashboard'));
+})->name('index');
+
 // ... código existente ...
