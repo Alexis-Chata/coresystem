@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('f_tipo_documentos', function (Blueprint $table) {
+        Schema::create('user_empleados', function (Blueprint $table) {
             $table->id();
-            $table->string('tipo_documento')->nullable();
-            $table->string('name')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('empleado_id')->constrained('empleados');
+            $table->timestamps();
         });
     }
 
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('f_tipo_documentos');
+        Schema::dropIfExists('user_empleados');
     }
 };

@@ -7,13 +7,14 @@ use App\Models\Empleado;
 use App\Models\F_tipo_documento;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
+use Illuminate\Support\Facades\DB;
 
 class EmpleadoSeeder extends Seeder
 {
     public function run(): void
     {
         $tipoDocumento = F_tipo_documento::inRandomOrder()->first();
-        
+
         if (!$tipoDocumento) {
             throw new \Exception('No hay tipos de documento en la base de datos. Asegúrate de ejecutar FTipoDocumentoSeeder primero.');
         }
@@ -29,6 +30,35 @@ class EmpleadoSeeder extends Seeder
         if ($vehiculos->isEmpty()) {
             throw new \Exception('No hay vehículos en la base de datos. Asegúrate de ejecutar VehiculoSeeder primero.');
         }
+
+        DB::insert("insert  into `empleados`
+        (`id`,`codigo`,`name`,`direccion`,`celular`,`f_tipo_documento_id`,`numero_documento`,`tipo_empleado`,`numero_brevete`,`empresa_id`,`vehiculo_id`) values
+        (1,NULL,'CHARLIE JARA','JICAMARCA','987654321',1,'99999999','vendedor',NULL,1,NULL),
+        (2,NULL,'ROSELVI SEGURA','MZ 62 LT 24 CANTOGRANDE','987654322',1,'72728861','vendedor',NULL,1,NULL),
+        (3,NULL,'PAUL CASTELO','JICAMARCA','987654323',1,'99999999','vendedor',NULL,1,NULL),
+        (4,NULL,'RONALD AQUIZE','JICAMARCA','987654324',1,'99999999','vendedor',NULL,1,NULL),
+        (5,NULL,'HUGO ROSALES','JICAMARCA','987654325',1,'99999999','vendedor',NULL,1,NULL),
+        (6,NULL,'DIXON QUISPE','MZ A LT 22 JUAN PABLO II','999999999',1,'46880607','vendedor',NULL,1,NULL),
+        (7,NULL,'ANGEL LOPEZ','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (8,NULL,'PAUL LIZANA','JICAMARCA','999999999',1,'61833310','vendedor',NULL,1,NULL),
+        (9,NULL,'JARA HUGO','JICAMARCA','999999999',1,'74526983','vendedor',NULL,1,NULL),
+        (10,NULL,'LEAO DO SANTOS','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (11,NULL,'ANGELA RIVAS MASKO','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (12,NULL,'ALEXANDER GOMEZ','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (13,NULL,'HUGO MAYO CAMPOS','JICAMARCA','999999999',1,'45608264','vendedor',NULL,1,NULL),
+        (14,NULL,'HUMBERTO BARZOLA','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (15,NULL,'WILLIAMS J.ZAMBRANO','JICAMARCA','999999999',2,'4680148','vendedor',NULL,1,NULL),
+        (16,NULL,'ARMANDO HUAMANI','JICAMARCA','999999999',1,'47310134','vendedor',NULL,1,NULL),
+        (17,NULL,'JUAN MACAVILCA','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (18,NULL,'LUIS SANCHEZ','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (19,NULL,'ROLANDO ALGUIAR','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (20,NULL,'NILO QUISPE','JICAMARCA','999999999',1,'76770386','vendedor',NULL,1,NULL),
+        (21,NULL,'REYNOSO JUSTO','JICAMARCA','999999999',1,'99999999','vendedor',NULL,1,NULL),
+        (22,NULL,'GLADYS QUISPE','JICAMARCA','999999999',1,'76226786','vendedor',NULL,1,NULL),
+        (23,NULL,'LUANA','JICAMARCA','999999999',1,'76226786','vendedor',NULL,1,NULL),
+        (24,NULL,'SERGIO SANCHEZ','JICAMARCA','999999999',1,'41869776','vendedor',NULL,1,NULL),
+        (25,NULL,'JHON BENITES','JICAMARCA','999999999',1,'76464963','vendedor',NULL,1,NULL);
+        ");
 
         $empleado = new Empleado();
         $empleado->name = 'Juan Pérez';

@@ -22,7 +22,8 @@ return new class extends Migration
             $table->string('ubigueo')->nullable();
             $table->string('addresstypecode')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

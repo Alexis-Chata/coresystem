@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('cantidad')->nullable();
             $table->string('producto_precio')->nullable();
             $table->string('importe')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

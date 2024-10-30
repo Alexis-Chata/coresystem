@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('almacen_id')->constrained('almacens');
             $table->string('stock')->nullable();
             $table->string('stock_minimo')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

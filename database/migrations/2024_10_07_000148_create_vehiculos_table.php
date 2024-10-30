@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('certificado_inscripcion')->nullable();
             $table->string('numero_tarjeta')->nullable();
             $table->string('tonelaje_maximo')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('categoria_id')->constrained('categorias');
             $table->foreignId('f_tipo_afectacion_id')->constrained('f_tipo_afectacions');
             $table->string('porcentaje_igv')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

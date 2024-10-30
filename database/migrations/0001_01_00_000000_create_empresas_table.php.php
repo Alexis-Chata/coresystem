@@ -24,7 +24,8 @@ return new class extends Migration
             $table->string('client_id')->nullable();
             $table->string('client_secret')->nullable();
             $table->boolean('production')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

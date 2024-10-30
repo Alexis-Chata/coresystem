@@ -22,7 +22,7 @@
             </svg>
         </div>
         <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Registro</h2>
-        
+
         @if ($errors->any())
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
                 <p class="font-bold">Por favor, corrija los siguientes errores:</p>
@@ -53,6 +53,15 @@
                 <input type="password" name="password_confirmation" id="password_confirmation" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
             </div>
             <div class="mb-6">
+                <label for="empleado_id" class="block text-gray-700 text-sm font-semibold mb-2">Codigo</label>
+                <select name="empleado_id" id="empleado_id" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <option value="">Seleccione Un Codigo</option>
+                    @foreach(App\Models\Empleado::all() as $empleado)
+                        <option value="{{ $empleado->id }}">{{ $empleado->id }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-6">
                 <label for="empresa_id" class="block text-gray-700 text-sm font-semibold mb-2">Empresa</label>
                 <select name="empresa_id" id="empresa_id" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     <option value="">Seleccione una empresa</option>
@@ -61,7 +70,7 @@
                     @endforeach
                 </select>
             </div>
-            
+
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mb-6">
                     <label class="flex items-center">
@@ -83,7 +92,7 @@
             </div>
         </form>
         <p class="text-center mt-8 text-sm text-gray-600">
-            ¿Ya tiene una cuenta? 
+            ¿Ya tiene una cuenta?
             <a href="{{ route('login') }}" class="font-semibold text-blue-600 hover:text-blue-800">Inicie sesión aquí</a>
         </p>
     </div>

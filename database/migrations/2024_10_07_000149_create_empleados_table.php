@@ -23,7 +23,8 @@ return new class extends Migration
             $table->string('numero_brevete')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('vehiculo_id')->nullable()->constrained('vehiculos');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

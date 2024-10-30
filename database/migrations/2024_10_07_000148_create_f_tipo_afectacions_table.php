@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('letra')->nullable();
             $table->string('codigo')->nullable();
             $table->string('tipo')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

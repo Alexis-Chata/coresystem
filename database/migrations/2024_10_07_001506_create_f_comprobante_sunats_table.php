@@ -62,7 +62,8 @@ return new class extends Migration
             $table->string('mensaje_sunat')->nullable();
             $table->string('obs')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

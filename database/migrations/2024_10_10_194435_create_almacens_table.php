@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('ubicacion')->nullable();
             $table->string('encargado_id')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

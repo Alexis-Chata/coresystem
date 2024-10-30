@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('fechaemision')->nullable();
             $table->foreignId('sede_id')->constrained('sedes');
             $table->foreignId('f_tipo_comprobante_id')->constrained('f_tipo_comprobantes');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

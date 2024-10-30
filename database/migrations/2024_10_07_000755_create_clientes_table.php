@@ -22,7 +22,8 @@ return new class extends Migration
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('ruta_id')->constrained('rutas');
             $table->foreignId('lista_precio_id')->constrained('lista_precios');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

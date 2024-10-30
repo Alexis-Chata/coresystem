@@ -21,7 +21,8 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

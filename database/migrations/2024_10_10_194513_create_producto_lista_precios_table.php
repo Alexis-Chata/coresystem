@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('producto_id')->constrained('productos');
             $table->foreignId('lista_precio_id')->constrained('lista_precios');
             $table->string('precio')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

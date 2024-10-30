@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('ruta_id')->constrained('rutas');
             $table->integer('nro_secuencia');
             $table->softDeletes();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

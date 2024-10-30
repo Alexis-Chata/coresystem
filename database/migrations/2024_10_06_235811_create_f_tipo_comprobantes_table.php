@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('tipo_comprobante')->nullable();
             $table->string('name')->nullable();
             $table->boolean('estado')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

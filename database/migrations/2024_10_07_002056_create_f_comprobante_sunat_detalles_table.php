@@ -32,7 +32,8 @@ return new class extends Migration
             $table->string('porcentajeIsc')->nullable();
             $table->string('isc')->nullable();
             $table->foreignId('f_comprobante_sunat_id')->constrained('f_comprobante_sunats');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 
