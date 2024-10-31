@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             CategoriaSeeder::class,
             FTipoAfectacionSeeder::class,
             ProductoSeeder::class,
+            ProductoListaPrecioSeeder::class,
             PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,

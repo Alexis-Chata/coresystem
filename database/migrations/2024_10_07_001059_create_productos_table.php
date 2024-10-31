@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('marca_id')->constrained('marcas');
             $table->foreignId('categoria_id')->constrained('categorias');
             $table->foreignId('f_tipo_afectacion_id')->constrained('f_tipo_afectacions');
             $table->string('porcentaje_igv')->nullable();
+            $table->string('tipo_unidad')->default("NIU");
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
