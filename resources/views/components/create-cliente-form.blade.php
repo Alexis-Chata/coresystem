@@ -61,18 +61,18 @@
                 @error('newCliente.empresa_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
+            <!-- Ruta -->
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="ruta_id">
-                    Ruta
-                </label>
-                <select wire:model="newCliente.ruta_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="ruta_id">
-                    <option value="">Seleccione una ruta</option>
-                    @foreach(App\Models\Ruta::all() as $ruta)
-                        <option value="{{ $ruta->id }}">{{ $ruta->name }}</option>
-                    @endforeach
-                </select>
-                @error('newCliente.ruta_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
-            </div>
+    <x-searchable-select
+        :options="App\Models\Ruta::all()->map(function($ruta) {
+            return ['id' => $ruta->id, 'name' => $ruta->name];
+        })"
+        wire-model="newCliente.ruta_id"
+        field="ruta_id"
+        label="Ruta"
+        placeholder="Buscar ruta..."
+    />
+</div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="lista_precio_id">

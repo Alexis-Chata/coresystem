@@ -68,7 +68,7 @@ final class ClienteTable extends PowerGridComponent
         return [
             'tipoDocumento' => ['tipo_documento'],
             'empresa' => ['razon_social'],
-            'listaPrecio' => ['nombre'],
+            'listaPrecio' => ['name'],
         ];
     }
 
@@ -95,8 +95,16 @@ final class ClienteTable extends PowerGridComponent
             ->add('lista_precio_id', function ($cliente) use ($listaPrecioOptions) {
                 return $this->selectComponent('lista_precio_id', $cliente->id, $cliente->lista_precio_id, $listaPrecioOptions);
             })
-            ->add('ruta_id', function ($cliente) use ($rutaOptions) {
-                return $this->selectComponent('ruta_id', $cliente->id, $cliente->ruta_id, $rutaOptions);
+            ->add('ruta_id', function ($cliente) {
+                return view('components.searchable-select', [
+                    'options' => Ruta::all()->map(function($ruta) {
+                        return ['id' => $ruta->id, 'name' => $ruta->name];
+                    }),
+                    'selected' => $cliente->ruta_id,
+                    'field' => 'ruta_id',
+                    'isEditing' => true,
+                    'modelId' => $cliente->id
+                ]);
             })
             ->add('created_at_formatted', fn (Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
@@ -158,6 +166,9 @@ final class ClienteTable extends PowerGridComponent
         ]);
         $this->editingField = null;
         $this->dispatch('pg:closeEditor-default');
+        
+        // Agregar esta línea para actualizar la tabla de padrón
+        $this->dispatch('refresh-padron-table');
     }
 
     public function actions(Cliente $row): array
@@ -218,6 +229,8 @@ final class ClienteTable extends PowerGridComponent
         $this->reset('newCliente');
         $this->dispatch('pg:eventRefresh-default');
         $this->dispatch('cliente-created', 'Cliente creado exitosamente');
+        // Disparar evento para actualizar la tabla de padrón
+        $this->dispatch('refresh-padron-table');
     }
 
     public function tipoDocumentoSelectOptions()
@@ -247,6 +260,9 @@ final class ClienteTable extends PowerGridComponent
         if ($cliente) {
             $cliente->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
+            
+            // Agregar esta línea para actualizar la tabla de padrón
+            $this->dispatch('refresh-padron-table');
         }
     }
 

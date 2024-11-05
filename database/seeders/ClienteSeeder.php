@@ -32,11 +32,6 @@ class ClienteSeeder extends Seeder
             throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
         }
 
-        $ruta = Ruta::first();
-        if (!$ruta) {
-            throw new \Exception('No hay rutas en la base de datos. Asegúrate de ejecutar RutaSeeder primero.');
-        }
-
         $clientes = [
             [
                 'razon_social' => 'Comercial San Miguel S.A.C.',
@@ -139,7 +134,7 @@ class ClienteSeeder extends Seeder
                 'celular' => $cliente['celular'],
                 'empresa_id' => $empresa->id,
                 'lista_precio_id' => $listaPrecio->id,
-                'ruta_id' => $ruta->id,
+                'ruta_id' => Ruta::inRandomOrder()->first()->id,
             ]);
         }
     }

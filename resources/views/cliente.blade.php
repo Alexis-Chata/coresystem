@@ -8,6 +8,7 @@
     <livewire:padron-table/>
 <script>
     document.addEventListener('livewire:initialized', () => {
+        // Eventos de Cliente
         Livewire.on('cliente-created', message => {
             Swal.fire({
                 title: '¡Éxito!',
@@ -16,10 +17,8 @@
                 confirmButtonText: 'OK'
             });
         });
-    });
-</script>
-<script>
-    document.addEventListener('livewire:initialized', () => {
+
+        // Eventos de Padrón
         Livewire.on('padron-deleted', message => {
             Swal.fire({
                 title: '¡Éxito!',

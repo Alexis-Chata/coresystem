@@ -267,4 +267,11 @@ final class PadronTable extends PowerGridComponent
             $this->dispatch('pg:eventRefresh-default');
         }
     }
+
+    // Evento para actualizar la tabla de padrón cuando se crea un cliente
+    #[On('refresh-padron-table')]
+    public function refreshTable(): void
+    {
+        $this->dispatch('pg:eventRefresh-default');
+    }
 }
