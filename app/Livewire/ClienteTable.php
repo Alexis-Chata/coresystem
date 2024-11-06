@@ -247,7 +247,22 @@ final class ClienteTable extends PowerGridComponent
     {
         $cliente = Cliente::find($clienteId);
         if ($cliente) {
-            $cliente->update([$field => $value]);
+            // Si el campo que se está actualizando es ruta_id
+            if ($field === 'ruta_id') {
+                // Obtener la ruta y su lista de precios asociada
+                $ruta = Ruta::find($value);
+                if ($ruta) {
+                    // Actualizar tanto la ruta como la lista de precios
+                    $cliente->update([
+                        'ruta_id' => $value,
+                        'lista_precio_id' => $ruta->lista_precio_id
+                    ]);
+                }
+            } else {
+                // Para otros campos, actualizar normalmente
+                $cliente->update([$field => $value]);
+            }
+
             $this->dispatch('pg:eventRefresh-default');
             
             // Agregar esta línea para actualizar la tabla de padrón
