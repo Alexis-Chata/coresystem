@@ -48,31 +48,37 @@
                 <input wire:model="newCliente.celular" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="celular" type="text" placeholder="Celular">
             </div>
 
-            <div class="mb-4">
+            <!-- Empresa -->
+            <div class="mb-4" style="display: none;">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="empresa_id">
                     Empresa
                 </label>
-                <select wire:model="newCliente.empresa_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="empresa_id">
-                    <option value="">Seleccione una empresa</option>
-                    @foreach(App\Models\Empresa::all() as $empresa)
-                        <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
-                    @endforeach
+                @php
+                    $empresa = App\Models\Empresa::first();
+                    $this->newCliente['empresa_id'] = $empresa->id; // Establecer el valor inicial
+                @endphp
+                <select wire:model="newCliente.empresa_id" 
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="empresa_id">
+                    <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
                 </select>
-                @error('newCliente.empresa_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+                @error('newCliente.empresa_id') 
+                    <span class="text-red-500 text-xs italic">{{ $message }}</span> 
+                @enderror
             </div>
 
             <!-- Ruta -->
             <div class="mb-4">
-    <x-searchable-select
-        :options="App\Models\Ruta::all()->map(function($ruta) {
-            return ['id' => $ruta->id, 'name' => $ruta->name];
-        })"
-        wire-model="newCliente.ruta_id"
-        field="ruta_id"
-        label="Ruta"
-        placeholder="Buscar ruta..."
-    />
-</div>
+                <x-searchable-select
+                    :options="App\Models\Ruta::all()->map(function($ruta) {
+                        return ['id' => $ruta->id, 'name' => $ruta->name];
+                    })"
+                    wire-model="newCliente.ruta_id"
+                    field="ruta_id"
+                    label="Ruta"
+                    placeholder="Buscar ruta..."
+                />
+            </div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="lista_precio_id">

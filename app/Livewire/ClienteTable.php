@@ -146,9 +146,6 @@ final class ClienteTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Empresa', 'empresa_id')
-                ->sortable()
-                ->searchable(),
             Column::make('Ruta', 'ruta_id')
                 ->sortable()
                 ->searchable(),
