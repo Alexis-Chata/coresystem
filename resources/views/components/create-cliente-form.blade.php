@@ -80,17 +80,27 @@
                 />
             </div>
 
+            <!-- Lista de Precios -->
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="lista_precio_id">
                     Lista de Precios
                 </label>
-                <select wire:model="newCliente.lista_precio_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="lista_precio_id">
+                <select wire:model="newCliente.lista_precio_id" 
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                        id="lista_precio_id"
+                        style="pointer-events: none;"
+                        {{ $newCliente['ruta_id'] ? 'disabled' : '' }}>  {{-- Deshabilitar si hay una ruta seleccionada --}}
                     <option value="">Seleccione una lista de precios</option>
                     @foreach(App\Models\Lista_precio::all() as $listaPrecio)
                         <option value="{{ $listaPrecio->id }}">{{ $listaPrecio->name }}</option>
                     @endforeach
                 </select>
-                @error('newCliente.lista_precio_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+                @if($newCliente['ruta_id'])
+                    <p class="text-sm text-gray-500 mt-1">Precio seleccionado según la ruta.</p>
+                @endif
+                @error('newCliente.lista_precio_id') 
+                    <span class="text-red-500 text-xs italic">{{ $message }}</span> 
+                @enderror
             </div>
 
             <div class="flex items-center justify-between">

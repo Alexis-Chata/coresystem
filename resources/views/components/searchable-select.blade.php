@@ -33,6 +33,8 @@
                 $wire.updateField('{{ $field }}', option.id, {{ $modelId }});
             @else
                 $wire.set('{{ $wireModel }}', option.id);
+                // Disparar evento para actualizar la lista de precios
+                $wire.dispatch('ruta-selected', { rutaId: option.id });
             @endif
             this.open = false;
         },

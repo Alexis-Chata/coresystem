@@ -95,16 +95,8 @@ final class ClienteTable extends PowerGridComponent
             ->add('lista_precio_id', function ($cliente) use ($listaPrecioOptions) {
                 return $this->selectComponent('lista_precio_id', $cliente->id, $cliente->lista_precio_id, $listaPrecioOptions);
             })
-            ->add('ruta_id', function ($cliente) {
-                return view('components.searchable-select', [
-                    'options' => Ruta::all()->map(function($ruta) {
-                        return ['id' => $ruta->id, 'name' => $ruta->name];
-                    }),
-                    'selected' => $cliente->ruta_id,
-                    'field' => 'ruta_id',
-                    'isEditing' => true,
-                    'modelId' => $cliente->id
-                ]);
+            ->add('ruta_id', function ($cliente) use ($rutaOptions) {
+                return $this->selectComponent('ruta_id', $cliente->id, $cliente->ruta_id, $rutaOptions);
             })
             ->add('created_at_formatted', fn (Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
@@ -270,5 +262,15 @@ final class ClienteTable extends PowerGridComponent
             $this->dispatch('pg:closeEditor-default');
         }
         $this->editingField = $field . '_' . $id;
+    }
+
+    #[On('ruta-selected')]
+    public function handleRutaSelected($rutaId)
+    {
+        // Obtener la lista de precios asociada a la ruta
+        $ruta = Ruta::find($rutaId);
+        if ($ruta) {
+            $this->newCliente['lista_precio_id'] = $ruta->lista_precio_id;
+        }
     }
 }
