@@ -139,7 +139,7 @@
 
             <!-- Elemento de menú Padron -->
             <li>
-                <a href="{{ route('padron.index') }}" class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if(request()->routeIs('ruta.index')) bg-graydark dark:bg-meta-4 @endif">
+                <a href="{{ route('padron.index') }}" class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if(request()->routeIs('padron.index')) bg-graydark dark:bg-meta-4 @endif">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H5.24a2 2 0 00-1.8 1.1l-.8 1.63A6 6 0 002 12.42V16h2"></path>
                     <circle cx="6.5" cy="16.5" r="2.5"></circle>

@@ -92,12 +92,8 @@ final class ClienteTable extends PowerGridComponent
             ->add('empresa_id', function ($cliente) use ($empresaOptions) {
                 return $this->selectComponent('empresa_id', $cliente->id, $cliente->empresa_id, $empresaOptions);
             })
-            ->add('lista_precio_id', function ($cliente) use ($listaPrecioOptions) {
-                return $this->selectComponent('lista_precio_id', $cliente->id, $cliente->lista_precio_id, $listaPrecioOptions);
-            })
-            ->add('ruta_id', function ($cliente) use ($rutaOptions) {
-                return $this->selectComponent('ruta_id', $cliente->id, $cliente->ruta_id, $rutaOptions);
-            })
+            ->add('lista_precio_nombre')
+            ->add('ruta_nombre')
             ->add('created_at_formatted', fn (Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
 
@@ -138,12 +134,10 @@ final class ClienteTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Ruta', 'ruta_id')
-                ->sortable()
-                ->searchable(),
-            Column::make('Lista precio', 'lista_precio_id')
-                ->sortable()
-                ->searchable(),
+            Column::make('Ruta', 'ruta_nombre')
+                ->sortable(),
+            Column::make('Lista precio', 'lista_precio_nombre')
+                ->sortable(),
             Column::action('Acción')
         ];
     }
@@ -247,22 +241,7 @@ final class ClienteTable extends PowerGridComponent
     {
         $cliente = Cliente::find($clienteId);
         if ($cliente) {
-            // Si el campo que se está actualizando es ruta_id
-            if ($field === 'ruta_id') {
-                // Obtener la ruta y su lista de precios asociada
-                $ruta = Ruta::find($value);
-                if ($ruta) {
-                    // Actualizar tanto la ruta como la lista de precios
-                    $cliente->update([
-                        'ruta_id' => $value,
-                        'lista_precio_id' => $ruta->lista_precio_id
-                    ]);
-                }
-            } else {
-                // Para otros campos, actualizar normalmente
-                $cliente->update([$field => $value]);
-            }
-
+            $cliente->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
             
             // Agregar esta línea para actualizar la tabla de padrón
@@ -287,5 +266,11 @@ final class ClienteTable extends PowerGridComponent
         if ($ruta) {
             $this->newCliente['lista_precio_id'] = $ruta->lista_precio_id;
         }
+    }
+
+    #[On('refresh-cliente-table')]
+    public function refreshTable()
+    {
+        $this->dispatch('pg:eventRefresh-default');
     }
 }

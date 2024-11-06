@@ -263,8 +263,38 @@ final class PadronTable extends PowerGridComponent
     {
         $padron = Padron::find($padronId);
         if ($padron) {
-            $padron->update([$field => $value]);
+            // Si el campo que se está actualizando es ruta_id
+            if ($field === 'ruta_id') {
+                // Obtener la ruta y su lista de precios asociada
+                $ruta = Ruta::find($value);
+                if ($ruta) {
+                    // Actualizar tanto la ruta como la lista de precios en padrón
+                    $padron->update([
+                        'ruta_id' => $value,
+                        'lista_precio_id' => $ruta->lista_precio_id
+                    ]);
+
+                    // Actualizar también el cliente asociado
+                    if ($padron->cliente) {
+                        $padron->cliente->update([
+                            'ruta_id' => $value,
+                            'lista_precio_id' => $ruta->lista_precio_id
+                        ]);
+                    }
+                }
+            } else {
+                // Para otros campos, actualizar normalmente
+                $padron->update([$field => $value]);
+                
+                // Si el campo existe en la tabla clientes, actualizarlo también
+                if ($padron->cliente && in_array($field, ['ruta_id', 'lista_precio_id'])) {
+                    $padron->cliente->update([$field => $value]);
+                }
+            }
+
             $this->dispatch('pg:eventRefresh-default');
+            // Disparar evento para actualizar la tabla de clientes
+            $this->dispatch('refresh-cliente-table');
         }
     }
 
