@@ -184,12 +184,22 @@ final class ClienteTable extends PowerGridComponent
 
     public function createCliente()
     {
+        // Establecer valores por defecto si no están presentes
+        if (empty($this->newCliente['f_tipo_documento_id'])) {
+            $primerTipoDocumento = F_tipo_documento::first();
+            $this->newCliente['f_tipo_documento_id'] = $primerTipoDocumento ? $primerTipoDocumento->id : null;
+        }
+        
+        if (empty($this->newCliente['numero_documento'])) {
+            $this->newCliente['numero_documento'] = '99999999';
+        }
+
         $messages = [
             'newCliente.razon_social.required' => 'La razón social es obligatoria',
             'newCliente.f_tipo_documento_id.required' => 'El tipo de documento es obligatorio',
             'newCliente.f_tipo_documento_id.exists' => 'El tipo de documento seleccionado no es válido',
             'newCliente.numero_documento.required' => 'El número de documento es obligatorio',
-            'newCliente.numero_documento.unique' => 'Este número de documento ya está registrado',
+            //'newCliente.numero_documento.unique' => 'Este número de documento ya está registrado',
             'newCliente.empresa_id.required' => 'Debe seleccionar una empresa',
             'newCliente.empresa_id.exists' => 'La empresa seleccionada no es válida',
             'newCliente.lista_precio_id.required' => 'Debe seleccionar una lista de precios',
@@ -201,7 +211,7 @@ final class ClienteTable extends PowerGridComponent
         $this->validate([
             'newCliente.razon_social' => 'required',
             'newCliente.f_tipo_documento_id' => 'required|exists:f_tipo_documentos,id',
-            'newCliente.numero_documento' => 'required|unique:clientes,numero_documento',
+            'newCliente.numero_documento' => 'required',
             'newCliente.empresa_id' => 'required|exists:empresas,id',
             'newCliente.lista_precio_id' => 'required|exists:lista_precios,id',
             'newCliente.ruta_id' => 'required|exists:rutas,id',
