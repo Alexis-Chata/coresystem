@@ -32,12 +32,15 @@ final class RutaTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        //$this->showCheckBox();
+        $header = PowerGrid::header()
+            ->showSearchInput();
+
+        if (auth()->user()->can('view menuEmpleado')) {
+            $header->includeViewOnTop('components.create-ruta-form');
+        }
 
         return [
-            PowerGrid::header()
-                ->showSearchInput()
-                ->includeViewOnTop('components.create-ruta-form'),
+            $header,
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -46,7 +49,9 @@ final class RutaTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Ruta::query()
+        $empleado = auth()->user()->empleados()->first();
+
+        $query = Ruta::query()
             ->join('empleados', 'rutas.vendedor_id', '=', 'empleados.id')
             ->join('empresas', 'rutas.empresa_id', '=', 'empresas.id')
             ->join('lista_precios', 'rutas.lista_precio_id', '=', 'lista_precios.id')
@@ -54,6 +59,12 @@ final class RutaTable extends PowerGridComponent
                      'empleados.name as vendedor_nombre',
                      'empresas.razon_social as empresa_nombre',
                      'lista_precios.name as lista_precio_nombre');
+
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $query->where('rutas.vendedor_id', $empleado->id);
+        }
+
+        return $query;
     }
 
     public function relationSearch(): array
@@ -108,11 +119,11 @@ final class RutaTable extends PowerGridComponent
                 ->editOnClick(),
             Column::make('Vendedor', 'vendedor_id')
                 ->sortable(),
-            Column::make('Empresa', 'empresa_id')
-                ->sortable(),
             Column::make('Lista de Precios', 'lista_precio_id')
                 ->sortable(),
             Column::action('Acción')
+                ->visibleInExport(false)
+                ->hidden(!auth()->user()->can('view menuEmpleado'))
         ];
     }
 
@@ -125,6 +136,10 @@ final class RutaTable extends PowerGridComponent
 
     public function actions(Ruta $row): array
     {
+        if (!auth()->user()->can('view menuEmpleado')) {
+            return [];
+        }
+
         return [
             Button::add('delete')
                 ->slot('Eliminar')
@@ -160,6 +175,12 @@ final class RutaTable extends PowerGridComponent
 
     public function createRuta()
     {
+        $empleado = auth()->user()->empleados()->first();
+        
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $this->newRuta['vendedor_id'] = $empleado->id;
+        }
+
         $this->validate([
             'newRuta.codigo' => 'required',
             'newRuta.name' => 'required',
@@ -177,6 +198,12 @@ final class RutaTable extends PowerGridComponent
 
     public function vendedorSelectOptions()
     {
+        $empleado = auth()->user()->empleados()->first();
+        
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            return collect([$empleado->id => $empleado->name]);
+        }
+        
         return Empleado::where('tipo_empleado', 'vendedor')->pluck('name', 'id');
     }
 
