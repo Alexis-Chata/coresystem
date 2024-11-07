@@ -44,13 +44,13 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Test User',
                     'email' => 'test@example.com',
                     'empresa_id' => $empresa->id,
-                ]);
+                ])->assignRole('admin');
             }
             User::factory()->create([
                 'name' => 'Vendedor 1',
                 'email' => 'vendedor@example.com',
                 'empresa_id' => $empresa->id,
-            ])->user_empleado()->create(['empleado_id' => 1]);
+            ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 1]);
         } else {
             throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
         }

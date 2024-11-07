@@ -21,6 +21,8 @@ final class RutaTable extends PowerGridComponent
 {
     public string $tableName = 'ruta-table-anq9ti-table';
     public bool $showCreateForm = false;
+    public string $sortField = 'id';
+    public string $sortDirection = 'desc';
 
     public $newRuta = [
         'codigo' => '',
@@ -35,7 +37,7 @@ final class RutaTable extends PowerGridComponent
         $header = PowerGrid::header()
             ->showSearchInput();
 
-        if (auth()->user()->can('view menuEmpleado')) {
+        if (auth()->user()->can('create ruta')) {
             $header->includeViewOnTop('components.create-ruta-form');
         }
 
@@ -83,13 +85,19 @@ final class RutaTable extends PowerGridComponent
             ->add('codigo')
             ->add('name')
             ->add('vendedor_id', function ($ruta) {
-                return $this->selectComponent('vendedor_id', $ruta->id, $ruta->vendedor_id, $this->vendedorSelectOptions());
-            })
-            ->add('empresa_id', function ($ruta) {
-                return $this->selectComponent('empresa_id', $ruta->id, $ruta->empresa_id, $this->empresaSelectOptions());
+                // Permiso Autorizado se muestra el select para editar,
+                // sino solo se muestra el input text con el nombre del vendedor,
+                // lo hacemos desde fields para dar la logica y luego imprimirlo en la columna.
+                if (auth()->user()->can('edit ruta')) {
+                    return $this->selectComponent('vendedor_id', $ruta->id, $ruta->vendedor_id, $this->vendedorSelectOptions());
+                }
+                return $ruta->vendedor_nombre;
             })
             ->add('lista_precio_id', function ($ruta) {
-                return $this->selectComponent('lista_precio_id', $ruta->id, $ruta->lista_precio_id, $this->listaPrecioSelectOptions());
+                if (auth()->user()->can('edit ruta')) {
+                    return $this->selectComponent('lista_precio_id', $ruta->id, $ruta->lista_precio_id, $this->listaPrecioSelectOptions());
+                }
+                return $ruta->lista_precio_nombre;
             })
             ->add('created_at_formatted', fn (Ruta $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
@@ -111,20 +119,35 @@ final class RutaTable extends PowerGridComponent
 
     public function columns(): array
     {
-        return [
+        $columns = [
             Column::make('Id', 'id'),
             Column::make('Nombre', 'name')
                 ->sortable()
                 ->searchable()
-                ->editOnClick(),
-            Column::make('Vendedor', 'vendedor_id')
-                ->sortable(),
-            Column::make('Lista de Precios', 'lista_precio_id')
-                ->sortable(),
-            Column::action('Acción')
-                ->visibleInExport(false)
-                ->hidden(!auth()->user()->can('view menuEmpleado'))
+                ->editOnClick(
+                    // Documentacion PowerGrid
+                    hasPermission: auth()->user()->can('edit ruta')
+                ),
         ];
+        
+        $empleado = auth()->user()->empleados()->first();
+        // Solo mostrar la columna de vendedor si NO es un vendedor
+        if (!$empleado || $empleado->tipo_empleado !== 'vendedor') {
+            $columns[] = Column::make('Vendedor', 'vendedor_id')
+                ->sortable()
+                ->field('vendedor_id');
+        }
+
+        $columns[] = Column::make('Lista de Precios', 'lista_precio_id')
+            ->sortable()
+            ->field('lista_precio_id');
+
+        $columns[] = Column::action('Acción')
+            ->visibleInExport(false)
+            // Documentacion PowerGrid
+            ->hidden(!auth()->user()->can('delete ruta'));
+
+        return $columns;
     }
 
     public function filters(): array
@@ -136,16 +159,14 @@ final class RutaTable extends PowerGridComponent
 
     public function actions(Ruta $row): array
     {
-        if (!auth()->user()->can('view menuEmpleado')) {
-            return [];
-        }
-
         return [
             Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                 ->dispatch('deleteRuta', ['rutaId' => $row->id])
+                // Documentacion PowerGrid
+                ->can(auth()->user()->can('delete ruta'))
         ];
     }
 

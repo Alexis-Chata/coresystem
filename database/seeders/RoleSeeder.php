@@ -10,27 +10,29 @@ class RoleSeeder extends Seeder
 {
     // Define los recursos y sus acciones permitidas
     protected $resourcePermissions = [
-        'proveedors' => ['view', 'create', 'edit', 'delete'],
-        'conductors' => ['view', 'create', 'edit', 'delete'],
-        'empresas' => ['view', 'create', 'edit', 'delete'],
-        //Permisos para vista en el menu
-        'menuEmpleado' => ['view'],
+        'marca' => ['view', 'create', 'edit', 'delete'],
+        'cliente' => ['view', 'create', 'edit', 'delete'],
+        'producto' => ['view', 'create', 'edit', 'delete'],
+        'categoria' => ['view', 'create', 'edit', 'delete'],
+        'proveedor' => ['view', 'create', 'edit', 'delete'],
+        'ruta' => ['view', 'create', 'edit', 'delete'],
+        'padron' => ['view', 'create', 'edit', 'delete'],
+        'empleado' => ['view', 'create', 'edit', 'delete'],
+        'roles' => ['view', 'assign'],
         
     ];
 
     // Define los roles y sus permisos
     protected $rolePermissions = [
         'admin' => ['*'], // Todos los permisos
-        'editor' => [
-            'proveedors' => ['view', 'edit'],
-            'conductors' => ['view', 'edit'],
-            'empresas' => ['view', 'edit'],
+        'vendedor' => [
+            'cliente' => ['view', 'edit'],
+            'ruta' => ['view', 'edit'],
             
         ],
-        'viewer' => [
-            'proveedors' => ['view'],
-            'conductors' => ['view'],
-            'empresas' => ['view'],
+        'conductor' => [
+            'ruta' => ['view'],
+            'padron' => ['view', 'edit'],
             
         ],
     ];

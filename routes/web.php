@@ -18,40 +18,46 @@ Route::middleware([
     })->name('dashboard');
 
     // Rutas de UserRoleController
-    Route::get('/user-roles', [UserRoleController::class, 'index'])->name('user-roles.index');
-    Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])->name('users.assign-role');
+    Route::get('/user-roles', [UserRoleController::class, 'index'])
+        ->middleware('can:view roles')
+        ->name('user-roles.index');
+    Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])
+        ->middleware('can:assign roles')
+        ->name('users.assign-role');
 
     // Ruta de MarcaController
-    Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');
+    Route::get('/marcas', [MarcaController::class, 'index'])
+        ->middleware('can:view marca')
+        ->name('marcas.index');
 
     // Rutas de vistas
     Route::get('/cliente', function () {
         return view('cliente');
-    })->name('cliente.index');
+    })->middleware('can:view cliente')->name('cliente.index');
 
     Route::get('/producto', function () {
         return view('producto');
-    })->name('producto.index');
+    })->middleware('can:view producto')->name('producto.index');
 
     Route::get('/categoria', function () {
         return view('categoria');
-    })->name('categoria.index');
+    })->middleware('can:view categoria')->name('categoria.index');
 
     Route::get('/proveedor', function () {
         return view('proveedor');
-    })->name('proveedor.index');
+    })->middleware('can:view proveedor')->name('proveedor.index');
 
     Route::get('/empleado', function () {
         return view('empleado');
-    })->name('empleado.index');
+    })->middleware('can:view empleado')->name('empleado.index');
 
     Route::get('/ruta', function () {
         return view('ruta');
-    })->name('ruta.index');
+    })->middleware('can:view ruta')->name('ruta.index');
 
     Route::get('/padron', function () {
         return view('padron');
-    })->name('padron.index');
+    })->middleware('can:view padron')->name('padron.index');
 });
 
 Route::get('/', function () {
