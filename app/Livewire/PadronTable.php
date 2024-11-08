@@ -319,4 +319,30 @@ final class PadronTable extends PowerGridComponent
     {
         $this->dispatch('pg:eventRefresh-default');
     }
+
+    public function filters(): array
+    {
+        $empleado = auth()->user()->empleados()->first();
+        $query = Ruta::query()
+            ->whereIn('id', function($subquery) use ($empleado) {
+                $subquery->select('ruta_id')
+                    ->from('padrons')
+                    ->distinct();
+                
+                if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+                    $subquery->where('vendedor_id', $empleado->id);
+                }
+            });
+        
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $query->where('vendedor_id', $empleado->id);
+        }
+
+        return [
+            Filter::select('ruta_id', 'rutas.id')
+                ->dataSource($query->get())
+                ->optionLabel('name')
+                ->optionValue('id'),
+        ];
+    }
 }
