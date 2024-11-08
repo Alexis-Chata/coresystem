@@ -27,6 +27,7 @@ final class PadronTable extends PowerGridComponent
         'cliente_id' => '',
         'ruta_id' => '',
         'nro_secuencia' => '',
+        'dia_visita' => '',
     ];
 
     public function setUp(): array
@@ -39,8 +40,9 @@ final class PadronTable extends PowerGridComponent
                 ->includeViewOnTop('components.create-padron-form')
                 ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
-                ->showPerPage()
-                ->showRecordCount(),
+                ->showPerPage(5, [5, 10, 15, 20, 0])
+                ->showRecordCount()
+                ->pageName('padronPage'),
         ];
     }
 
@@ -76,7 +78,10 @@ final class PadronTable extends PowerGridComponent
             ->add('estado', function (Padron $model) {
                 return $model->deleted_at ? 'Eliminado' : 'Activo';
             })
-            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null);
+            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null)
+            ->add('dia_visita', function ($padron) {
+                return $this->selectComponent('dia_visita', $padron->id, $padron->dia_visita, $this->diasVisitaOptions());
+            });
     }
 
     private function selectComponent($field, $padronId, $selected, $options)
@@ -103,6 +108,9 @@ final class PadronTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
+            Column::make('Día de visita', 'dia_visita')
+                ->sortable()
+                ->searchable(),
             Column::make('Cliente', 'cliente_id')
                 ->sortable(),
             Column::make('Estado', 'estado')
@@ -303,5 +311,18 @@ final class PadronTable extends PowerGridComponent
     public function refreshTable(): void
     {
         $this->dispatch('pg:eventRefresh-default');
+    }
+
+    private function diasVisitaOptions()
+    {
+        return [
+            'lunes' => 'Lunes',
+            'martes' => 'Martes',
+            'miercoles' => 'Miércoles',
+            'jueves' => 'Jueves',
+            'viernes' => 'Viernes',
+            'sabado' => 'Sábado',
+            'domingo' => 'Domingo'
+        ];
     }
 }

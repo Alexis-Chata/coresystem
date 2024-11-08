@@ -42,8 +42,9 @@ final class ClienteTable extends PowerGridComponent
                 ->showSearchInput()
                 ->includeViewOnTop('components.create-cliente-form'),
             PowerGrid::footer()
-                ->showPerPage()
-                ->showRecordCount(),
+                ->showPerPage(5, [5, 10, 15, 20, 0])
+                ->showRecordCount()
+                ->pageName('clientePage'),
             PowerGrid::responsive()
                 ->fixedColumns('id', 'razon_social'),
         ];
