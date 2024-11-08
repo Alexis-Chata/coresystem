@@ -39,7 +39,7 @@ final class PadronTable extends PowerGridComponent
                 ->includeViewOnTop('components.create-padron-form')
                 ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
-                ->showPerPage(5, [5, 10, 15, 20, 0])
+                ->showPerPage()
                 ->showRecordCount()
                 ->pageName('padronPage'),
         ];
@@ -47,11 +47,18 @@ final class PadronTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Padron::query()
-            //->withTrashed() // Incluye registros eliminados suavemente
+        $empleado = auth()->user()->empleados()->first();
+
+        $query = Padron::query()
             ->join('clientes', 'padrons.cliente_id', '=', 'clientes.id')
             ->join('rutas', 'padrons.ruta_id', '=', 'rutas.id')
             ->select('padrons.*', 'clientes.razon_social as cliente_nombre', 'rutas.name as ruta_nombre');
+
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $query->where('rutas.vendedor_id', $empleado->id);
+        }
+
+        return $query;
     }
 
     public function relationSearch(): array
@@ -256,7 +263,14 @@ final class PadronTable extends PowerGridComponent
 
     public function rutaSelectOptions()
     {
-        return Ruta::all()->pluck('name', 'id');
+        $empleado = auth()->user()->empleados()->first();
+        $query = Ruta::query();
+        
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $query->where('rutas.vendedor_id', $empleado->id);
+        }
+        
+        return $query->pluck('name', 'id');
     }
 
     #[On('updateField')]
