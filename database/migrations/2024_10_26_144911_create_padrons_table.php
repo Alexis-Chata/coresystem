@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->foreignId('ruta_id')->constrained('rutas');
             $table->integer('nro_secuencia');
-            $table->string('dia_visita')->nullable();
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

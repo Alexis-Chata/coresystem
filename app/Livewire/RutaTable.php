@@ -30,6 +30,7 @@ final class RutaTable extends PowerGridComponent
         'vendedor_id' => '',
         'empresa_id' => '',
         'lista_precio_id' => '',
+        'dia_visita' => '',
     ];
 
     public function setUp(): array
@@ -99,7 +100,10 @@ final class RutaTable extends PowerGridComponent
                 }
                 return $ruta->lista_precio_nombre;
             })
-            ->add('created_at_formatted', fn (Ruta $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+            ->add('created_at_formatted', fn (Ruta $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
+            ->add('dia_visita', function ($ruta) {
+                return $this->selectComponent('dia_visita', $ruta->id, $ruta->dia_visita, $this->diasVisitaOptions());
+            });
     }
 
     private function selectComponent($field, $rutaId, $selected, $options)
@@ -128,6 +132,9 @@ final class RutaTable extends PowerGridComponent
                     // Documentacion PowerGrid
                     hasPermission: auth()->user()->can('edit ruta')
                 ),
+            Column::make('Día de visita', 'dia_visita')
+                ->sortable()
+                ->searchable(),
         ];
         
         $empleado = auth()->user()->empleados()->first();
@@ -246,5 +253,17 @@ final class RutaTable extends PowerGridComponent
             $ruta->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
         }
+    }
+    private function diasVisitaOptions()
+    {
+        return [
+            'lunes' => 'Lunes',
+            'martes' => 'Martes',
+            'miercoles' => 'Miércoles',
+            'jueves' => 'Jueves',
+            'viernes' => 'Viernes',
+            'sabado' => 'Sábado',
+            'domingo' => 'Domingo'
+        ];
     }
 }

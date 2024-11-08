@@ -27,7 +27,6 @@ final class PadronTable extends PowerGridComponent
         'cliente_id' => '',
         'ruta_id' => '',
         'nro_secuencia' => '',
-        'dia_visita' => '',
     ];
 
     public function setUp(): array
@@ -78,10 +77,7 @@ final class PadronTable extends PowerGridComponent
             ->add('estado', function (Padron $model) {
                 return $model->deleted_at ? 'Eliminado' : 'Activo';
             })
-            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null)
-            ->add('dia_visita', function ($padron) {
-                return $this->selectComponent('dia_visita', $padron->id, $padron->dia_visita, $this->diasVisitaOptions());
-            });
+            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null);
     }
 
     private function selectComponent($field, $padronId, $selected, $options)
@@ -108,9 +104,6 @@ final class PadronTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Día de visita', 'dia_visita')
-                ->sortable()
-                ->searchable(),
             Column::make('Cliente', 'cliente_id')
                 ->sortable(),
             Column::make('Estado', 'estado')
@@ -311,18 +304,5 @@ final class PadronTable extends PowerGridComponent
     public function refreshTable(): void
     {
         $this->dispatch('pg:eventRefresh-default');
-    }
-
-    private function diasVisitaOptions()
-    {
-        return [
-            'lunes' => 'Lunes',
-            'martes' => 'Martes',
-            'miercoles' => 'Miércoles',
-            'jueves' => 'Jueves',
-            'viernes' => 'Viernes',
-            'sabado' => 'Sábado',
-            'domingo' => 'Domingo'
-        ];
     }
 }

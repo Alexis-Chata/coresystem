@@ -14,7 +14,6 @@ class Padron extends Model
         'cliente_id',
         'ruta_id',
         'nro_secuencia',
-        'dia_visita',
     ];
 
     public function cliente()
