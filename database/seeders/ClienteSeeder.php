@@ -32,6 +32,16 @@ class ClienteSeeder extends Seeder
             throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
         }
 
+        $rutas = Ruta::all();
+        foreach ($rutas as $ruta) {
+            Cliente::factory()->count(25)->create([
+                'f_tipo_documento_id' => $tipoDocumento->id,
+                'empresa_id' => $empresa->id,
+                'ruta_id' => $ruta->id,
+                'lista_precio_id' => $ruta->lista_precio_id,
+            ]);
+        }
+
         $clientes = [
             [
                 'razon_social' => 'Comercial San Miguel S.A.C.',
