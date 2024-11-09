@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Empleado;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -26,13 +27,14 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
+        $empresa_id = optional(Empleado::find($input['empleado_id']))->empresa_id;
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
-            'empresa_id' => $input['empresa_id'] ?? null, // Asegúrate de que este campo esté presente en el formulario
+            'empresa_id' => $empresa_id ?? null,
         ]);
-        $user->user_empleado()->create(['empleado_id' => $input['empleado_id'] ?? null]);
+        $user->user_empleado()->create(['tipo' => 'main', 'empleado_id' => $input['empleado_id'] ?? null]);
 
         return $user;
     }

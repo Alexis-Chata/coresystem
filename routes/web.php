@@ -25,6 +25,11 @@ Route::middleware([
         ->middleware('can:assign roles')
         ->name('users.assign-role');
 
+    // Rutas de User
+    Route::get('/usuarios', function () {
+        return view('users.lista-usuarios');
+    })->middleware('can:view usuarios')->name('user.lista');
+
     // Ruta de MarcaController
     Route::get('/marcas', [MarcaController::class, 'index'])
         ->middleware('can:view marca')

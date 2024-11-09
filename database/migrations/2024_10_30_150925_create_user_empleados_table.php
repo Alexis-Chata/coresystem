@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('empleado_id')->constrained('empleados');
+            $table->string('tipo');
             $table->timestamps();
         });
     }

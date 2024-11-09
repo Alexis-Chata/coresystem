@@ -56,12 +56,12 @@
                 <label for="empleado_id" class="block text-gray-700 text-sm font-semibold mb-2">Codigo</label>
                 <select name="empleado_id" id="empleado_id" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     <option value="">Seleccione Un Codigo</option>
-                    @foreach(App\Models\Empleado::all() as $empleado)
+                    @foreach($empleados_id_sin_asignar as $empleado)
                         <option value="{{ $empleado->id }}">{{ $empleado->id }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="mb-6">
+            {{-- <div class="mb-6">
                 <label for="empresa_id" class="block text-gray-700 text-sm font-semibold mb-2">Empresa</label>
                 <select name="empresa_id" id="empresa_id" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     <option value="">Seleccione una empresa</option>
@@ -69,7 +69,7 @@
                         <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mb-6">
