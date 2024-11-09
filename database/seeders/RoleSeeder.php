@@ -27,8 +27,8 @@ class RoleSeeder extends Seeder
         'admin' => ['*'], // Todos los permisos
         'vendedor' => [
             'cliente' => ['view', 'edit'],
-            'ruta' => ['view', 'edit'],
-            
+            'ruta' => ['view'],
+            'padron' => ['view', 'edit'],
         ],
         'conductor' => [
             'ruta' => ['view'],

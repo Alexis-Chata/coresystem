@@ -102,7 +102,10 @@ final class RutaTable extends PowerGridComponent
             })
             ->add('created_at_formatted', fn (Ruta $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
             ->add('dia_visita', function ($ruta) {
-                return $this->selectComponent('dia_visita', $ruta->id, $ruta->dia_visita, $this->diasVisitaOptions());
+                if (auth()->user()->can('edit ruta')) {
+                    return $this->selectComponent('dia_visita', $ruta->id, $ruta->dia_visita, $this->diasVisitaOptions());
+                }
+                return $ruta->dia_visita;
             });
     }
 
@@ -124,7 +127,9 @@ final class RutaTable extends PowerGridComponent
     public function columns(): array
     {
         $columns = [
-            Column::make('Id', 'id'),
+            Column::make('Id', 'id')
+                ->sortable()
+                ->searchable(),
             Column::make('Nombre', 'name')
                 ->sortable()
                 ->searchable()
@@ -141,8 +146,7 @@ final class RutaTable extends PowerGridComponent
         // Solo mostrar la columna de vendedor si NO es un vendedor
         if (!$empleado || $empleado->tipo_empleado !== 'vendedor') {
             $columns[] = Column::make('Vendedor', 'vendedor_id')
-                ->sortable()
-                ->field('vendedor_id');
+                ->sortable();
         }
 
         $columns[] = Column::make('Lista de Precios', 'lista_precio_id')

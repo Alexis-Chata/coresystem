@@ -70,7 +70,10 @@
             <!-- Ruta -->
             <div class="mb-4">
                 <x-searchable-select
-                    :options="App\Models\Ruta::all()->map(function($ruta) {
+                    :options="App\Models\Ruta::when(
+                        auth()->user()->empleados()->first()?->tipo_empleado === 'vendedor',
+                        fn($query) => $query->where('vendedor_id', auth()->user()->empleados()->first()->id)
+                    )->get()->map(function($ruta) {
                         return ['id' => $ruta->id, 'name' => $ruta->name];
                     })"
                     wire-model="newCliente.ruta_id"

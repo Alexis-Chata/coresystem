@@ -76,6 +76,12 @@ final class PadronTable extends PowerGridComponent
             ->add('cliente_id', function ($padron) {
                 return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
             })
+            ->add('cliente_id', function ($padron) {
+                if (auth()->user()->can('view padron')) {
+                    return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
+                }
+                return $padron->cliente_nombre;
+            })
             ->add('ruta_id', function ($padron) {
                 return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $this->rutaSelectOptions());
             })
@@ -113,9 +119,7 @@ final class PadronTable extends PowerGridComponent
                 ->editOnClick(),
             Column::make('Cliente', 'cliente_id')
                 ->sortable(),
-            Column::make('Estado', 'estado')
-                ->sortable()
-                ->bodyAttribute('class', 'text-center'),
+            Column::make('Estado', 'estado'),
         ];
 
         // Agregar la columna solo si el usuario es admin
@@ -139,7 +143,7 @@ final class PadronTable extends PowerGridComponent
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                 ->dispatch('restorePadron', ['padronId' => $row->id]);
-            if (auth()->user()->can('view menuEmpleado')) {
+            if (auth()->user()->can('delete padron')) {
                 $actions[] = Button::add('forceDelete')
                     ->slot('Eliminar permanentemente')
                     ->id()

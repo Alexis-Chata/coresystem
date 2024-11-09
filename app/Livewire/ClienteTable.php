@@ -52,7 +52,7 @@ final class ClienteTable extends PowerGridComponent
 
     public function datasource(): Builder
 {
-    return Cliente::query()
+    $query = Cliente::query()
         ->join('f_tipo_documentos', 'clientes.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
         ->join('empresas', 'clientes.empresa_id', '=', 'empresas.id')
         ->join('lista_precios', 'clientes.lista_precio_id', '=', 'lista_precios.id')
@@ -62,6 +62,14 @@ final class ClienteTable extends PowerGridComponent
                  'empresas.razon_social as empresa_nombre',
                  'lista_precios.name as lista_precio_nombre',
                  'rutas.name as ruta_nombre');
+
+    // OJO: Filtro registros por vendedor
+    $empleado = auth()->user()->empleados()->first();
+    if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+        $query->where('rutas.vendedor_id', $empleado->id);
+    }
+
+    return $query;
 }
 
     public function relationSearch(): array
