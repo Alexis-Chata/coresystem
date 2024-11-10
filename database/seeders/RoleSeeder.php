@@ -28,7 +28,7 @@ class RoleSeeder extends Seeder
         'vendedor' => [
             'cliente' => ['view', 'edit'],
             'ruta' => ['view'],
-            'padron' => ['view', 'edit'],
+            'padron' => ['view'],
         ],
         'conductor' => [
             'ruta' => ['view'],

@@ -77,7 +77,7 @@ final class PadronTable extends PowerGridComponent
                 return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
             })
             ->add('cliente_id', function ($padron) {
-                if (auth()->user()->can('view padron')) {
+                if (auth()->user()->can('edit padron')) {
                     return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
                 }
                 return $padron->cliente_nombre;
@@ -167,10 +167,12 @@ final class PadronTable extends PowerGridComponent
         $padron = Padron::find($padronId);
         if ($padron) {
             $secuenciaEliminada = $padron->nro_secuencia;
+            $rutaId = $padron->ruta_id;
             $padron->delete(); // Soft delete
 
-            // Reorganizar las secuencias después de eliminar
-            Padron::where('nro_secuencia', '>', $secuenciaEliminada)
+            // Reorganizar las secuencias solo para la misma ruta
+            Padron::where('ruta_id', $rutaId)
+                  ->where('nro_secuencia', '>', $secuenciaEliminada)
                   ->decrement('nro_secuencia');
 
             $this->dispatch('pg:eventRefresh-default');
@@ -183,10 +185,10 @@ final class PadronTable extends PowerGridComponent
     {
         $padron = Padron::withTrashed()->find($padronId);
         if ($padron) {
-            // Obtener la última secuencia
-            $ultimaSecuencia = Padron::max('nro_secuencia');
+            // Obtener la última secuencia de la ruta específica
+            $ultimaSecuencia = Padron::where('ruta_id', $padron->ruta_id)->max('nro_secuencia');
             
-            // Restaurar con la siguiente secuencia disponible
+            // Restaurar con la siguiente secuencia disponible en esa ruta
             $padron->nro_secuencia = $ultimaSecuencia + 1;
             $padron->restore();
             
@@ -213,15 +215,16 @@ final class PadronTable extends PowerGridComponent
             $oldSequence = $padron->nro_secuencia;
             $newSequence = (int)$value;
 
-            // Si la nueva secuencia es mayor que la anterior
+            // Reorganizar secuencias solo dentro de la misma ruta
             if ($newSequence > $oldSequence) {
-                Padron::where('nro_secuencia', '>', $oldSequence)
+                Padron::where('ruta_id', $padron->ruta_id)
+                      ->where('nro_secuencia', '>', $oldSequence)
                       ->where('nro_secuencia', '<=', $newSequence)
                       ->decrement('nro_secuencia');
             }
-            // Si la nueva secuencia es menor que la anterior
             else if ($newSequence < $oldSequence) {
-                Padron::where('nro_secuencia', '>=', $newSequence)
+                Padron::where('ruta_id', $padron->ruta_id)
+                      ->where('nro_secuencia', '>=', $newSequence)
                       ->where('nro_secuencia', '<', $oldSequence)
                       ->increment('nro_secuencia');
             }
@@ -282,15 +285,34 @@ final class PadronTable extends PowerGridComponent
     {
         $padron = Padron::find($padronId);
         if ($padron) {
-            // Si el campo que se está actualizando es ruta_id
             if ($field === 'ruta_id') {
-                // Obtener la ruta y su lista de precios asociada
+                $oldRutaId = $padron->ruta_id;
                 $ruta = Ruta::find($value);
+                $secuenciaActual = $padron->nro_secuencia;
+                
                 if ($ruta) {
-                    // Actualizar tanto la ruta como la lista de precios en padrón
+                    // Primero, reorganizar la ruta anterior
+                    Padron::where('ruta_id', $oldRutaId)
+                        ->where('nro_secuencia', '>', $secuenciaActual)
+                        ->decrement('nro_secuencia');
+
+                    // Verificar si la secuencia ya existe en la nueva ruta
+                    $existeSecuencia = Padron::where('ruta_id', $value)
+                        ->where('nro_secuencia', $secuenciaActual)
+                        ->exists();
+
+                    if ($existeSecuencia) {
+                        // Si existe, mover todos los números de secuencia mayores o iguales hacia arriba
+                        Padron::where('ruta_id', $value)
+                            ->where('nro_secuencia', '>=', $secuenciaActual)
+                            ->increment('nro_secuencia');
+                    }
+
+                    // Actualizar el padrón con la misma secuencia
                     $padron->update([
                         'ruta_id' => $value,
-                        'lista_precio_id' => $ruta->lista_precio_id
+                        'lista_precio_id' => $ruta->lista_precio_id,
+                        'nro_secuencia' => $secuenciaActual
                     ]);
 
                     // Actualizar también el cliente asociado
@@ -300,20 +322,37 @@ final class PadronTable extends PowerGridComponent
                             'lista_precio_id' => $ruta->lista_precio_id
                         ]);
                     }
+
+                    // Asegurarse de que las secuencias estén ordenadas correctamente
+                    $this->reorderSequences($value);
                 }
             } else {
                 // Para otros campos, actualizar normalmente
                 $padron->update([$field => $value]);
                 
-                // Si el campo existe en la tabla clientes, actualizarlo también
                 if ($padron->cliente && in_array($field, ['ruta_id', 'lista_precio_id'])) {
                     $padron->cliente->update([$field => $value]);
                 }
             }
 
             $this->dispatch('pg:eventRefresh-default');
-            // Disparar evento para actualizar la tabla de clientes
             $this->dispatch('refresh-cliente-table');
+        }
+    }
+
+    // Agregar este nuevo método para asegurar el orden correcto de las secuencias
+    private function reorderSequences($rutaId)
+    {
+        $padrones = Padron::where('ruta_id', $rutaId)
+            ->orderBy('nro_secuencia')
+            ->get();
+        
+        $secuencia = 1;
+        foreach ($padrones as $padron) {
+            if ($padron->nro_secuencia != $secuencia) {
+                $padron->update(['nro_secuencia' => $secuencia]);
+            }
+            $secuencia++;
         }
     }
 
