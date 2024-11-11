@@ -18,8 +18,9 @@ class RoleSeeder extends Seeder
         'ruta' => ['view', 'create', 'edit', 'delete'],
         'padron' => ['view', 'create', 'edit', 'delete'],
         'empleado' => ['view', 'create', 'edit', 'delete'],
+        'usuarios' => ['view', 'create', 'edit', 'delete'],
         'roles' => ['view', 'assign'],
-        
+
     ];
 
     // Define los roles y sus permisos
@@ -33,7 +34,7 @@ class RoleSeeder extends Seeder
         'conductor' => [
             'ruta' => ['view'],
             'padron' => ['view', 'edit'],
-            
+
         ],
     ];
 
