@@ -20,8 +20,10 @@ final class PadronTable extends PowerGridComponent
 {
     public string $tableName = 'padron-table-ay3rv1-table';
     public bool $showCreateForm = false;
-    public string $sortField = 'nro_secuencia'; 
+    public string $sortField = 'nro_secuencia';
     public string $sortDirection = 'asc';
+    public $empleado;
+    public $user;
 
     public $newPadron = [
         'cliente_id' => '',
@@ -32,6 +34,8 @@ final class PadronTable extends PowerGridComponent
     public function setUp(): array
     {
         //$this->showCheckBox();
+        $this->user = auth()->user();
+        $this->empleado = $this->user->empleados()->first();
 
         return [
             PowerGrid::header()
@@ -47,7 +51,7 @@ final class PadronTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        $empleado = auth()->user()->empleados()->first();
+        $empleado = $this->empleado;
 
         $query = Padron::query()
             ->join('clientes', 'padrons.cliente_id', '=', 'clientes.id')
@@ -65,45 +69,47 @@ final class PadronTable extends PowerGridComponent
     {
         return [
             'cliente' => ['razon_social'],
-            //'ruta' => ['name'],
+            'ruta' => ['name'],
         ];
     }
 
     public function fields(): PowerGridFields
     {
+        $var_clienteSelectOptions = $this->clienteSelectOptions();
+        $var_rutaSelectOptions = $this->rutaSelectOptions();
         return PowerGrid::fields()
             ->add('id')
-            ->add('cliente_id', function ($padron) {
-                return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
+            ->add('cliente_id', function ($padron) use ($var_clienteSelectOptions) {
+                return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
             })
-            ->add('cliente_id', function ($padron) {
-                if (auth()->user()->can('edit padron')) {
-                    return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $this->clienteSelectOptions());
+            ->add('cliente_id', function ($padron) use ($var_clienteSelectOptions) {
+                if ($this->user->can('edit padron')) {
+                    return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
                 }
                 return $padron->cliente_nombre;
             })
-            ->add('ruta_id', function ($padron) {
-                return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $this->rutaSelectOptions());
+            ->add('ruta_id', function ($padron) use ($var_rutaSelectOptions) {
+                return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $var_rutaSelectOptions);
             })
             ->add('nro_secuencia')
-            ->add('created_at_formatted', fn (Padron $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
+            ->add('created_at_formatted', fn(Padron $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
             ->add('estado', function (Padron $model) {
                 return $model->deleted_at ? 'Eliminado' : 'Activo';
             })
-            ->add('deleted_at_formatted', fn (Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null);
+            ->add('deleted_at_formatted', fn(Padron $model) => $model->deleted_at ? Carbon::parse($model->deleted_at)->format('d/m/Y H:i:s') : null);
     }
 
     private function selectComponent($field, $padronId, $selected, $options)
     {
         return Blade::render(
-            '<select wire:change="updateField(\''. $field .'\', $event.target.value, '. $padronId .')">'
-            . '<option value="">Seleccionar</option>'
-            . '@foreach($options as $value => $label)'
-            . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
-            . '{{ $label }}'
-            . '</option>'
-            . '@endforeach'
-            . '</select>',
+            '<select wire:change="updateField(\'' . $field . '\', $event.target.value, ' . $padronId . ')">'
+                . '<option value="">Seleccionar</option>'
+                . '@foreach($options as $value => $label)'
+                . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
+                . '{{ $label }}'
+                . '</option>'
+                . '@endforeach'
+                . '</select>',
             ['options' => $options, 'selected' => $selected]
         );
     }
@@ -123,9 +129,9 @@ final class PadronTable extends PowerGridComponent
         ];
 
         // Agregar la columna solo si el usuario es admin
-        //if (auth()->user()->can('view menuEmpleado')) {
-            //$columns[] = Column::make('Fecha de eliminación', 'deleted_at_formatted')
-                //->sortable();
+        //if ($this->user->can('view menuEmpleado')) {
+        //$columns[] = Column::make('Fecha de eliminación', 'deleted_at_formatted')
+        //->sortable();
         //}
 
         $columns[] = Column::action('Acción');
@@ -136,14 +142,14 @@ final class PadronTable extends PowerGridComponent
     public function actions(Padron $row): array
     {
         $actions = [];
-        
+
         if ($row->deleted_at) {
             $actions[] = Button::add('restore')
                 ->slot('Restaurar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                 ->dispatch('restorePadron', ['padronId' => $row->id]);
-            if (auth()->user()->can('delete padron')) {
+            if ($this->user->can('delete padron')) {
                 $actions[] = Button::add('forceDelete')
                     ->slot('Eliminar permanentemente')
                     ->id()
@@ -157,7 +163,7 @@ final class PadronTable extends PowerGridComponent
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                 ->dispatch('deletePadron', ['padronId' => $row->id]);
         }
-        
+
         return $actions;
     }
 
@@ -172,8 +178,8 @@ final class PadronTable extends PowerGridComponent
 
             // Reorganizar las secuencias solo para la misma ruta
             Padron::where('ruta_id', $rutaId)
-                  ->where('nro_secuencia', '>', $secuenciaEliminada)
-                  ->decrement('nro_secuencia');
+                ->where('nro_secuencia', '>', $secuenciaEliminada)
+                ->decrement('nro_secuencia');
 
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('padron-deleted', 'Padrón eliminado exitosamente');
@@ -187,11 +193,11 @@ final class PadronTable extends PowerGridComponent
         if ($padron) {
             // Obtener la última secuencia de la ruta específica
             $ultimaSecuencia = Padron::where('ruta_id', $padron->ruta_id)->max('nro_secuencia');
-            
+
             // Restaurar con la siguiente secuencia disponible en esa ruta
             $padron->nro_secuencia = $ultimaSecuencia + 1;
             $padron->restore();
-            
+
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('padron-restored', 'Padrón restaurado exitosamente');
         }
@@ -218,15 +224,14 @@ final class PadronTable extends PowerGridComponent
             // Reorganizar secuencias solo dentro de la misma ruta
             if ($newSequence > $oldSequence) {
                 Padron::where('ruta_id', $padron->ruta_id)
-                      ->where('nro_secuencia', '>', $oldSequence)
-                      ->where('nro_secuencia', '<=', $newSequence)
-                      ->decrement('nro_secuencia');
-            }
-            else if ($newSequence < $oldSequence) {
+                    ->where('nro_secuencia', '>', $oldSequence)
+                    ->where('nro_secuencia', '<=', $newSequence)
+                    ->decrement('nro_secuencia');
+            } else if ($newSequence < $oldSequence) {
                 Padron::where('ruta_id', $padron->ruta_id)
-                      ->where('nro_secuencia', '>=', $newSequence)
-                      ->where('nro_secuencia', '<', $oldSequence)
-                      ->increment('nro_secuencia');
+                    ->where('nro_secuencia', '>=', $newSequence)
+                    ->where('nro_secuencia', '<', $oldSequence)
+                    ->increment('nro_secuencia');
             }
 
             $padron->update(['nro_secuencia' => $newSequence]);
@@ -270,13 +275,13 @@ final class PadronTable extends PowerGridComponent
 
     public function rutaSelectOptions()
     {
-        $empleado = auth()->user()->empleados()->first();
+        $empleado = $this->empleado;
         $query = Ruta::query();
-        
+
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $query->where('rutas.vendedor_id', $empleado->id);
         }
-        
+
         return $query->pluck('name', 'id');
     }
 
@@ -289,7 +294,7 @@ final class PadronTable extends PowerGridComponent
                 $oldRutaId = $padron->ruta_id;
                 $ruta = Ruta::find($value);
                 $secuenciaActual = $padron->nro_secuencia;
-                
+
                 if ($ruta) {
                     // Primero, reorganizar la ruta anterior
                     Padron::where('ruta_id', $oldRutaId)
@@ -329,7 +334,7 @@ final class PadronTable extends PowerGridComponent
             } else {
                 // Para otros campos, actualizar normalmente
                 $padron->update([$field => $value]);
-                
+
                 if ($padron->cliente && in_array($field, ['ruta_id', 'lista_precio_id'])) {
                     $padron->cliente->update([$field => $value]);
                 }
@@ -346,7 +351,7 @@ final class PadronTable extends PowerGridComponent
         $padrones = Padron::where('ruta_id', $rutaId)
             ->orderBy('nro_secuencia')
             ->get();
-        
+
         $secuencia = 1;
         foreach ($padrones as $padron) {
             if ($padron->nro_secuencia != $secuencia) {
@@ -365,18 +370,18 @@ final class PadronTable extends PowerGridComponent
 
     public function filters(): array
     {
-        $empleado = auth()->user()->empleados()->first();
+        $empleado = $this->empleado;
         $query = Ruta::query()
-            ->whereIn('id', function($subquery) use ($empleado) {
+            ->whereIn('id', function ($subquery) use ($empleado) {
                 $subquery->select('ruta_id')
                     ->from('padrons')
                     ->distinct();
-                
+
                 if ($empleado && $empleado->tipo_empleado === 'vendedor') {
                     $subquery->where('vendedor_id', $empleado->id);
                 }
             });
-        
+
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $query->where('vendedor_id', $empleado->id);
         }

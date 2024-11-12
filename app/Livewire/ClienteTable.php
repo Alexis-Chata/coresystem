@@ -51,26 +51,28 @@ final class ClienteTable extends PowerGridComponent
     }
 
     public function datasource(): Builder
-{
-    $query = Cliente::query()
-        ->join('f_tipo_documentos', 'clientes.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
-        ->join('empresas', 'clientes.empresa_id', '=', 'empresas.id')
-        ->join('lista_precios', 'clientes.lista_precio_id', '=', 'lista_precios.id')
-        ->join('rutas', 'clientes.ruta_id', '=', 'rutas.id')
-        ->select('clientes.*', 
-                 'f_tipo_documentos.tipo_documento as tipo_documento_nombre', 
-                 'empresas.razon_social as empresa_nombre',
-                 'lista_precios.name as lista_precio_nombre',
-                 'rutas.name as ruta_nombre');
+    {
+        $query = Cliente::query()
+            ->join('f_tipo_documentos', 'clientes.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
+            ->join('empresas', 'clientes.empresa_id', '=', 'empresas.id')
+            ->join('lista_precios', 'clientes.lista_precio_id', '=', 'lista_precios.id')
+            ->join('rutas', 'clientes.ruta_id', '=', 'rutas.id')
+            ->select(
+                'clientes.*',
+                'f_tipo_documentos.tipo_documento as tipo_documento_nombre',
+                'empresas.razon_social as empresa_nombre',
+                'lista_precios.name as lista_precio_nombre',
+                'rutas.name as ruta_nombre'
+            );
 
-    // OJO: Filtro registros por vendedor
-    $empleado = auth()->user()->empleados()->first();
-    if ($empleado && $empleado->tipo_empleado === 'vendedor') {
-        $query->where('rutas.vendedor_id', $empleado->id);
+        // OJO: Filtro registros por vendedor
+        $empleado = auth()->user()->empleados()->first();
+        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+            $query->where('rutas.vendedor_id', $empleado->id);
+        }
+
+        return $query;
     }
-
-    return $query;
-}
 
     public function relationSearch(): array
     {
@@ -90,7 +92,7 @@ final class ClienteTable extends PowerGridComponent
 
         return PowerGrid::fields()
             ->add('id')
-            ->add('id_formatted', fn (Cliente $model) => str_pad($model->id, 8, '0', STR_PAD_LEFT))
+            ->add('id_formatted', fn(Cliente $model) => str_pad($model->id, 8, '0', STR_PAD_LEFT))
             ->add('razon_social')
             ->add('direccion')
             ->add('f_tipo_documento_id', function ($cliente) use ($tipoDocumentoOptions) {
@@ -103,19 +105,19 @@ final class ClienteTable extends PowerGridComponent
             })
             ->add('lista_precio_nombre')
             ->add('ruta_nombre')
-            ->add('created_at_formatted', fn (Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+            ->add('created_at_formatted', fn(Cliente $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
 
     private function selectComponent($field, $clienteId, $selected, $options)
     {
         return Blade::render(
-            '<select wire:change="updateField(\''. $field .'\', $event.target.value, '. $clienteId .')">'
-            . '@foreach($options as $value => $label)'
-            . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
-            . '{{ $label }}'
-            . '</option>'
-            . '@endforeach'
-            . '</select>',
+            '<select wire:change="updateField(\'' . $field . '\', $event.target.value, ' . $clienteId . ')">'
+                . '@foreach($options as $value => $label)'
+                . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
+                . '{{ $label }}'
+                . '</option>'
+                . '@endforeach'
+                . '</select>',
             ['options' => $options, 'selected' => $selected]
         );
     }
@@ -158,7 +160,7 @@ final class ClienteTable extends PowerGridComponent
         ]);
         $this->editingField = null;
         $this->dispatch('pg:closeEditor-default');
-        
+
         // Agregar esta línea para actualizar la tabla de padrón
         $this->dispatch('refresh-padron-table');
     }
@@ -198,7 +200,7 @@ final class ClienteTable extends PowerGridComponent
             $primerTipoDocumento = F_tipo_documento::first();
             $this->newCliente['f_tipo_documento_id'] = $primerTipoDocumento ? $primerTipoDocumento->id : null;
         }
-        
+
         if (empty($this->newCliente['numero_documento'])) {
             $this->newCliente['numero_documento'] = '99999999';
         }
@@ -262,7 +264,7 @@ final class ClienteTable extends PowerGridComponent
         if ($cliente) {
             $cliente->update([$field => $value]);
             $this->dispatch('pg:eventRefresh-default');
-            
+
             // Agregar esta línea para actualizar la tabla de padrón
             $this->dispatch('refresh-padron-table');
         }
