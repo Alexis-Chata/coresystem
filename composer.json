@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "greenter/lite": "^5.1",
         "laravel/framework": "^11.9",
         "laravel/jetstream": "^5.2",
         "laravel/sanctum": "^4.0",
@@ -16,6 +17,7 @@
         "wireui/wireui": "^2.1"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.14",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
