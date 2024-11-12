@@ -16,29 +16,9 @@ class RutaSeeder extends Seeder
      */
     public function run(): void
     {
-        $empresa = Empresa::first();
-        if (!$empresa) {
-            throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
-        }
-
-        $vendedores = Empleado::where('tipo_empleado', 'vendedor')->get();
-        if ($vendedores->isEmpty()) {
-            throw new \Exception('No hay vendedores en la base de datos. Asegúrate de ejecutar EmpleadoSeeder primero.');
-        }
-
-        $listaPrecio = Lista_precio::first();
-        if (!$listaPrecio) {
-            throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
-        }
-
-        $rutas = [
-            ['codigo' => 'R001', 'name' => 'Ruta Lima Norte'],
-            ['codigo' => 'R002', 'name' => 'Ruta Lima Sur'],
-            ['codigo' => 'R003', 'name' => 'Ruta Lima Este'],
-        ];
-
+        // Primero, insertamos las rutas sin día de visita
         DB::insert("
-        insert  into `rutas`(`id`,`codigo`,`name`,`vendedor_id`,`empresa_id`,`lista_precio_id`) values
+        insert into `rutas`(`id`,`codigo`,`name`,`vendedor_id`,`empresa_id`,`lista_precio_id`) values
         (1,NULL,'JICAMARCA',9,1,1),
         (2,NULL,'J.C.M - HUANTA',3,1,1),
         (3,NULL,'JICAMARCA - VALLE',4,1,1),
@@ -170,14 +150,12 @@ class RutaSeeder extends Seeder
         (129,NULL,'MERCADOS WILLIAM',15,1,2);
         ");
 
-        foreach ($rutas as $index => $ruta) {
-            Ruta::create([
-                'codigo' => $ruta['codigo'],
-                'name' => $ruta['name'],
-                'vendedor_id' => $vendedores[$index % $vendedores->count()]->id,
-                'empresa_id' => $empresa->id,
-                'lista_precio_id' => $listaPrecio->id,
-            ]);
-        }
+        // Luego, actualizamos todas las rutas con días aleatorios
+        DB::statement("
+            UPDATE rutas 
+            SET dia_visita = ELT(FLOOR(1 + RAND() * 7), 
+                'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')
+            WHERE dia_visita IS NULL
+        ");
     }
 }

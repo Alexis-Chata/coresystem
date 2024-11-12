@@ -261,13 +261,13 @@ final class RutaTable extends PowerGridComponent
     private function diasVisitaOptions()
     {
         return [
-            'lunes' => 'Lunes',
-            'martes' => 'Martes',
-            'miercoles' => 'Miércoles',
-            'jueves' => 'Jueves',
-            'viernes' => 'Viernes',
-            'sabado' => 'Sábado',
-            'domingo' => 'Domingo'
+            'Lunes' => 'Lunes',
+            'Martes' => 'Martes',
+            'Miércoles' => 'Miércoles',
+            'Jueves' => 'Jueves',
+            'Viernes' => 'Viernes',
+            'Sábado' => 'Sábado',
+            'Domingo' => 'Domingo'
         ];
     }
 }

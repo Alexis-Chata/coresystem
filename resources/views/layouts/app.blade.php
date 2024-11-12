@@ -70,9 +70,19 @@
                 justify-content: flex-end;
                 right: 0;
             }
-            .overflow-x-auto {
-                overflow-x: initial !important;
-            }
         </style>
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+                document.addEventListener('focusout', (event) => {
+                    if (event.target.matches('[x-ref="editable"]')) {
+                        event.target.dispatchEvent(new KeyboardEvent('keydown', {
+                            key: 'Escape',
+                            code: 'Escape',
+                            bubbles: true
+                        }));
+                    }
+                });
+            });
+        </script>
     </body>
 </html>

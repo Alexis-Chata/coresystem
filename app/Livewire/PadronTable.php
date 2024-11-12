@@ -65,7 +65,7 @@ final class PadronTable extends PowerGridComponent
     {
         return [
             'cliente' => ['razon_social'],
-            'ruta' => ['name'],
+            //'ruta' => ['name'],
         ];
     }
 
