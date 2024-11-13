@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\F_tipo_afectacion;
+use App\Models\FTipoAfectacion;
 
 class FTipoAfectacionSeeder extends Seeder
 {
@@ -38,7 +38,7 @@ class FTipoAfectacionSeeder extends Seeder
         ];
 
         foreach ($tiposAfectacion as $tipo) {
-            F_tipo_afectacion::create($tipo);
+            FTipoAfectacion::create($tipo);
         }
     }
 }

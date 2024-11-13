@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('f_comprobante_sunats', function (Blueprint $table) {
             $table->id();
-            $table->string('ublVersion')->nullable();
-            $table->string('tipoDoc')->nullable();
-            $table->string('tipoDoc_name')->nullable();
-            $table->string('tipoOperacion')->nullable();
+            $table->string('ublVersion')->default("2.1");
+            $table->string('tipoDoc')->default("03");
+            $table->string('tipoDoc_name')->default("BOLETA ELECTRONICA");
+            $table->string('tipoOperacion')->default("0101");
             $table->string('serie')->nullable();
             $table->string('correlativo')->nullable();
-            $table->string('fechaEmision')->nullable();
-            $table->string('formaPagoTipo')->nullable();
-            $table->string('f_comprobantes_sunatcol')->nullable();
-            $table->string('tipoMoneda')->nullable();
+            $table->dateTime('fechaEmision')->nullable();
+            $table->string('formaPagoTipo')->default("Contado");
+            $table->string('tipoMoneda')->default("PEN");
             $table->string('companyRuc')->nullable();
             $table->string('companyRazonSocial')->nullable();
             $table->string('companyNombreComercial')->nullable();
@@ -32,7 +31,7 @@ return new class extends Migration
             $table->string('companyAddressDistrito')->nullable();
             $table->string('companyAddressUrbanizacion')->nullable();
             $table->string('companyAddressDireccion')->nullable();
-            $table->string('companyAddressCodLocal')->nullable();
+            $table->string('companyAddressCodLocal')->default("0000");
             $table->string('clientTipoDoc')->nullable();
             $table->string('clientNumDoc')->nullable();
             $table->string('clientRazonSocial')->nullable();
@@ -40,15 +39,15 @@ return new class extends Migration
             $table->string('mtoOperInafectas')->nullable();
             $table->string('mtoOperExoneradas')->nullable();
             $table->string('mtoIGV')->nullable();
-            $table->string('mtoBaseIsc')->nullable();
+            $table->string('mtoBaseIsc')->nullable(); // Sumatoria MtoBaseISC detalles
             $table->string('mtoISC')->nullable();
             $table->string('icbper')->nullable();
             $table->string('totalImpuestos')->nullable();
             $table->string('valorVenta')->nullable();
             $table->string('subTotal')->nullable();
-            $table->string('redondeo')->nullable();
+            $table->string('redondeo')->default("0.0");
             $table->string('mtoImpVenta')->nullable();
-            $table->string('legendsCode')->nullable();
+            $table->string('legendsCode')->default("1000");
             $table->string('legendsValue')->nullable();
             $table->string('tipDocAfectado')->nullable();
             $table->string('numDocfectado')->nullable();

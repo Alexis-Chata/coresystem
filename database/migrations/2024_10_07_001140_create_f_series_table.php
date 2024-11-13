@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('series', function (Blueprint $table) {
+        Schema::create('f_series', function (Blueprint $table) {
             $table->id();
             $table->string('serie')->nullable();
             $table->string('correlativo')->nullable();
             $table->string('fechaemision')->nullable();
-            $table->foreignId('sede_id')->constrained('sedes');
+            $table->foreignId('f_sede_id')->constrained('f_sedes');
             $table->foreignId('f_tipo_comprobante_id')->constrained('f_tipo_comprobantes');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

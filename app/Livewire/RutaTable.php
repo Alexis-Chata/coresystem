@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Models\Ruta;
 use App\Models\Empleado;
 use App\Models\Empresa;
-use App\Models\Lista_precio;
+use App\Models\ListaPrecio;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -58,7 +58,7 @@ final class RutaTable extends PowerGridComponent
             ->join('empleados', 'rutas.vendedor_id', '=', 'empleados.id')
             ->join('empresas', 'rutas.empresa_id', '=', 'empresas.id')
             ->join('lista_precios', 'rutas.lista_precio_id', '=', 'lista_precios.id')
-            ->select('rutas.*', 
+            ->select('rutas.*',
                      'empleados.name as vendedor_nombre',
                      'empresas.razon_social as empresa_nombre',
                      'lista_precios.name as lista_precio_nombre');
@@ -141,7 +141,7 @@ final class RutaTable extends PowerGridComponent
                 ->sortable()
                 ->searchable(),
         ];
-        
+
         $empleado = auth()->user()->empleados()->first();
         // Solo mostrar la columna de vendedor si NO es un vendedor
         if (!$empleado || $empleado->tipo_empleado !== 'vendedor') {
@@ -208,7 +208,7 @@ final class RutaTable extends PowerGridComponent
     public function createRuta()
     {
         $empleado = auth()->user()->empleados()->first();
-        
+
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $this->newRuta['vendedor_id'] = $empleado->id;
         }
@@ -231,11 +231,11 @@ final class RutaTable extends PowerGridComponent
     public function vendedorSelectOptions()
     {
         $empleado = auth()->user()->empleados()->first();
-        
+
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             return collect([$empleado->id => $empleado->name]);
         }
-        
+
         return Empleado::where('tipo_empleado', 'vendedor')->pluck('name', 'id');
     }
 
@@ -246,7 +246,7 @@ final class RutaTable extends PowerGridComponent
 
     public function listaPrecioSelectOptions()
     {
-        return Lista_precio::all()->pluck('name', 'id');
+        return ListaPrecio::all()->pluck('name', 'id');
     }
 
     #[On('updateField')]

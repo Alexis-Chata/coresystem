@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Empleado;
-use App\Models\F_tipo_documento;
+use App\Models\FTipoDocumento;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class EmpleadoFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {   
+    {
         $tipoEmpleado = $this->faker->randomElement(['conductor', 'vendedor']);
         $casos = [];
         if ($tipoEmpleado === 'conductor') {
@@ -32,7 +32,7 @@ class EmpleadoFactory extends Factory
             'name' => $this->faker->name,
             'direccion' => $this->faker->address,
             'celular' => $this->faker->phoneNumber,
-            'f_tipo_documento_id' => F_tipo_documento::inRandomOrder()->first()->id,
+            'f_tipo_documento_id' => FTipoDocumento::inRandomOrder()->first()->id,
             'numero_documento' => $this->faker->unique()->numerify('########'),
             // ... otros campos que sean necesarios
         ]+$casos;

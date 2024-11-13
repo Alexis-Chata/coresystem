@@ -63,6 +63,10 @@ Route::middleware([
     Route::get('/padron', function () {
         return view('padron');
     })->middleware('can:view padron')->name('padron.index');
+
+    Route::get('/comprobantes', function () {
+        return view('comprobantes');
+    })->name('comprobantes.index');
 });
 
 Route::get('/', function () {

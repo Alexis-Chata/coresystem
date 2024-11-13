@@ -24,7 +24,7 @@ class Empleado extends Model
 
     public function tipoDocumento()
     {
-        return $this->belongsTo(F_tipo_documento::class, 'f_tipo_documento_id');
+        return $this->belongsTo(FTipoDocumento::class, 'f_tipo_documento_id');
     }
     public function empresa()
     {

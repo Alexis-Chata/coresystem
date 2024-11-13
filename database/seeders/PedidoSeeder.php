@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Pedido;
 use App\Models\Ruta;
-use App\Models\F_tipo_comprobante;
+use App\Models\FTipoComprobante;
 use App\Models\Empleado;
 use App\Models\Cliente;
 use App\Models\Empresa;
@@ -15,13 +15,13 @@ class PedidoSeeder extends Seeder
     public function run(): void
     {
         $rutas = Ruta::all();
-        $tiposComprobante = F_tipo_comprobante::all();
+        $tiposComprobante = FTipoComprobante::all();
         $vendedores = Empleado::where('tipo_empleado', 'vendedor')->get();
         $conductores = Empleado::where('tipo_empleado', 'conductor')->get();
         $clientes = Cliente::all();
         $empresa = Empresa::first();
 
-        if ($rutas->isEmpty() || $tiposComprobante->isEmpty() || $vendedores->isEmpty() || 
+        if ($rutas->isEmpty() || $tiposComprobante->isEmpty() || $vendedores->isEmpty() ||
             $conductores->isEmpty() || $clientes->isEmpty() || !$empresa) {
             throw new \Exception('Asegúrate de que existan rutas, tipos de comprobante, vendedores, conductores, clientes y una empresa.');
         }

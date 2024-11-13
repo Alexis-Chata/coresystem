@@ -6,7 +6,7 @@ use App\Models\Producto;
 use App\Models\Empresa;
 use App\Models\Marca;
 use App\Models\Categoria;
-use App\Models\F_tipo_afectacion;
+use App\Models\FTipoAfectacion;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -52,7 +52,7 @@ final class ProductoTable extends PowerGridComponent
         ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
         ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
         ->join('f_tipo_afectacions', 'productos.f_tipo_afectacion_id', '=', 'f_tipo_afectacions.id')
-        ->select('productos.*', 
+        ->select('productos.*',
                  'empresas.razon_social as empresa_nombre',
                  'marcas.name as marca_nombre',
                  'categorias.nombre as categoria_nombre',  // Cambiado de 'name' a 'nombre'
@@ -193,7 +193,7 @@ final class ProductoTable extends PowerGridComponent
 
     public function tipoAfectacionSelectOptions()
     {
-        return F_tipo_afectacion::all()->pluck('name', 'id');
+        return FTipoAfectacion::all()->pluck('name', 'id');
     }
 
     #[On('updateField')]

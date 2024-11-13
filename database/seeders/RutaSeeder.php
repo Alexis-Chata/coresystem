@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Ruta;
 use App\Models\Empleado;
 use App\Models\Empresa;
-use App\Models\Lista_precio;
+use App\Models\ListaPrecio;
 use Illuminate\Support\Facades\DB;
 
 class RutaSeeder extends Seeder
@@ -152,8 +152,8 @@ class RutaSeeder extends Seeder
 
         // Luego, actualizamos todas las rutas con días aleatorios
         DB::statement("
-            UPDATE rutas 
-            SET dia_visita = ELT(FLOOR(1 + RAND() * 7), 
+            UPDATE rutas
+            SET dia_visita = ELT(FLOOR(1 + RAND() * 7),
                 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')
             WHERE dia_visita IS NULL
         ");

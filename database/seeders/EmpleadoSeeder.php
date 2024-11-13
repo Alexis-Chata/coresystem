@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Empleado;
-use App\Models\F_tipo_documento;
+use App\Models\FTipoDocumento;
 use App\Models\Empresa;
 use App\Models\Vehiculo;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ class EmpleadoSeeder extends Seeder
 {
     public function run(): void
     {
-        $tipoDocumento = F_tipo_documento::inRandomOrder()->first();
+        $tipoDocumento = FTipoDocumento::inRandomOrder()->first();
 
         if (!$tipoDocumento) {
             throw new \Exception('No hay tipos de documento en la base de datos. Asegúrate de ejecutar FTipoDocumentoSeeder primero.');

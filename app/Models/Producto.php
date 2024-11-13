@@ -10,11 +10,14 @@ class Producto extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'empresa_id',
         'marca_id',
         'categoria_id',
         'f_tipo_afectacion_id',
         'porcentaje_igv',
+        'tipo_unidad',
+        'cantidad',
     ];
 
     public function empresa()
@@ -34,6 +37,6 @@ class Producto extends Model
 
     public function tipoAfectacion()
     {
-        return $this->belongsTo(F_tipo_afectacion::class, 'f_tipo_afectacion_id');
+        return $this->belongsTo(FTipoAfectacion::class, 'f_tipo_afectacion_id');
     }
 }

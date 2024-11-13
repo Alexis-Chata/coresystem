@@ -4,8 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Cliente;
 use App\Models\Empresa;
-use App\Models\F_tipo_documento;
-use App\Models\Lista_precio;
+use App\Models\FTipoDocumento;
+use App\Models\ListaPrecio;
 use App\Models\Ruta;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -197,7 +197,7 @@ final class ClienteTable extends PowerGridComponent
     {
         // Establecer valores por defecto si no están presentes
         if (empty($this->newCliente['f_tipo_documento_id'])) {
-            $primerTipoDocumento = F_tipo_documento::first();
+            $primerTipoDocumento = FTipoDocumento::first();
             $this->newCliente['f_tipo_documento_id'] = $primerTipoDocumento ? $primerTipoDocumento->id : null;
         }
 
@@ -239,7 +239,7 @@ final class ClienteTable extends PowerGridComponent
 
     public function tipoDocumentoSelectOptions()
     {
-        return F_tipo_documento::all()->pluck('tipo_documento', 'id');
+        return FTipoDocumento::all()->pluck('tipo_documento', 'id');
     }
 
     public function empresaSelectOptions()
@@ -249,7 +249,7 @@ final class ClienteTable extends PowerGridComponent
 
     public function listaPrecioSelectOptions()
     {
-        return Lista_precio::all()->pluck('name', 'id');
+        return ListaPrecio::all()->pluck('name', 'id');
     }
 
     public function rutaSelectOptions()

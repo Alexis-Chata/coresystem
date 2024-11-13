@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Empleado;
 use App\Models\Empresa;
-use App\Models\F_tipo_documento;
+use App\Models\FTipoDocumento;
 use App\Models\Vehiculo;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,7 +55,7 @@ final class EmpleadoTable extends PowerGridComponent
             ->join('f_tipo_documentos', 'empleados.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
             ->join('empresas', 'empleados.empresa_id', '=', 'empresas.id')
             ->leftJoin('vehiculos', 'empleados.vehiculo_id', '=', 'vehiculos.id')
-            ->select('empleados.*', 
+            ->select('empleados.*',
                      'f_tipo_documentos.name as tipo_documento_nombre',
                      'empresas.razon_social as empresa_nombre',
                      'vehiculos.placa as vehiculo_placa');
@@ -212,7 +212,7 @@ final class EmpleadoTable extends PowerGridComponent
 
     public function tipoDocumentoSelectOptions()
     {
-        return F_tipo_documento::all()->pluck('name', 'id');
+        return FTipoDocumento::all()->pluck('name', 'id');
     }
 
     public function tipoEmpleadoSelectOptions()

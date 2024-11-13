@@ -4,11 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Pedido;
 use App\Models\Ruta;
-use App\Models\F_tipo_comprobante;
+use App\Models\FTipoComprobante;
 use App\Models\Empleado;
 use App\Models\Cliente;
 use App\Models\Empresa;
-use App\Models\Lista_precio;
+use App\Models\ListaPrecio;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -25,7 +25,7 @@ final class PedidoTable extends PowerGridComponent
     public string $tableName = 'pedidos';
 
     public bool $showModalForm = false;
-    
+
     // Propiedades para el formulario
     public $ruta_id;
     public $f_tipo_comprobante_id;
@@ -50,12 +50,12 @@ final class PedidoTable extends PowerGridComponent
     public function mount(): void
     {
         $this->rutas = Ruta::all();
-        $this->tiposComprobante = F_tipo_comprobante::all();
+        $this->tiposComprobante = FTipoComprobante::all();
         $this->vendedores = Empleado::where('tipo_empleado', 'vendedor')->get();
         $this->conductores = Empleado::where('tipo_empleado', 'conductor')->get();
         $this->clientes = Cliente::all();
         $this->empresas = Empresa::all();
-        $this->listaPrecios = Lista_precio::all();
+        $this->listaPrecios = ListaPrecio::all();
 
         parent::mount();
     }

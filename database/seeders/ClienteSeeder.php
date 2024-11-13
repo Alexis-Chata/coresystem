@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Cliente;
-use App\Models\F_tipo_documento;
+use App\Models\FTipoDocumento;
 use App\Models\Empresa;
-use App\Models\Lista_precio;
+use App\Models\ListaPrecio;
 use App\Models\Ruta;
 
 class ClienteSeeder extends Seeder
@@ -18,16 +18,16 @@ class ClienteSeeder extends Seeder
             throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
         }
 
-        $tipoDocumento = F_tipo_documento::where('tipo_documento', 'RUC')->first();
+        $tipoDocumento = FTipoDocumento::where('tipo_documento', 'RUC')->first();
         if (!$tipoDocumento) {
             // Si no existe, créalo
-            $tipoDocumento = F_tipo_documento::create([
+            $tipoDocumento = FTipoDocumento::create([
                 'tipo_documento' => 'RUC',
                 'name' => 'Registro Único de Contribuyentes'
             ]);
         }
 
-        $listaPrecio = Lista_precio::first();
+        $listaPrecio = ListaPrecio::first();
         if (!$listaPrecio) {
             throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
         }

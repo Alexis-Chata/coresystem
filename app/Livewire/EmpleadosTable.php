@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Empleado;
-use App\Models\F_tipo_documento;
+use App\Models\FTipoDocumento;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -92,7 +92,7 @@ final class EmpleadosTable extends PowerGridComponent
 
     public function tipoDocumentoSelectOptions()
     {
-        return F_tipo_documento::all(['id', 'tipo_documento'])->mapWithKeys(function ($item) {
+        return FTipoDocumento::all(['id', 'tipo_documento'])->mapWithKeys(function ($item) {
             return [$item->id => $item->tipo_documento];
         });
     }

@@ -50,7 +50,7 @@
                 </label>
                 <select wire:model="newProducto.f_tipo_afectacion_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_tipo_afectacion_id">
                     <option value="">Seleccione un tipo de afectación</option>
-                    @foreach(App\Models\F_tipo_afectacion::all() as $tipoAfectacion)
+                    @foreach(App\Models\FTipoAfectacion::all() as $tipoAfectacion)
                         <option value="{{ $tipoAfectacion->id }}">{{ $tipoAfectacion->name }}</option>
                     @endforeach
                 </select>

@@ -30,6 +30,6 @@ class Ruta extends Model
 
     public function listaPrecio()
     {
-        return $this->belongsTo(Lista_precio::class);
+        return $this->belongsTo(ListaPrecio::class);
     }
 }

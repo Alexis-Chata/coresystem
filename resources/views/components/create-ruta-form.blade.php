@@ -53,7 +53,7 @@
                 </label>
                 <select wire:model="newRuta.lista_precio_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="lista_precio_id">
                     <option value="">Seleccione una lista de precios</option>
-                    @foreach(App\Models\Lista_precio::all() as $listaPrecio)
+                    @foreach(App\Models\ListaPrecio::all() as $listaPrecio)
                         <option value="{{ $listaPrecio->id }}">{{ $listaPrecio->name }}</option>
                     @endforeach
                 </select>

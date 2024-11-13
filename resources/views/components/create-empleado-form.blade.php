@@ -41,7 +41,7 @@
                 </label>
                 <select wire:model="newEmpleado.f_tipo_documento_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_tipo_documento_id">
                     <option value="">Seleccione un tipo de documento</option>
-                    @foreach(App\Models\F_tipo_documento::all() as $tipoDocumento)
+                    @foreach(App\Models\FTipoDocumento::all() as $tipoDocumento)
                         <option value="{{ $tipoDocumento->id }}">{{ $tipoDocumento->name }}</option>
                     @endforeach
                 </select>

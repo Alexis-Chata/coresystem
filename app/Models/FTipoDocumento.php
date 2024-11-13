@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sede extends Model
+class FTipoDocumento extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['tipo_documento', 'name'];
 }

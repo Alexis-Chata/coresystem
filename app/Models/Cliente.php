@@ -36,7 +36,7 @@ class Cliente extends Model
         static::updated(function ($cliente) {
             if ($cliente->wasChanged('ruta_id')) {
                 $padron = Padron::where('cliente_id', $cliente->id)->first();
-                
+
                 if ($padron) {
                     $ultimaSecuencia = Padron::where('ruta_id', $cliente->ruta_id)
                                             ->max('nro_secuencia') ?? 0;
@@ -51,11 +51,11 @@ class Cliente extends Model
 
         static::deleted(function ($cliente) {
             $padron = Padron::where('cliente_id', $cliente->id)->first();
-            
+
             if ($padron) {
                 $secuenciaEliminada = $padron->nro_secuencia;
                 $rutaId = $padron->ruta_id;
-                
+
                 $padron->delete();
 
                 Padron::where('ruta_id', $rutaId)
@@ -72,7 +72,7 @@ class Cliente extends Model
 
     public function tipoDocumento()
     {
-        return $this->belongsTo(F_tipo_documento::class, 'f_tipo_documento_id');
+        return $this->belongsTo(FTipoDocumento::class, 'f_tipo_documento_id');
     }
 
     public function empresa()
@@ -82,7 +82,7 @@ class Cliente extends Model
 
     public function listaPrecio()
     {
-        return $this->belongsTo(Lista_precio::class);
+        return $this->belongsTo(ListaPrecio::class);
     }
 
     public function ruta()

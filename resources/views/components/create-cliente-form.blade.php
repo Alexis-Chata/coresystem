@@ -26,7 +26,7 @@
                 </label>
                 <select wire:model="newCliente.f_tipo_documento_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_tipo_documento_id">
                     <option value="">Seleccione un tipo de documento</option>
-                    @foreach(App\Models\F_tipo_documento::all() as $tipoDocumento)
+                    @foreach(App\Models\FTipoDocumento::all() as $tipoDocumento)
                         <option value="{{ $tipoDocumento->id }}">{{ $tipoDocumento->tipo_documento }}</option>
                     @endforeach
                 </select>
@@ -57,13 +57,13 @@
                     $empresa = App\Models\Empresa::first();
                     $this->newCliente['empresa_id'] = $empresa->id; // Establecer el valor inicial
                 @endphp
-                <select wire:model="newCliente.empresa_id" 
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                <select wire:model="newCliente.empresa_id"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="empresa_id">
                     <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
                 </select>
-                @error('newCliente.empresa_id') 
-                    <span class="text-red-500 text-xs italic">{{ $message }}</span> 
+                @error('newCliente.empresa_id')
+                    <span class="text-red-500 text-xs italic">{{ $message }}</span>
                 @enderror
             </div>
 
@@ -88,21 +88,21 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="lista_precio_id">
                     Lista de Precios
                 </label>
-                <select wire:model="newCliente.lista_precio_id" 
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                <select wire:model="newCliente.lista_precio_id"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="lista_precio_id"
                         style="pointer-events: none;"
                         {{ $newCliente['ruta_id'] ? 'disabled' : '' }}>  {{-- Deshabilitar si hay una ruta seleccionada --}}
                     <option value="">Seleccione una lista de precios</option>
-                    @foreach(App\Models\Lista_precio::all() as $listaPrecio)
+                    @foreach(App\Models\ListaPrecio::all() as $listaPrecio)
                         <option value="{{ $listaPrecio->id }}">{{ $listaPrecio->name }}</option>
                     @endforeach
                 </select>
                 @if($newCliente['ruta_id'])
                     <p class="text-sm text-gray-500 mt-1">Precio seleccionado según la ruta.</p>
                 @endif
-                @error('newCliente.lista_precio_id') 
-                    <span class="text-red-500 text-xs italic">{{ $message }}</span> 
+                @error('newCliente.lista_precio_id')
+                    <span class="text-red-500 text-xs italic">{{ $message }}</span>
                 @enderror
             </div>
 
