@@ -70,6 +70,9 @@
                 justify-content: flex-end;
                 right: 0;
             }
+            .overflow-x-auto {
+                overflow-x: initial !important;
+            }
         </style>
         <script>
             document.addEventListener('livewire:initialized', () => {

@@ -148,8 +148,7 @@ final class ClienteTable extends PowerGridComponent
             Column::make('Ruta', 'ruta_nombre')
                 ->sortable(),
             Column::make('Lista precio', 'lista_precio_nombre')
-                ->sortable(),
-            Column::action('Acción')
+                ->sortable()
         ];
     }
 
@@ -163,23 +162,6 @@ final class ClienteTable extends PowerGridComponent
 
         // Agregar esta línea para actualizar la tabla de padrón
         $this->dispatch('refresh-padron-table');
-    }
-
-    public function actions(Cliente $row): array
-    {
-        return [
-            Button::add('delete')
-                ->slot('Eliminar')
-                ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deleteCliente', ['clienteId' => $row->id])
-        ];
-    }
-
-    #[On('deleteCliente')]
-    public function deleteCliente($clienteId): void
-    {
-        Cliente::destroy($clienteId);
     }
 
     public function openCreateForm()

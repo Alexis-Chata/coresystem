@@ -1,10 +1,18 @@
-<div x-data="{ open: false }" class="relative">
+<div x-data="{ open: false }" class="relative mb-3">
     <button @click="open = !open" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         {{ $showCreateForm ? 'Cerrar' : 'Crear Nuevo Producto' }}
     </button>
 
     <div x-show="open" @click.away="open = false" class="absolute z-10 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
         <form wire:submit.prevent="createProducto" class="p-4">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                    Nombre
+                </label>
+                <input wire:model="newProducto.name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Nombre del producto">
+                @error('newProducto.name') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="empresa_id">
                     Empresa
@@ -63,6 +71,44 @@
                 </label>
                 <input wire:model="newProducto.porcentaje_igv" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="porcentaje_igv" type="number" step="0.01" placeholder="Porcentaje IGV">
                 @error('newProducto.porcentaje_igv') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="cantidad">
+                    Cantidad
+                </label>
+                <input wire:model="newProducto.cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="cantidad" type="number" placeholder="Cantidad">
+                @error('newProducto.cantidad') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="sub_cantidad">
+                    Sub Cantidad
+                </label>
+                <input wire:model="newProducto.sub_cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="sub_cantidad" type="number" placeholder="Sub Cantidad">
+                @error('newProducto.sub_cantidad') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="tipo">
+                    Tipo
+                </label>
+                <select wire:model="newProducto.tipo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="tipo">
+                    <option value="estandar">Estándar</option>
+                    <option value="otro">Otro</option>
+                </select>
+                @error('newProducto.tipo') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="tipo_unidad">
+                    Tipo de Unidad
+                </label>
+                <select wire:model="newProducto.tipo_unidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="tipo_unidad">
+                    <option value="NIU">NIU</option>
+                    <option value="otro">Otro</option>
+                </select>
+                @error('newProducto.tipo_unidad') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
             <div class="flex items-center justify-between">

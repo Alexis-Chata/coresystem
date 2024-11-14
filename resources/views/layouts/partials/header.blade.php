@@ -29,7 +29,7 @@
                             </span>
                         </button>
                         <!-- Hamburger Toggle BTN -->
-                        <a class="block flex-shrink-0 lg:hidden" href="index.html">
+                        <a class="block flex-shrink-0 lg:hidden" href="/dashboard">
                             <img src="src/images/logo/logo-icon.svg" alt="Logo" />
                         </a>
                     </div>
@@ -90,7 +90,7 @@
                             </li>
 
                             <!-- Notification Menu Area -->
-                            <li class="relative" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
+                            <li class="relative hidden" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
                                 <a class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
                                     href="#" @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false">
                                     <span :class="!notifying && 'hidden'"
@@ -173,7 +173,7 @@
                             <!-- Notification Menu Area -->
 
                             <!-- Chat Notification Area -->
-                            <li class="relative" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
+                            <li class="relative hidden" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
                                 <a class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
                                     href="#" @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false">
                                     <span :class="!notifying && 'hidden'"
@@ -317,7 +317,16 @@
                                 </span>
 
                                 <span class="h-12 w-12 rounded-full">
-                                    <img src="src/images/user/user-01.png" alt="User" />
+                                    @php
+                                        $imagePath = match($rol) {
+                                            'Administrador' => 'https://cdn-icons-png.flaticon.com/512/16842/16842358.png',
+                                            'Vendedor' => 'https://cdn-icons-png.flaticon.com/512/16785/16785438.png',
+                                            'Conductor' => 'src/images/user/user-01.png',
+                                            'Almacenero' => 'src/images/user/user-01.png',
+                                            default => 'src/images/user/user-01.png'
+                                        };
+                                    @endphp
+                                    <img src="{{ $imagePath }}" alt="{{ $rol }}" />
                                 </span>
 
                                 <svg :class="dropdownOpen && 'rotate-180'" class="hidden fill-current sm:block"

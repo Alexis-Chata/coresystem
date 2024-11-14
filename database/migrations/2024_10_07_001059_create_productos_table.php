@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('f_tipo_afectacion_id')->constrained('f_tipo_afectacions');
             $table->string('porcentaje_igv')->nullable();
             $table->string('tipo_unidad')->default("NIU");
+            $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -34,5 +35,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('productos');
+        Schema::table('productos', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

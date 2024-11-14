@@ -22,23 +22,31 @@ final class ProductoTable extends PowerGridComponent
 {
     public string $tableName = 'producto-table-96qpy8-table';
     public bool $showCreateForm = false;
+    public string $sortField = 'id';
+    public string $sortDirection = 'desc';
 
     public $newProducto = [
+        'name' => '',
         'empresa_id' => '',
         'marca_id' => '',
         'categoria_id' => '',
         'f_tipo_afectacion_id' => '',
         'porcentaje_igv' => '',
+        'cantidad' => '',
+        'sub_cantidad' => '',
+        'tipo' => 'estandar',
+        'tipo_unidad' => 'NIU',
     ];
 
     public function setUp(): array
     {
-        $this->showCheckBox();
+        //$this->showCheckBox();
 
         return [
             PowerGrid::header()
                 ->showSearchInput()
-                ->includeViewOnTop('components.create-producto-form'),
+                ->includeViewOnTop('components.create-producto-form')
+                ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -65,7 +73,7 @@ final class ProductoTable extends PowerGridComponent
             'empresa' => ['razon_social'],
             'marca' => ['name'],
             'categoria' => ['nombre'],
-            'tipoAfectacion' => ['tipo_afectacion'],
+            'tipoAfectacion' => ['name'],
         ];
     }
 
@@ -78,6 +86,7 @@ final class ProductoTable extends PowerGridComponent
 
         return PowerGrid::fields()
             ->add('id')
+            ->add('name')
             ->add('empresa_id', function ($producto) use ($empresaOptions) {
                 return $this->selectComponent('empresa_id', $producto->id, $producto->empresa_id, $empresaOptions);
             })
@@ -112,11 +121,31 @@ final class ProductoTable extends PowerGridComponent
     {
         return [
             Column::make('Id', 'id'),
+            Column::make('Nombre', 'name')
+                ->sortable()
+                ->searchable()
+                ->editOnClick(),
             Column::make('Empresa', 'empresa_id'),
             Column::make('Marca', 'marca_id'),
             Column::make('Categoría', 'categoria_id'),
             Column::make('Tipo de afectación', 'f_tipo_afectacion_id'),
             Column::make('Porcentaje IGV', 'porcentaje_igv')
+                ->sortable()
+                ->searchable()
+                ->editOnClick(),
+            Column::make('Cantidad', 'cantidad')
+                ->sortable()
+                ->searchable()
+                ->editOnClick(),
+            Column::make('Sub Cantidad', 'sub_cantidad')
+                ->sortable()
+                ->searchable()
+                ->editOnClick(),
+            Column::make('Tipo', 'tipo')
+                ->sortable()
+                ->searchable()
+                ->editOnClick(),
+            Column::make('Tipo Unidad', 'tipo_unidad')
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
@@ -133,19 +162,45 @@ final class ProductoTable extends PowerGridComponent
 
     public function actions(Producto $row): array
     {
-        return [
-            Button::add('delete')
+        $actions = [];
+
+        if ($row->deleted_at) {
+            $actions[] = Button::add('restore')
+                ->slot('Restaurar')
+                ->id()
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('restoreProducto', ['productoId' => $row->id]);
+        } else {
+            $actions[] = Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deleteProducto', ['productoId' => $row->id])
-        ];
+                ->dispatch('deleteProducto', ['productoId' => $row->id]);
+        }
+
+        return $actions;
     }
 
     #[On('deleteProducto')]
     public function deleteProducto($productoId): void
     {
-        Producto::destroy($productoId);
+        $producto = Producto::find($productoId);
+        if ($producto) {
+            $producto->delete();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('producto-deleted', 'Producto eliminado exitosamente');
+        }
+    }
+
+    #[On('restoreProducto')]
+    public function restoreProducto($productoId): void
+    {
+        $producto = Producto::withTrashed()->find($productoId);
+        if ($producto) {
+            $producto->restore();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('producto-restored', 'Producto restaurado exitosamente');
+        }
     }
 
     public function openCreateForm()
@@ -162,11 +217,16 @@ final class ProductoTable extends PowerGridComponent
     public function createProducto()
     {
         $this->validate([
+            'newProducto.name' => 'required|string|max:255',
             'newProducto.empresa_id' => 'required|exists:empresas,id',
             'newProducto.marca_id' => 'required|exists:marcas,id',
             'newProducto.categoria_id' => 'required|exists:categorias,id',
             'newProducto.f_tipo_afectacion_id' => 'required|exists:f_tipo_afectacions,id',
             'newProducto.porcentaje_igv' => 'required|numeric',
+            'newProducto.cantidad' => 'required|string',
+            'newProducto.sub_cantidad' => 'nullable|string',
+            'newProducto.tipo' => 'required|string',
+            'newProducto.tipo_unidad' => 'required|string',
         ]);
 
         Producto::create($this->newProducto);
