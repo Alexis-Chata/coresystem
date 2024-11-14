@@ -1,4 +1,4 @@
-<div x-data="{ open: false }" class="relative">
+<div x-data="{ open: false }" class="mb-3 relative">
     <button @click="open = !open" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         {{ $showCreateForm ? 'Cerrar' : 'Crear Nueva Ruta' }}
     </button>

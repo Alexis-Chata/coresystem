@@ -38,6 +38,10 @@ final class RutaTable extends PowerGridComponent
         $header = PowerGrid::header()
             ->showSearchInput();
 
+        if (auth()->user()->can('delete ruta')) {
+            $header->showSoftDeletes(showMessage: true);
+        }
+
         if (auth()->user()->can('create ruta')) {
             $header->includeViewOnTop('components.create-ruta-form');
         }
@@ -61,7 +65,8 @@ final class RutaTable extends PowerGridComponent
             ->select('rutas.*',
                      'empleados.name as vendedor_nombre',
                      'empresas.razon_social as empresa_nombre',
-                     'lista_precios.name as lista_precio_nombre');
+                     'lista_precios.name as lista_precio_nombre')
+            ->withCount('clientes');
 
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $query->where('rutas.vendedor_id', $empleado->id);
@@ -106,7 +111,8 @@ final class RutaTable extends PowerGridComponent
                     return $this->selectComponent('dia_visita', $ruta->id, $ruta->dia_visita, $this->diasVisitaOptions());
                 }
                 return $ruta->dia_visita;
-            });
+            })
+            ->add('clientes_count', fn (Ruta $ruta) => $ruta->clientes_count);
     }
 
     private function selectComponent($field, $rutaId, $selected, $options)
@@ -137,6 +143,8 @@ final class RutaTable extends PowerGridComponent
                     // Documentacion PowerGrid
                     hasPermission: auth()->user()->can('edit ruta')
                 ),
+            Column::make('N° Clientes', 'clientes_count')
+                ->sortable(),
             Column::make('Día de visita', 'dia_visita')
                 ->sortable()
                 ->searchable(),
@@ -170,21 +178,47 @@ final class RutaTable extends PowerGridComponent
 
     public function actions(Ruta $row): array
     {
-        return [
-            Button::add('delete')
+        $actions = [];
+
+        if ($row->deleted_at) {
+            $actions[] = Button::add('restore')
+                ->slot('Restaurar')
+                ->id()
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('restoreRuta', ['rutaId' => $row->id])
+                ->can(auth()->user()->can('delete ruta'));
+        } else {
+            $actions[] = Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                 ->dispatch('deleteRuta', ['rutaId' => $row->id])
-                // Documentacion PowerGrid
-                ->can(auth()->user()->can('delete ruta'))
-        ];
+                ->can(auth()->user()->can('delete ruta'));
+        }
+
+        return $actions;
     }
 
     #[On('deleteRuta')]
     public function deleteRuta($rutaId): void
     {
-        Ruta::destroy($rutaId);
+        $ruta = Ruta::find($rutaId);
+        if ($ruta) {
+            $ruta->delete();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('ruta-deleted', 'Ruta eliminada exitosamente');
+        }
+    }
+
+    #[On('restoreRuta')]
+    public function restoreRuta($rutaId): void
+    {
+        $ruta = Ruta::withTrashed()->find($rutaId);
+        if ($ruta) {
+            $ruta->restore();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('ruta-restored', 'Ruta restaurada exitosamente');
+        }
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
