@@ -73,6 +73,9 @@
             .overflow-x-auto {
                 overflow-x: initial !important;
             }
+            [role="navigation"] .z-10{
+                z-index: 8 !important;
+            }
         </style>
         <script>
             document.addEventListener('livewire:initialized', () => {

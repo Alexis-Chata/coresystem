@@ -25,7 +25,6 @@ final class RutaTable extends PowerGridComponent
     public string $sortDirection = 'desc';
 
     public $newRuta = [
-        'codigo' => '',
         'name' => '',
         'vendedor_id' => '',
         'empresa_id' => '',
@@ -88,7 +87,6 @@ final class RutaTable extends PowerGridComponent
     {
         return PowerGrid::fields()
             ->add('id')
-            ->add('codigo')
             ->add('name')
             ->add('vendedor_id', function ($ruta) {
                 // Permiso Autorizado se muestra el select para editar,
@@ -248,7 +246,6 @@ final class RutaTable extends PowerGridComponent
         }
 
         $this->validate([
-            'newRuta.codigo' => 'required',
             'newRuta.name' => 'required',
             'newRuta.vendedor_id' => 'required|exists:empleados,id',
             'newRuta.empresa_id' => 'required|exists:empresas,id',

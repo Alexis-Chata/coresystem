@@ -107,4 +107,5 @@
         </div>
     </div>
 </div>
+<livewire:lista-precio-table/>
 @endsection

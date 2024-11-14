@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('descripcion')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
+            $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -27,5 +28,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('lista_precios');
+        Schema::table('lista_precios', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };
