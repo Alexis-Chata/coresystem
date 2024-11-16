@@ -56,6 +56,7 @@
     }" 
     @if(!$isEditing)
     @cliente-created.window="search = ''; selected = null; open = false"
+    @producto-lista-precio-created.window="search = ''; selected = null; open = false"
     @endif
     class="relative">
         <div class="relative">

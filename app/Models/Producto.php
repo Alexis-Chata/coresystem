@@ -42,4 +42,11 @@ class Producto extends Model
     {
         return $this->belongsTo(FTipoAfectacion::class, 'f_tipo_afectacion_id');
     }
+
+    public function listaPrecios()
+    {
+        return $this->belongsToMany(ListaPrecio::class, 'producto_lista_precios')
+            ->withPivot('precio')
+            ->withTimestamps();
+    }
 }

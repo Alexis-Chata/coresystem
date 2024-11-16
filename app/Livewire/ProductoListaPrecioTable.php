@@ -21,6 +21,9 @@ final class ProductoListaPrecioTable extends PowerGridComponent
 {
     public string $tableName = 'producto-lista-precio-table-0ikqpf-table';
     public bool $showCreateForm = false;
+    public string $sortField = 'id';
+    public string $sortDirection = 'desc';
+    public $precios = [];
     
     public $newProductoListaPrecio = [
         'producto_id' => '',
@@ -28,11 +31,11 @@ final class ProductoListaPrecioTable extends PowerGridComponent
         'precio' => '',
     ];
 
+
     public function setUp(): array
     {
         return [
             PowerGrid::header()
-                ->showSoftDeletes()
                 ->showSearchInput()
                 ->includeViewOnTop('components.create-producto-lista-precio-form'),
             PowerGrid::footer()
@@ -43,124 +46,83 @@ final class ProductoListaPrecioTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return ProductoListaPrecio::query()
-            ->with(['producto', 'listaPrecio']);
+        return Producto::query()
+            ->select('productos.*')
+            ->distinct()
+            ->when(true, function ($query) {
+                $listaPrecios = ListaPrecio::all();
+                foreach ($listaPrecios as $listaPrecio) {
+                    $query->addSelect([
+                        'precio_' . $listaPrecio->id => ProductoListaPrecio::select('precio')
+                            ->whereColumn('producto_id', 'productos.id')
+                            ->where('lista_precio_id', $listaPrecio->id)
+                            ->limit(1)
+                    ]);
+                }
+            });
     }
 
     public function fields(): PowerGridFields
     {
-        $productosOptions = $this->productosSelectOptions();
-        $listaPreciosOptions = $this->listaPreciosSelectOptions();
-
-        return PowerGrid::fields()
+        $fields = PowerGrid::fields()
             ->add('id')
-            ->add('producto_id', function ($model) use ($productosOptions) {
-                return $this->selectComponent('producto_id', $model->id, $model->producto_id, $productosOptions);
-            })
-            ->add('lista_precio_id', function ($model) use ($listaPreciosOptions) {
-                return $this->selectComponent('lista_precio_id', $model->id, $model->lista_precio_id, $listaPreciosOptions);
-            })
-            ->add('precio', fn($model) => number_format($model->precio, 2))
-            ->add('created_at_formatted', fn ($model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
-    }
+            ->add('name', fn($model) => $model->name);
 
-    private function selectComponent($field, $modelId, $selected, $options)
-    {
-        return Blade::render(
-            '<select wire:change="updateField(\''. $field .'\', $event.target.value, '. $modelId .')">'
-            . '@foreach($options as $value => $label)'
-            . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
-            . '{{ $label }}'
-            . '</option>'
-            . '@endforeach'
-            . '</select>',
-            ['options' => $options, 'selected' => $selected]
-        );
+        $listaPrecios = ListaPrecio::all();
+        foreach ($listaPrecios as $listaPrecio) {
+            $fields->add('precio_' . $listaPrecio->id, 
+                fn($model) => $model->{'precio_' . $listaPrecio->id} 
+                    ? number_format($model->{'precio_' . $listaPrecio->id}, 2) 
+                    : '-'
+            );
+        }
+
+        return $fields;
     }
 
     public function columns(): array
     {
-        return [
+        $columns = [
             Column::make('Id', 'id')
                 ->sortable(),
-            Column::make('Producto', 'producto_id')
-                ->sortable(),
-            Column::make('Lista de Precio', 'lista_precio_id')
-                ->sortable(),
-            Column::make('Precio', 'precio')
+            Column::make('Producto', 'name')
                 ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::action('Acción')
+                ->searchable(),
         ];
-    }
 
-    #[\Livewire\Attributes\On('restoreProductoListaPrecio')]
-    public function restore($rowId): void
-    {
-        $productoListaPrecio = ProductoListaPrecio::withTrashed()->find($rowId);
-        if ($productoListaPrecio) {
-            $productoListaPrecio->restore();
-            
-            $this->dispatch('pg:eventRefresh-default');
-            $this->dispatch('producto-lista-precio-SweetAlert2', 'Restaurado exitosamente');
+        $listaPrecios = ListaPrecio::all();
+        foreach ($listaPrecios as $listaPrecio) {
+            $columns[] = Column::make($listaPrecio->name, 'precio_' . $listaPrecio->id)
+                ->sortable()
+                ->editOnClick();
         }
-    }
 
-    #[\Livewire\Attributes\On('deleteProductoListaPrecio')]
-    public function delete($rowId): void
-    {
-        $productoListaPrecio = ProductoListaPrecio::find($rowId);
-        if ($productoListaPrecio) {
-            $productoListaPrecio->delete();
-            
-            $this->dispatch('pg:eventRefresh-default');
-            $this->dispatch('producto-lista-precio-SweetAlert2', 'Eliminado exitosamente');
-        }
-    }
-
-    public function actions(ProductoListaPrecio $row): array
-    {
-        $actions = [];
-
-        $actions[] = Button::add('restore')
-            ->slot('Restaurar')
-            ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-            ->dispatch('restoreProductoListaPrecio', ['rowId' => $row->id]);
-
-        $actions[] = Button::add('delete')
-            ->slot('Eliminar')
-            ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-            ->dispatch('deleteProductoListaPrecio', ['rowId' => $row->id]);
-
-        return $actions;
-    }
-
-    public function actionRules($row): array
-    {
-        return [
-            Rule::button('restore')
-                ->when(fn($row) => !$row->trashed())
-                ->hide(),
-            Rule::button('delete')
-                ->when(fn($row) => $row->trashed())
-                ->hide(),
-        ];
+        return $columns;
     }
 
     public function createProductoListaPrecio()
     {
         $this->validate([
             'newProductoListaPrecio.producto_id' => 'required|exists:productos,id',
-            'newProductoListaPrecio.lista_precio_id' => 'required|exists:lista_precios,id',
-            'newProductoListaPrecio.precio' => 'required|numeric|min:0',
+            'precios.*' => 'required|numeric|min:0',
         ]);
 
-        ProductoListaPrecio::create($this->newProductoListaPrecio);
+        $producto_id = $this->newProductoListaPrecio['producto_id'];
 
-        $this->reset('newProductoListaPrecio');
+        foreach ($this->precios as $lista_precio_id => $precio) {
+            ProductoListaPrecio::updateOrCreate(
+                [
+                    'producto_id' => $producto_id,
+                    'lista_precio_id' => $lista_precio_id
+                ],
+                ['precio' => $precio]
+            );
+        }
+
+        $this->reset(['newProductoListaPrecio', 'precios']);
         $this->dispatch('pg:eventRefresh-default');
-        $this->dispatch('producto-lista-precio-SweetAlert2', 'Precio creado exitosamente');
+        $this->dispatch('producto-lista-precio-created');
+        $this->dispatch('producto-lista-precio-SweetAlert2', 'Precios actualizados exitosamente');
     }
 
     // Métodos auxiliares para los selects
@@ -186,15 +148,26 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
-{
-    $productoListaPrecio = ProductoListaPrecio::query()->find($id);
-    if ($productoListaPrecio) {
-        $productoListaPrecio->update([
-            $field => $value,
-        ]);
-        
-        $this->dispatch('pg:eventRefresh-default');
-        $this->dispatch('producto-lista-precio-SweetAlert2', 'Actualizado exitosamente');
+    {
+        if (str_starts_with($field, 'precio_')) {
+            $listaPrecioId = substr($field, 7); // Extraer el ID de la lista de precio
+            
+            $productoListaPrecio = ProductoListaPrecio::updateOrCreate(
+                [
+                    'producto_id' => $id,
+                    'lista_precio_id' => $listaPrecioId
+                ],
+                ['precio' => $value]
+            );
+            
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('producto-lista-precio-SweetAlert2', 'Precio actualizado exitosamente');
+        }
     }
-}
+
+    #[On('refresh-producto-lista-precio-table')]
+    public function refreshTable()
+    {
+        $this->dispatch('pg:eventRefresh-default');
+    }
 }

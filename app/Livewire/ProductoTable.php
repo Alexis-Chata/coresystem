@@ -234,6 +234,7 @@ final class ProductoTable extends PowerGridComponent
         $this->reset('newProducto');
         $this->dispatch('pg:eventRefresh-default');
         $this->dispatch('producto-created', 'Producto creado exitosamente');
+        $this->dispatch('refresh-producto-lista-precio-table');
     }
 
     public function empresaSelectOptions()

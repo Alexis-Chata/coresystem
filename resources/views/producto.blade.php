@@ -3,7 +3,8 @@
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <livewire:producto-table/>
-
+<br>
+<livewire:producto-lista-precio-table/>
 <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('producto-created', message => {
