@@ -41,9 +41,19 @@ Route::middleware([
         return view('cliente');
     })->middleware('can:view cliente')->name('cliente.index');
 
-    Route::get('/producto', function () {
-        return view('producto');
-    })->middleware('can:view producto')->name('producto.index');
+    Route::prefix('producto')->middleware('can:view producto')->group(function () {
+        Route::get('/', function () {
+            return view('producto');
+        })->name('producto.index');
+
+        Route::get('/precios-mayorista', function () {
+            return view('producto.precios-mayorista');
+        })->name('producto.precios-mayorista');
+
+        Route::get('/precios-bodega', function () {
+            return view('producto.precios-bodega');
+        })->name('producto.precios-bodega');
+    });
 
     Route::get('/categoria', function () {
         return view('categoria');
