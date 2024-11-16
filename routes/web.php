@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\MarcaController;
+use Illuminate\Support\Facades\Storage;
 
 // Rutas públicas (si las hay)
 // ...
@@ -64,9 +65,28 @@ Route::middleware([
         return view('padron');
     })->middleware('can:view padron')->name('padron.index');
 
+    Route::get('/empresas', function () {
+        return view('empresas');
+    })->middleware('can:view empresa')->name('empresa.index');
+
     Route::get('/comprobantes', function () {
         return view('comprobantes');
     })->name('comprobantes.index');
+
+    Route::get('storage/{filename}', function ($filename) {
+        // Verificar si el archivo existe en el disco 'private'
+        if (Storage::disk('local')->exists($filename)) {
+            // Obtener el archivo
+            $file = Storage::disk('local')->get($filename);
+            $mimeType = Storage::disk('local')->mimeType($filename);
+
+            // Devolver el archivo con el tipo MIME adecuado
+            return response($file, 200)->header('Content-Type', $mimeType);
+        }
+
+        // Si el archivo no existe, devolver un error 404
+        return abort(404, 'Archivo no encontrado');
+    })->name('storage_file.view');
 });
 
 Route::get('/', function () {

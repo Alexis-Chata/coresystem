@@ -13,10 +13,10 @@ class EmpresaSeeder extends Seeder
     public function run(): void
     {
         Empresa::create([
-            'ruc' => '20123456789',
-            'razon_social' => 'GoloMix S.A.C.',
-            'name_comercial' => 'GoloMix',
-            'direccion' => 'Av. Principal 123, Lima',
+            'ruc' => '20603752458',
+            'razon_social' => 'L & L GOLOMIX E.I.R.L.',
+            'name_comercial' => 'L & L GOLOMIX E.I.R.L.',
+            'direccion' => 'MZA. Q LOTE. 7 C.C. JICAMARCA SCT EL PEDREGAL ANEXO 22 (ESPALDA DE PISCINA EL PADRINO) LIMA - HUAROCHIRI - SAN ANTONIO',
             // Estos campos no estaban en tu seeder original, pero los incluyo por si los necesitas
             'logo_path' => null,
             'cert_path' => null,

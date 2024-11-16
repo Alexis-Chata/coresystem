@@ -8,4 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class FSede extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        "name",
+        "telefono",
+        "direccion",
+        "departamento",
+        "provincia",
+        "distrito",
+        "ubigueo",
+        "addresstypecode",
+        "empresa_id",
+    ];
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 }

@@ -23,6 +23,9 @@ final class ClienteTable extends PowerGridComponent
 {
     public string $tableName = 'cliente-table-ctgosb-table';
     public bool $showCreateForm = false;
+    public $empleado;
+    public $user;
+    public $editingField;
 
     public $newCliente = [
         'razon_social' => '',
@@ -37,6 +40,9 @@ final class ClienteTable extends PowerGridComponent
 
     public function setUp(): array
     {
+        $this->user = auth()->user();
+        $this->empleado = $this->user->empleados()->first();
+
         return [
             PowerGrid::header()
                 ->showSearchInput()
@@ -66,7 +72,7 @@ final class ClienteTable extends PowerGridComponent
             );
 
         // OJO: Filtro registros por vendedor
-        $empleado = auth()->user()->empleados()->first();
+        $empleado = $this->empleado;
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $query->where('rutas.vendedor_id', $empleado->id);
         }
@@ -275,5 +281,6 @@ final class ClienteTable extends PowerGridComponent
     public function refreshTable()
     {
         $this->dispatch('pg:eventRefresh-default');
+        $this->setUp();
     }
 }

@@ -366,6 +366,7 @@ final class PadronTable extends PowerGridComponent
     public function refreshTable(): void
     {
         $this->dispatch('pg:eventRefresh-default');
+        $this->setUp();
     }
 
     public function filters(): array

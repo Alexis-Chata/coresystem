@@ -19,6 +19,8 @@ class RoleSeeder extends Seeder
         'padron' => ['view', 'create', 'edit', 'delete'],
         'empleado' => ['view', 'create', 'edit', 'delete'],
         'usuarios' => ['view', 'create', 'edit', 'delete'],
+        'empresa' => ['view', 'create', 'edit', 'delete'],
+        'sede' => ['view', 'create', 'edit', 'delete'],
         'roles' => ['view', 'assign'],
 
     ];

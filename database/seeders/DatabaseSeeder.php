@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,
+            FSedeSeeder::class,
         ]);
 
         $empresa = Empresa::first();
