@@ -19,7 +19,7 @@ use Livewire\Attributes\On;
 
 final class ProductoListaPrecioTable extends PowerGridComponent
 {
-    public string $tableName = 'producto-lista-precio-table-0ikqpf-table';
+    public string $tableName = 'producto-lista-precio-table';
     public bool $showCreateForm = false;
     public string $sortField = 'id';
     public string $sortDirection = 'desc';
@@ -163,11 +163,5 @@ final class ProductoListaPrecioTable extends PowerGridComponent
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('producto-lista-precio-SweetAlert2', 'Precio actualizado exitosamente');
         }
-    }
-
-    #[On('refresh-producto-lista-precio-table')]
-    public function refreshTable()
-    {
-        $this->dispatch('pg:eventRefresh-default');
     }
 }

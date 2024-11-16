@@ -58,12 +58,19 @@ final class ListaPrecioTable extends PowerGridComponent
             Column::make('Id', 'id'),
             Column::make('Nombre', 'name')
                 ->sortable()
-                ->searchable(),
+                ->searchable()
+                ->editOnClick(),
             Column::make('Descripción', 'descripcion')
                 ->sortable()
-                ->searchable(),
+                ->searchable()
+                ->editOnClick(),
             Column::action('Action')
         ];
+    }
+
+    public function onUpdatedEditable(string|int $id, string $field, string $value): void
+    {
+        ListaPrecio::find($id)->update([$field => $value]);
     }
 
     #[\Livewire\Attributes\On('restoreListaPrecio')]

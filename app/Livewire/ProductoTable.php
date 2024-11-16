@@ -158,6 +158,7 @@ final class ProductoTable extends PowerGridComponent
         Producto::query()->find($id)->update([
             $field => $value,
         ]);
+        $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
     }
 
     public function actions(Producto $row): array
@@ -187,7 +188,7 @@ final class ProductoTable extends PowerGridComponent
         $producto = Producto::find($productoId);
         if ($producto) {
             $producto->delete();
-            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
             $this->dispatch('producto-deleted', 'Producto eliminado exitosamente');
         }
     }
@@ -198,7 +199,7 @@ final class ProductoTable extends PowerGridComponent
         $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
             $producto->restore();
-            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
             $this->dispatch('producto-restored', 'Producto restaurado exitosamente');
         }
     }
@@ -232,9 +233,8 @@ final class ProductoTable extends PowerGridComponent
         Producto::create($this->newProducto);
 
         $this->reset('newProducto');
-        $this->dispatch('pg:eventRefresh-default');
+        $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
         $this->dispatch('producto-created', 'Producto creado exitosamente');
-        $this->dispatch('refresh-producto-lista-precio-table');
     }
 
     public function empresaSelectOptions()
@@ -255,15 +255,5 @@ final class ProductoTable extends PowerGridComponent
     public function tipoAfectacionSelectOptions()
     {
         return FTipoAfectacion::all()->pluck('name', 'id');
-    }
-
-    #[On('updateField')]
-    public function updateField($field, $value, $productoId)
-    {
-        $producto = Producto::find($productoId);
-        if ($producto) {
-            $producto->update([$field => $value]);
-            $this->dispatch('pg:eventRefresh-default');
-        }
     }
 }
