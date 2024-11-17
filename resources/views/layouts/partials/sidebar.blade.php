@@ -4,7 +4,7 @@
             <!-- SIDEBAR HEADER -->
             <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
                 <a href="{{ route('dashboard') }}">
-                    <img src="src/images/logo/logo.svg" alt="Logo" />
+                    <img src="{{ asset('src/images/logo/logo.svg') }}" alt="Logo" />
                 </a>
 
                 <button class="block lg:hidden" @click.stop="sidebarToggle = !sidebarToggle">
@@ -93,6 +93,7 @@
                 <!-- Dropdown Menu Start -->
                 <div class="translate transform overflow-hidden" :class="(selected === 'Productos') ? 'block' : 'hidden'">
                     <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                        @can('edit producto')
                         <li>
                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white" 
                                href="{{ route('producto.index') }}"
@@ -100,7 +101,7 @@
                                 Lista de Productos
                             </a>
                         </li>
-
+                        @endcan
                         <li>
                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white" 
                                href="{{ route('producto.precios-mayorista') }}"

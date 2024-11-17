@@ -61,7 +61,8 @@ final class ProductoPreciosMayoristaTable extends PowerGridComponent
     {
         return [
             Column::make('ID', 'id')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Producto', 'name')
                 ->sortable()
                 ->searchable(),
@@ -74,5 +75,4 @@ final class ProductoPreciosMayoristaTable extends PowerGridComponent
             Column::make('Precio Unidad', 'precio_unidad'),
         ];
     }
-    
 }

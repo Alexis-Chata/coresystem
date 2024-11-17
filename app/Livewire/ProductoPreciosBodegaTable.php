@@ -58,7 +58,8 @@ final class ProductoPreciosBodegaTable extends PowerGridComponent
     {
         return [
             Column::make('ID', 'id')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Producto', 'name')
                 ->sortable()
                 ->searchable(),

@@ -41,10 +41,11 @@ Route::middleware([
         return view('cliente');
     })->middleware('can:view cliente')->name('cliente.index');
 
-    Route::prefix('producto')->middleware('can:view producto')->group(function () {
+    Route::prefix('producto')->group(function () {
         Route::get('/', function () {
             return view('producto');
-        })->name('producto.index');
+        })->middleware('can:edit producto')
+          ->name('producto.index');
 
         Route::get('/precios-mayorista', function () {
             return view('producto.precios-mayorista');

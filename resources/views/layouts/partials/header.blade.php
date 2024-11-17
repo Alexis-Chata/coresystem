@@ -30,7 +30,7 @@
                         </button>
                         <!-- Hamburger Toggle BTN -->
                         <a class="block flex-shrink-0 lg:hidden" href="/dashboard">
-                            <img src="src/images/logo/logo-icon.svg" alt="Logo" />
+                            <img src="{{ asset('src/images/logo/logo-icon.svg') }}" alt="Logo" />
                         </a>
                     </div>
                     <div class="hidden sm:block">
@@ -211,7 +211,7 @@
                                             <a class="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                                                 href="messages.html">
                                                 <div class="h-12.5 w-12.5 rounded-full">
-                                                    <img src="src/images/user/user-02.png" alt="User" />
+                                                    <img src="{{ asset('src/images/user/user-02.png') }}" alt="User" />
                                                 </div>
 
                                                 <div>
@@ -227,7 +227,7 @@
                                             <a class="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                                                 href="messages.html">
                                                 <div class="h-12.5 w-12.5 rounded-full">
-                                                    <img src="src/images/user/user-01.png" alt="User" />
+                                                    <img src="{{ asset('src/images/user/user-01.png') }}" alt="User" />
                                                 </div>
 
                                                 <div>
@@ -243,7 +243,7 @@
                                             <a class="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                                                 href="messages.html">
                                                 <div class="h-12.5 w-12.5 rounded-full">
-                                                    <img src="src/images/user/user-03.png" alt="User" />
+                                                    <img src="{{ asset('src/images/user/user-03.png') }}" alt="User" />
                                                 </div>
 
                                                 <div>
@@ -259,7 +259,7 @@
                                             <a class="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                                                 href="messages.html">
                                                 <div class="h-12.5 w-12.5 rounded-full">
-                                                    <img src="src/images/user/user-04.png" alt="User" />
+                                                    <img src="{{ asset('src/images/user/user-04.png') }}" alt="User" />
                                                 </div>
 
                                                 <div>
@@ -275,7 +275,7 @@
                                             <a class="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                                                 href="messages.html">
                                                 <div class="h-12.5 w-12.5 rounded-full">
-                                                    <img src="src/images/user/user-02.png" alt="User" />
+                                                    <img src="{{ asset('src/images/user/user-02.png') }}" alt="User" />
                                                 </div>
 
                                                 <div>
@@ -321,9 +321,9 @@
                                         $imagePath = match($rol) {
                                             'Administrador' => 'https://cdn-icons-png.flaticon.com/512/16842/16842358.png',
                                             'Vendedor' => 'https://cdn-icons-png.flaticon.com/512/16785/16785438.png',
-                                            'Conductor' => 'src/images/user/user-01.png',
-                                            'Almacenero' => 'src/images/user/user-01.png',
-                                            default => 'src/images/user/user-01.png'
+                                            'Conductor' => asset('src/images/user/user-01.png'),
+                                            'Almacenero' => asset('src/images/user/user-01.png'),
+                                            default => asset('src/images/user/user-01.png')
                                         };
                                     @endphp
                                     <img src="{{ $imagePath }}" alt="{{ $rol }}" />
