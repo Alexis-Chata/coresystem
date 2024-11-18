@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('almacen_productos', function (Blueprint $table) {
+        Schema::create('producto_components', function (Blueprint $table) {
             $table->id();
             $table->foreignId('producto_id')->constrained('productos');
-            $table->foreignId('almacen_id')->constrained('almacens');
-            $table->string('stock_fisico')->nullable();
-            $table->string('stock_disponible')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->foreignId('component_id')->constrained('productos');
+            $table->string('cantidad');
+            $table->string('subcantidad');
+            $table->timestamps();
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('almacen_productos');
+        Schema::dropIfExists('producto_components');
     }
 };
