@@ -158,8 +158,8 @@ final class FSedeTable extends PowerGridComponent
                 ->searchable()
                 ->editOnClick(),
 
-            Column::make('Empresa id', 'empresa_id'),
-            Column::make('Created at', 'created_at', 'created_at_formatted')
+            Column::make('Empresa', 'empresa_id'),
+            Column::make('Created at', 'created_at_formatted', 'created_at')
                 ->sortable(),
 
             Column::action('Action')
@@ -200,22 +200,10 @@ final class FSedeTable extends PowerGridComponent
     }
     */
 
-    public function openCreateForm()
-    {
-        $this->showCreateForm = true;
-    }
-
-    public function closeCreateForm()
-    {
-        $this->showCreateForm = false;
-        $this->reset('newFSede');
-    }
-
     public function createEmpresa()
     {
         $messages = [
             'newFSede.name.required' => '* Obligatorio',
-            'newFSede.telefono.required' => '* Obligatorio',
             'newFSede.direccion.required' => '* Obligatorio',
             'newFSede.departamento.required' => '* Obligatorio',
             'newFSede.provincia.required' => '* Obligatorio',
@@ -224,17 +212,20 @@ final class FSedeTable extends PowerGridComponent
             'newFSede.addresstypecode.required' => '* Obligatorio',
             'newFSede.empresa_id.required' => '* Obligatorio',
             'newCliente.empresa_id.exists' => 'Seleccion no es válida',
+            'newFSede.addresstypecode.unique' => 'Ya existe una sede con este código para esta empresa',
         ];
 
         $this->validate([
             'newFSede.name' => 'required',
-            'newFSede.telefono' => 'required',
             'newFSede.direccion' => 'required',
             'newFSede.departamento' => 'required',
             'newFSede.provincia' => 'required',
             'newFSede.distrito' => 'required',
             'newFSede.ubigueo' => 'required',
-            'newFSede.addresstypecode' => 'required',
+            'newFSede.addresstypecode' => [
+                'required',
+                'unique:f_sedes,addresstypecode,NULL,id,empresa_id,' . $this->newFSede['empresa_id']
+            ],
             'newFSede.empresa_id' => 'required|exists:empresas,id',
         ], $messages);
 

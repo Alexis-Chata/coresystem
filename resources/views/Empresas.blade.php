@@ -5,6 +5,9 @@
     <br />
     <br />
     <livewire:f-sede-table />
+    <br />
+    <br />
+    <livewire:f-serie-table />
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

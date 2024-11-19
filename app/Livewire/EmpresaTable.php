@@ -215,49 +215,43 @@ final class EmpresaTable extends PowerGridComponent
     }
     */
 
-    public function openCreateForm()
-    {
-        $this->showCreateForm = true;
-    }
-
-    public function closeCreateForm()
-    {
-        $this->showCreateForm = false;
-        $this->reset('newEmpresa');
-    }
-
     public function createEmpresa()
     {
         $messages = [
             'newEmpresa.ruc.required' => '* Obligatorio',
+            'newEmpresa.ruc.unique' => 'Ya existe una empresa con este RUC',
+            'newEmpresa.ruc.regex' => 'El RUC debe tener 11 dígitos',
             'newEmpresa.razon_social.required' => '* Obligatorio',
             'newEmpresa.name_comercial.required' => '* Obligatorio',
             'newEmpresa.direccion.required' => '* Obligatorio',
-            'newEmpresa.logo_path.required' => '* Obligatorio',
+            'newEmpresa.logo_path.mimes' => '* Formato no válido',
             'newEmpresa.cert_path.required' => '* Obligatorio',
+            'newEmpresa.cert_path.mimes' => '* Formato no válido',
             'newEmpresa.sol_user.required' => '* Obligatorio',
             'newEmpresa.sol_pass.required' => '* Obligatorio',
-            'newEmpresa.client_id.required' => '* Obligatorio',
-            'newEmpresa.client_secret.required' => '* Obligatorio',
+            //'newEmpresa.client_id.required' => '* Obligatorio',
+            //'newEmpresa.client_secret.required' => '* Obligatorio',
             'newEmpresa.production.required' => '* Obligatorio',
         ];
 
         $this->validate([
-            'newEmpresa.ruc' => 'required',
+            'newEmpresa.ruc' => ['required', 'unique:empresas,ruc', 'regex:/^(10|20)\d{9}$/'],
             'newEmpresa.razon_social' => 'required',
             'newEmpresa.name_comercial' => 'required',
             'newEmpresa.direccion' => 'required',
-            'newEmpresa.logo_path' => 'required|file',
-            'newEmpresa.cert_path' => 'required|file',
+            'newEmpresa.logo_path' => 'nullable|file|mimes:png,jpg,jpeg',
+            'newEmpresa.cert_path' => 'required|file|extensions:pem,txt,PEM,TXT',
             'newEmpresa.sol_user' => 'required',
             'newEmpresa.sol_pass' => 'required',
-            'newEmpresa.client_id' => 'required',
-            'newEmpresa.client_secret' => 'required',
+            //'newEmpresa.client_id' => 'required',
+            //'newEmpresa.client_secret' => 'required',
             'newEmpresa.production' => 'required',
         ], $messages);
 
-        $this->newEmpresa['logo_path'] = $this->newEmpresa['logo_path']->store();
-        $this->newEmpresa['cert_path'] = $this->newEmpresa['cert_path']->store();
+        if ($this->newEmpresa['logo_path']) {
+            $this->newEmpresa['logo_path'] = $this->newEmpresa['logo_path']->store('logos');
+        }
+        $this->newEmpresa['cert_path'] = $this->newEmpresa['cert_path']->store('certificados');
         Empresa::create($this->newEmpresa);
 
         $this->reset('newEmpresa');

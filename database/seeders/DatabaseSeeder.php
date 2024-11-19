@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             ProveedorSeeder::class,
             PadronSeeder::class,
             FSedeSeeder::class,
+            SerieSeeder::class,
         ]);
 
         $empresa = Empresa::first();
