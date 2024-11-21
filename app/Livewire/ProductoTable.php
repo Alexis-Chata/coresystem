@@ -7,6 +7,7 @@ use App\Models\Empresa;
 use App\Models\Marca;
 use App\Models\Categoria;
 use App\Models\FTipoAfectacion;
+use App\Models\ProductoComponent;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -17,6 +18,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\DB;
 
 final class ProductoTable extends PowerGridComponent
 {
@@ -36,7 +38,11 @@ final class ProductoTable extends PowerGridComponent
         'sub_cantidad' => '',
         'tipo' => 'estandar',
         'tipo_unidad' => 'NIU',
+        'cantidad_total' => '',
+        'components' => []
     ];
+
+    public $editingProductoId = null;
 
     public function setUp(): array
     {
@@ -165,6 +171,14 @@ final class ProductoTable extends PowerGridComponent
     {
         $actions = [];
 
+        if ($row->tipo === 'compuesto') {
+            $actions[] = Button::add('edit-components')
+                ->slot('Editar Componentes')
+                ->id()
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('editProductoComponents', ['productoId' => $row->id]);
+        }
+
         if ($row->deleted_at) {
             $actions[] = Button::add('restore')
                 ->slot('Restaurar')
@@ -215,26 +229,121 @@ final class ProductoTable extends PowerGridComponent
         $this->reset('newProducto');
     }
 
+    public function updateComponents($components)
+    {
+        $this->newProducto['components'] = collect($components)
+            ->filter(function ($component) {
+                return !empty($component['producto_id']);
+            })
+            ->map(function ($component) {
+                return [
+                    'producto_id' => $component['producto_id'],
+                    'cantidad' => $component['cantidad'] ?? 0,
+                    'subcantidad' => $component['subcantidad'] ?? 0,
+                    'stock' => $component['stock'] ?? 0,
+                ];
+            })->values()->toArray();
+    }
+
+    public function getProductoStock($productoId, $componentId)
+    {
+        try {
+            $producto = Producto::findOrFail($productoId);
+            $stock = $producto->cantidad ?? 0;
+            
+            // Agregar un log para depuración
+            \Log::info('Stock obtenido:', [
+                'productoId' => $productoId,
+                'componentId' => $componentId,
+                'stock' => $stock
+            ]);
+            
+            $this->dispatch('update-component-stock', [
+                'componentId' => $componentId,
+                'stock' => $stock
+            ]);
+            
+            return $stock; // Retornamos el stock para confirmación
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener stock:', [
+                'error' => $e->getMessage(),
+                'productoId' => $productoId,
+                'componentId' => $componentId
+            ]);
+            session()->flash('error', 'Error al obtener el stock: ' . $e->getMessage());
+        }
+    }
+
     public function createProducto()
     {
-        $this->validate([
-            'newProducto.name' => 'required|string|max:255',
-            'newProducto.empresa_id' => 'required|exists:empresas,id',
-            'newProducto.marca_id' => 'required|exists:marcas,id',
-            'newProducto.categoria_id' => 'required|exists:categorias,id',
-            'newProducto.f_tipo_afectacion_id' => 'required|exists:f_tipo_afectacions,id',
-            'newProducto.porcentaje_igv' => 'required|numeric',
-            'newProducto.cantidad' => 'required|string',
-            'newProducto.sub_cantidad' => 'nullable|string',
-            'newProducto.tipo' => 'required|string',
-            'newProducto.tipo_unidad' => 'required|string',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        Producto::create($this->newProducto);
+            // Validación básica para todos los productos
+            $baseValidation = [
+                'newProducto.name' => 'required|string|max:255',
+                'newProducto.empresa_id' => 'required|exists:empresas,id',
+                'newProducto.marca_id' => 'required|exists:marcas,id',
+                'newProducto.categoria_id' => 'required|exists:categorias,id',
+                'newProducto.f_tipo_afectacion_id' => 'required|exists:f_tipo_afectacions,id',
+                'newProducto.porcentaje_igv' => 'required|numeric',
+                'newProducto.tipo' => 'required|in:estandar,compuesto',
+                'newProducto.tipo_unidad' => 'required|string',
+                'newProducto.cantidad_total' => 'required|numeric|min:1',
+            ];
 
-        $this->reset('newProducto');
-        $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
-        $this->dispatch('producto-created', 'Producto creado exitosamente');
+            // Validación específica según el tipo de producto
+            if ($this->newProducto['tipo'] === 'estandar') {
+                $baseValidation['newProducto.cantidad'] = 'required|numeric|min:0';
+                $baseValidation['newProducto.sub_cantidad'] = 'nullable|numeric|min:0';
+            } else {
+                $baseValidation['newProducto.components'] = 'required|array|min:2';
+                $baseValidation['newProducto.components.*.producto_id'] = 'required|exists:productos,id';
+                $baseValidation['newProducto.components.*.cantidad'] = 'required|numeric|min:1';
+                $baseValidation['newProducto.components.*.subcantidad'] = 'nullable|numeric|min:0';
+            }
+
+            $this->validate($baseValidation);
+
+            $productoData = [
+                'name' => $this->newProducto['name'],
+                'empresa_id' => $this->newProducto['empresa_id'],
+                'marca_id' => $this->newProducto['marca_id'],
+                'categoria_id' => $this->newProducto['categoria_id'],
+                'f_tipo_afectacion_id' => $this->newProducto['f_tipo_afectacion_id'],
+                'porcentaje_igv' => $this->newProducto['porcentaje_igv'],
+                'tipo' => $this->newProducto['tipo'],
+                'tipo_unidad' => $this->newProducto['tipo_unidad'],
+                'cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['cantidad'] : 0,
+                'sub_cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['sub_cantidad'] : 0,
+                'cantidad_total' => $this->newProducto['cantidad_total'],
+            ];
+
+            $producto = Producto::create($productoData);
+
+            if ($this->newProducto['tipo'] === 'compuesto' && !empty($this->newProducto['components'])) {
+                foreach ($this->newProducto['components'] as $component) {
+                    ProductoComponent::create([
+                        'producto_id' => $producto->id,
+                        'component_id' => $component['producto_id'],
+                        'cantidad' => $component['cantidad'],
+                        'subcantidad' => $component['subcantidad'] ?? 0,
+                        'cantidad_total' => $this->newProducto['cantidad_total']
+                    ]);
+                }
+            }
+
+            DB::commit();
+            
+            $this->dispatch('producto-created', 'Producto creado exitosamente');
+            $this->reset('newProducto');
+            $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Error al crear el producto: ' . $e->getMessage());
+        }
     }
 
     public function empresaSelectOptions()
@@ -255,5 +364,94 @@ final class ProductoTable extends PowerGridComponent
     public function tipoAfectacionSelectOptions()
     {
         return FTipoAfectacion::all()->pluck('name', 'id');
+    }
+
+    #[On('editProductoComponents')]
+    public function editProductoComponents($productoId): void
+    {
+        $this->editingProductoId = $productoId;
+        $producto = Producto::with(['componentProducts'])->find($productoId);
+        if ($producto) {
+            $cantidadTotal = ProductoComponent::where('producto_id', $productoId)
+                ->first()
+                ->cantidad_total ?? '';
+            
+            $components = $producto->componentProducts->map(function($component) use ($cantidadTotal) {
+                $componentProduct = Producto::find($component->id);
+                
+                return [
+                    'id' => $component->pivot->id ?? uniqid(),
+                    'producto_id' => $component->id,
+                    'cantidad' => $component->pivot->cantidad,
+                    'subcantidad' => $component->pivot->subcantidad,
+                    'stock' => $componentProduct->cantidad ?? 0,
+                    'cantidad_total' => $cantidadTotal,
+                    'name' => $componentProduct->name
+                ];
+            })->toArray();
+            
+            $this->dispatch('show-edit-components', [
+                'components' => $components,
+                'cantidadTotal' => $cantidadTotal
+            ]);
+        }
+    }
+
+    public function updateEditingComponents($data)
+    {
+        try {
+            DB::beginTransaction();
+            
+            if (!$this->editingProductoId) {
+                throw new \Exception('No se ha seleccionado ningún producto para editar');
+            }
+            
+            $components = $data['components'];
+            $cantidadTotal = $data['cantidadTotal'];
+            
+            // Validar que haya al menos 2 componentes
+            if (count($components) < 2) {
+                throw new \Exception('Debe haber al menos 2 componentes');
+            }
+            
+            // Validar cantidad total
+            if (empty($cantidadTotal) || $cantidadTotal < 1) {
+                throw new \Exception('La cantidad total debe ser mayor a 0');
+            }
+            
+            // Validar componentes
+            foreach ($components as $component) {
+                if (empty($component['producto_id']) || 
+                    empty($component['cantidad']) || 
+                    $component['cantidad'] > $component['stock']) {
+                    throw new \Exception('Datos de componentes inválidos');
+                }
+            }
+            
+            // Eliminar componentes existentes
+            ProductoComponent::where('producto_id', $this->editingProductoId)->delete();
+            
+            // Crear nuevos componentes
+            foreach ($components as $component) {
+                ProductoComponent::create([
+                    'producto_id' => $this->editingProductoId,
+                    'component_id' => $component['producto_id'],
+                    'cantidad' => $component['cantidad'],
+                    'subcantidad' => $component['subcantidad'] ?? 0,
+                    'cantidad_total' => $cantidadTotal
+                ]);
+            }
+            
+            DB::commit();
+            
+            // Actualizar la interfaz
+            $this->dispatch('components-updated');
+            $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Error al actualizar los componentes: ' . $e->getMessage());
+            $this->dispatch('error', ['message' => $e->getMessage()]);
+        }
     }
 }

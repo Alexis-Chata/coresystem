@@ -12,15 +12,15 @@ class Producto extends Model
 
     protected $fillable = [
         'name',
+        'cantidad',
+        'sub_cantidad',
+        'tipo',
         'empresa_id',
         'marca_id',
         'categoria_id',
         'f_tipo_afectacion_id',
         'porcentaje_igv',
         'tipo_unidad',
-        'cantidad',
-        'sub_cantidad',
-        'tipo',
     ];
 
     public function empresa()
@@ -48,5 +48,16 @@ class Producto extends Model
         return $this->belongsToMany(ListaPrecio::class, 'producto_lista_precios')
             ->withPivot('precio')
             ->withTimestamps();
+    }
+
+    public function componentes()
+    {
+        return $this->hasMany(ProductoComponent::class);
+    }
+
+    public function componentProducts()
+    {
+        return $this->belongsToMany(Producto::class, 'producto_components', 'producto_id', 'component_id')
+                    ->withPivot('cantidad', 'subcantidad', 'cantidad_total');
     }
 }

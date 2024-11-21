@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('component_id')->constrained('productos');
             $table->string('cantidad');
             $table->string('subcantidad');
+            $table->string('cantidad_total');
             $table->timestamps();
         });
     }
