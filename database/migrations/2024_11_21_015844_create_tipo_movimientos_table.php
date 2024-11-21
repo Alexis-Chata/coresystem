@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('almacens', function (Blueprint $table) {
+        Schema::create('tipo_movimientos', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo');
             $table->string('name');
-            $table->string('direccion')->nullable();
-            $table->string('telefono')->nullable();
-            $table->string('email')->nullable();
-            $table->foreignId('encargado_id')->nullable()->constrained('empleados');
-            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->string('descripcion')->nullable();
+            $table->foreignId('empleado_id')->constrained('empleados');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('almacens');
+        Schema::dropIfExists('tipo_movimientos');
     }
 };

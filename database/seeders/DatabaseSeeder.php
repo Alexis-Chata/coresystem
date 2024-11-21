@@ -34,6 +34,8 @@ class DatabaseSeeder extends Seeder
             PadronSeeder::class,
             FSedeSeeder::class,
             SerieSeeder::class,
+            AlmacenSeeder::class,
+            TipoMovimientoSeeder::class,
         ]);
 
         $empresa = Empresa::first();

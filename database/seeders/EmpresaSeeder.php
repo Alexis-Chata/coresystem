@@ -17,7 +17,6 @@ class EmpresaSeeder extends Seeder
             'razon_social' => 'L & L GOLOMIX E.I.R.L.',
             'name_comercial' => 'L & L GOLOMIX E.I.R.L.',
             'direccion' => 'MZA. Q LOTE. 7 C.C. JICAMARCA SCT EL PEDREGAL ANEXO 22 (ESPALDA DE PISCINA EL PADRINO) LIMA - HUAROCHIRI - SAN ANTONIO',
-            // Estos campos no estaban en tu seeder original, pero los incluyo por si los necesitas
             'logo_path' => null,
             'cert_path' => null,
             'sol_user' => null,
