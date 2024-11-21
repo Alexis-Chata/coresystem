@@ -12,7 +12,6 @@
             
             if (value === 'compuesto' && this.components.length === 0) {
                 this.addComponent();
-                this.addComponent();
             }
         });
 
@@ -83,7 +82,7 @@
         }
     },
     removeComponent(componentId) {
-        if (this.components.length > 2) {
+        if (this.components.length > 1) {
             this.components = this.components.filter(c => c.id !== componentId);
             this.$wire.updateComponents(this.components);
         }
@@ -274,7 +273,7 @@
                             <button type="button" 
                                 @click="removeComponent(component.id)"
                                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
-                                x-show="components.length > 2">
+                                x-show="components.length > 1">
                                 X
                             </button>
                         </div>
@@ -394,7 +393,7 @@
                     <button type="button" 
                         @click="removeEditingComponent(component.id)"
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
-                        x-show="editingComponents.length > 2">
+                        x-show="editingComponents.length > 1">
                         X
                     </button>
                 </div>

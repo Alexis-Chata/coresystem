@@ -298,7 +298,7 @@ final class ProductoTable extends PowerGridComponent
                 $baseValidation['newProducto.cantidad'] = 'required|numeric|min:0';
                 $baseValidation['newProducto.sub_cantidad'] = 'nullable|numeric|min:0';
             } else {
-                $baseValidation['newProducto.components'] = 'required|array|min:2';
+                $baseValidation['newProducto.components'] = 'required|array|min:1';
                 $baseValidation['newProducto.components.*.producto_id'] = 'required|exists:productos,id';
                 $baseValidation['newProducto.components.*.cantidad'] = 'required|numeric|min:1';
                 $baseValidation['newProducto.components.*.subcantidad'] = 'nullable|numeric|min:0';
@@ -410,7 +410,7 @@ final class ProductoTable extends PowerGridComponent
             $cantidadTotal = $data['cantidadTotal'];
             
             // Validar que haya al menos 2 componentes
-            if (count($components) < 2) {
+            if (count($components) < 1) {
                 throw new \Exception('Debe haber al menos 2 componentes');
             }
             
