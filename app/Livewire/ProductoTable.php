@@ -112,7 +112,7 @@ final class ProductoTable extends PowerGridComponent
     private function selectComponent($field, $productoId, $selected, $options)
     {
         return Blade::render(
-            '<select wire:change="updateField(\''. $field .'\', $event.target.value, '. $productoId .')">'
+            '<select wire:change="onUpdatedEditable('. $productoId .', \''. $field .'\', $event.target.value)">'
             . '@foreach($options as $value => $label)'
             . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
             . '{{ $label }}'
@@ -126,12 +126,14 @@ final class ProductoTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
+            Column::make('Id', 'id')
+                ->sortable()
+                ->searchable(),
             Column::make('Nombre', 'name')
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Empresa', 'empresa_id'),
+            //Column::make('Empresa', 'empresa_id'),
             Column::make('Marca', 'marca_id'),
             Column::make('Categoría', 'categoria_id'),
             Column::make('Tipo de afectación', 'f_tipo_afectacion_id'),

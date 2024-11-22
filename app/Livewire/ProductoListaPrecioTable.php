@@ -47,8 +47,11 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     public function datasource(): Builder
     {
         return Producto::query()
-            ->select('productos.*')
-            ->distinct()
+            ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->select([
+                'productos.*',
+                'marcas.name as marca_nombre'
+            ])
             ->when(true, function ($query) {
                 $listaPrecios = ListaPrecio::all();
                 foreach ($listaPrecios as $listaPrecio) {
@@ -66,7 +69,9 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     {
         $fields = PowerGrid::fields()
             ->add('id')
-            ->add('name', fn($model) => $model->name);
+            ->add('name')
+            ->add('marca_nombre')
+            ->add('cantidad');
 
         $listaPrecios = ListaPrecio::all();
         foreach ($listaPrecios as $listaPrecio) {
@@ -83,11 +88,17 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     public function columns(): array
     {
         $columns = [
-            Column::make('Id', 'id')
-                ->sortable(),
+            Column::make('ID', 'id')
+                ->sortable()
+                ->searchable(),
             Column::make('Producto', 'name')
                 ->sortable()
                 ->searchable(),
+            Column::make('Marca', 'marca_nombre', 'marcas.name')
+                ->sortable()
+                ->searchable(),
+            Column::make('Cantidad', 'cantidad')
+                ->sortable(),
         ];
 
         $listaPrecios = ListaPrecio::all();
@@ -123,17 +134,6 @@ final class ProductoListaPrecioTable extends PowerGridComponent
         $this->dispatch('pg:eventRefresh-default');
         $this->dispatch('producto-lista-precio-created');
         $this->dispatch('producto-lista-precio-SweetAlert2', 'Precios actualizados exitosamente');
-    }
-
-    // Métodos auxiliares para los selects
-    private function productosSelectOptions()
-    {
-        return Producto::all()->pluck('name', 'id');
-    }
-
-    private function listaPreciosSelectOptions()
-    {
-        return ListaPrecio::all()->pluck('name', 'id');
     }
 
     #[On('updateField')]
