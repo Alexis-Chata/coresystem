@@ -299,6 +299,19 @@
                            id="cantidad_total" 
                            type="number" 
                            min="1"
+                           :max="Math.min(...components.map(comp => comp.cantidad && comp.stock ? Math.floor(comp.stock / comp.cantidad) : Infinity))"
+                           @input="
+                               const maxPosible = Math.min(...components.map(comp => {
+                                   if (!comp.cantidad || !comp.stock) return Infinity;
+                                   return Math.floor(parseFloat(comp.stock) / parseFloat(comp.cantidad));
+                               }));
+                               
+                               if (parseFloat($event.target.value) > maxPosible) {
+                                   alert('La cantidad total excede el stock disponible de uno o más componentes');
+                                   $event.target.value = maxPosible;
+                                   $wire.set('newProducto.cantidad_total', maxPosible);
+                               }
+                           "
                            placeholder="Cantidad total">
                     @error('newProducto.cantidad_total') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
                 </div>
@@ -415,7 +428,20 @@
             </label>
             <input type="number" 
                    x-model="cantidadTotal"
-                   @input="editingComponents.forEach(comp => comp.cantidad_total = cantidadTotal)"
+                   @input="
+                       const maxPosible = Math.min(...editingComponents.map(comp => {
+                           if (!comp.cantidad || !comp.stock) return Infinity;
+                           return Math.floor(parseFloat(comp.stock) / parseFloat(comp.cantidad));
+                       }));
+                       
+                       if (parseFloat($event.target.value) > maxPosible) {
+                           alert('La cantidad total excede el stock disponible de uno o más componentes');
+                           cantidadTotal = maxPosible;
+                       } else {
+                           editingComponents.forEach(comp => comp.cantidad_total = cantidadTotal);
+                       }
+                   "
+                   :max="Math.min(...editingComponents.map(comp => comp.cantidad && comp.stock ? Math.floor(comp.stock / comp.cantidad) : Infinity))"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                    id="edit_cantidad_total"
                    min="1"
