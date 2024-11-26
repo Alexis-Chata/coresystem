@@ -4,213 +4,208 @@ namespace App\Livewire;
 
 use App\Models\Pedido;
 use App\Models\Ruta;
-use App\Models\FTipoComprobante;
 use App\Models\Empleado;
 use App\Models\Cliente;
 use App\Models\Empresa;
 use App\Models\ListaPrecio;
+use App\Models\Producto;
 use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use PowerComponents\LivewirePowerGrid\Button;
-use PowerComponents\LivewirePowerGrid\Column;
-use PowerComponents\LivewirePowerGrid\Facades\Filter;
-use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
-use PowerComponents\LivewirePowerGrid\PowerGridFields;
-use PowerComponents\LivewirePowerGrid\PowerGridComponent;
-use PowerComponents\LivewirePowerGrid\Rules\Rule;
 use Livewire\Component;
 
-final class PedidoTable extends PowerGridComponent
+class PedidoTable extends Component
 {
-    public string $tableName = 'pedidos';
-
-    public bool $showModalForm = false;
-
-    // Propiedades para el formulario
-    public $ruta_id;
-    public $f_tipo_comprobante_id;
-    public $vendedor_id;
-    public $conductor_id;
-    public $cliente_id;
+    // Propiedades del formulario
+    public $empresa;
     public $fecha_emision;
-    public $importe_total;
-    public $nro_doc_liquidacion;
-    public $lista_precio;  // Asegúrate de que esta propiedad esté definida
-    public $empresa_id;
+    public $vendedor_id;
+    public $cliente_id = '';
+    public $ruta_id = '';
+    public $lista_precio = '';
+    public $direccion = '';
+    public $documento = '';
+    public $search = '';
+    public $productos = [];
+    public $pedido_detalles = [];
+    public $cantidad = 1;
 
-    // Propiedades para los selectores
-    public $rutas = [];
-    public $tiposComprobante = [];
-    public $vendedores = [];
-    public $conductores = [];
+    // Propiedades para listas y usuario
     public $clientes = [];
-    public $empresas = [];
-    public $listaPrecios = [];
+    public $vendedores = [];
+    public $empleado;
+    public $user;
 
-    public function mount(): void
+    public function mount()
     {
-        $this->rutas = Ruta::all();
-        $this->tiposComprobante = FTipoComprobante::all();
-        $this->vendedores = Empleado::where('tipo_empleado', 'vendedor')->get();
-        $this->conductores = Empleado::where('tipo_empleado', 'conductor')->get();
-        $this->clientes = Cliente::all();
-        $this->empresas = Empresa::all();
-        $this->listaPrecios = ListaPrecio::all();
-
-        parent::mount();
+        $this->user = auth()->user();
+        $this->empleado = $this->user->empleados()->first();
+        $this->pedido_detalles = [];
+        
+        // Inicializar datos por defecto
+        $this->initializeDefaultData();
+        
+        // Cargar datos según el rol
+        $this->loadDataByRole();
     }
 
-    public function setUp(): array
+    private function initializeDefaultData()
     {
-        $this->showCheckBox();
-
-        return [
-            PowerGrid::header()
-                ->showSearchInput()
-                ->includeViewOnTop('components.create-button'),
-            PowerGrid::footer()
-                ->showPerPage()
-                ->showRecordCount(),
-        ];
-    }
-
-    public function datasource(): Builder
-    {
-        return Pedido::query();
-    }
-
-    public function relationSearch(): array
-    {
-        return [];
-    }
-
-    public function fields(): PowerGridFields
-    {
-        return PowerGrid::fields()
-            ->add('id')
-            ->add('ruta_id')
-            ->add('f_tipo_comprobante_id')
-            ->add('vendedor_id')
-            ->add('conductor_id')
-            ->add('cliente_id')
-            ->add('fecha_emision')
-            ->add('importe_total')
-            ->add('nro_doc_liquidacion')
-            ->add('lista_precio')
-            ->add('empresa_id')
-            ->add('created_at');
-    }
-
-    public function columns(): array
-    {
-        return [
-            Column::make('Id', 'id'),
-            Column::make('Ruta id', 'ruta_id')
-                ->editOnClick(),
-            Column::make('F tipo comprobante id', 'f_tipo_comprobante_id')
-                ->editOnClick(),
-            Column::make('Vendedor id', 'vendedor_id')
-                ->editOnClick(),
-            Column::make('Conductor id', 'conductor_id')
-                ->editOnClick(),
-            Column::make('Cliente id', 'cliente_id')
-                ->editOnClick(),
-            Column::make('Fecha emision', 'fecha_emision')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Importe total', 'importe_total')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Nro doc liquidacion', 'nro_doc_liquidacion')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Lista precio id', 'lista_precio')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Empresa id', 'empresa_id')
-                ->editOnClick(),
-            Column::action('Action')
-        ];
-    }
-
-    public function filters(): array
-    {
-        return [
-        ];
-    }
-
-    public function onUpdatedEditable($id, $field, $value): void
-    {
-        Pedido::query()->find($id)->update([
-            $field => $value,
-        ]);
-    }
-
-    public function openModal(): void
-    {
-        $this->showModalForm = true;
-    }
-
-    public function closeModal(): void
-    {
-        $this->showModalForm = false;
-        $this->reset(['ruta_id', 'f_tipo_comprobante_id', 'vendedor_id', 'conductor_id', 'cliente_id', 'fecha_emision', 'importe_total', 'nro_doc_liquidacion', 'lista_precio', 'empresa_id']);
-    }
-
-    public function addPedido(): void
-    {
-        $this->validate([
-            'ruta_id' => 'required|exists:rutas,id',
-            'f_tipo_comprobante_id' => 'required|exists:f_tipo_comprobantes,id',
-            'vendedor_id' => 'required|exists:empleados,id',
-            'conductor_id' => 'required|exists:empleados,id',
-            'cliente_id' => 'required|exists:clientes,id',
-            'fecha_emision' => 'required|date',
-            'importe_total' => 'required|numeric',
-            'nro_doc_liquidacion' => 'required',
-            'lista_precio' => 'required|exists:lista_precios,id',
-            'empresa_id' => 'required|exists:empresas,id',
-        ]);
-
-        try {
-            Pedido::create([
-                'ruta_id' => $this->ruta_id,
-                'f_tipo_comprobante_id' => $this->f_tipo_comprobante_id,
-                'vendedor_id' => $this->vendedor_id,
-                'conductor_id' => $this->conductor_id,
-                'cliente_id' => $this->cliente_id,
-                'fecha_emision' => $this->fecha_emision,
-                'importe_total' => $this->importe_total,
-                'nro_doc_liquidacion' => $this->nro_doc_liquidacion,
-                'lista_precio' => $this->lista_precio,
-                'empresa_id' => $this->empresa_id,
-            ]);
-
-            $this->closeModal();
-            $this->emit('refreshDatatable');
-            $this->dispatch('showAlert', ['message' => 'Pedido creado con éxito', 'type' => 'success']);
-        } catch (\Exception $e) {
-            $this->dispatch('showAlert', ['message' => 'Error al crear el pedido: ' . $e->getMessage(), 'type' => 'error']);
+        $this->empresa = Empresa::first();
+        $this->fecha_emision = Carbon::now()->format('d-m-Y');
+        
+        if (!$this->user->hasRole('admin')) {
+            $this->vendedor_id = $this->empleado->id;
         }
     }
 
-    public function actions(Pedido $row): array
+    private function loadDataByRole()
     {
-        return [
-            Button::add('delete')
-                ->slot('Eliminar')
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('delete', ['rowId' => $row->id])
-        ];
+        if ($this->user->hasRole('admin')) {
+            $this->vendedores = Empleado::where('tipo_empleado', 'vendedor')->get();
+            $this->clientes = Cliente::all();
+        } else {
+            $rutasDelVendedor = Ruta::where('vendedor_id', $this->empleado->id)->pluck('id');
+            $this->clientes = Cliente::whereIn('ruta_id', $rutasDelVendedor)->get();
+        }
     }
 
-    #[\Livewire\Attributes\On('delete')]
-    public function delete($rowId): void
+    public function updatedClienteId($value)
     {
-        Pedido::destroy($rowId);
+        if (!$value) {
+            $this->resetClienteData();
+            return;
+        }
+
+        $cliente = Cliente::with(['ruta', 'listaPrecio', 'tipoDocumento'])->find($value);
+        
+        if ($cliente) {
+            $this->updateClienteData($cliente);
+        }
     }
+
+    private function resetClienteData()
+    {
+        $this->direccion = '';
+        $this->ruta_id = '';
+        $this->lista_precio = '';
+        $this->documento = '';
+    }
+
+    private function updateClienteData($cliente)
+    {
+        $this->direccion = $cliente->direccion;
+        $this->ruta_id = $cliente->ruta_id;
+        $this->lista_precio = $cliente->lista_precio_id;
+        $this->documento = $cliente->tipoDocumento->tipo_documento . ' - ' . $cliente->numero_documento;
+    }
+
+    public function getRutaNameProperty()
+    {
+        return $this->ruta_id ? optional(Ruta::find($this->ruta_id))->name : '';
+    }
+
+    public function getListaPrecioNameProperty()
+    {
+        return $this->lista_precio ? optional(ListaPrecio::find($this->lista_precio))->name : '';
+    }
+
+    public function updatedSearch()
+    {
+        if (!$this->lista_precio) {
+            return;
+        }
+
+        if (strlen($this->search) > 0) {
+            $this->productos = Producto::where(function($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('id', 'like', '%' . $this->search . '%');
+                })
+                ->with([
+                    'marca',
+                    'listaPrecios' => function($query) {
+                        $query->where('lista_precio_id', $this->lista_precio);
+                    }
+                ])
+                ->take(5)
+                ->get();
+
+            // Debug para verificar los precios
+            logger('Productos encontrados:', [
+                'lista_precio' => $this->lista_precio,
+                'productos' => $this->productos->map(function($producto) {
+                    return [
+                        'id' => $producto->id,
+                        'name' => $producto->name,
+                        'precio' => $producto->listaPrecios->first()?->pivot?->precio
+                    ];
+                })
+            ]);
+        } else {
+            $this->productos = [];
+        }
+    }
+
+    public function agregarProducto($producto_id)
+    {
+        if (!$this->lista_precio) {
+            // Mostrar mensaje de error o alerta
+            return;
+        }
+
+        $producto = Producto::with([
+            'listaPrecios' => function($query) {
+                $query->where('lista_precio_id', $this->lista_precio);
+            }
+        ])->find($producto_id);
+        
+        if (!$producto) return;
+
+        // Verificar si el producto ya existe en el detalle
+        $existe = collect($this->pedido_detalles)->first(function ($detalle) use ($producto_id) {
+            return $detalle['producto_id'] === $producto_id;
+        });
+
+        if (!$existe) {
+            $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
+
+            if ($precio > 0) {
+                $this->pedido_detalles[] = [
+                    'producto_id' => $producto->id,
+                    'codigo' => $producto->id,
+                    'nombre' => $producto->name,
+                    'cantidad' => $this->cantidad,
+                    'importe' => $precio * $this->cantidad
+                ];
+            }
+        }
+
+        // Limpiar búsqueda
+        $this->search = '';
+        $this->productos = [];
+    }
+
+    public function eliminarDetalle($index)
+    {
+        unset($this->pedido_detalles[$index]);
+        $this->pedido_detalles = array_values($this->pedido_detalles);
+    }
+
+    public function actualizarCantidad($index)
+    {
+        $detalle = $this->pedido_detalles[$index];
+        $producto = Producto::find($detalle['producto_id']);
+        
+        $precio = $producto->listaPrecios()
+            ->where('lista_precio_id', $this->lista_precio)
+            ->first()
+            ->pivot
+            ->precio ?? 0;
+
+        $this->pedido_detalles[$index]['importe'] = $precio * $this->pedido_detalles[$index]['cantidad'];
+    }
+
+    public function render()
+    {
+        return view('livewire.pedido-table');
+    }
+    
 }

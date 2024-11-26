@@ -123,6 +123,18 @@
             </li>
             @endcan
 
+            <!-- Pedido -->
+            @can('view pedido')
+            <li>
+                <a href="{{ route('pedido.index') }}" class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4">
+                    <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.25 2.25H3.75C3.35218 2.25 3 2.50218 3 2.90001V15.1C3 15.4978 3.35218 15.75 3.75 15.75H14.25C14.6478 15.75 15 15.4978 15 15.1V2.90001C15 2.50218 14.6478 2.25 14.25 2.25ZM12.75 14.25H5.25V5.25H12.75V14.25Z" fill=""/>
+                    </svg>
+                    Pedido
+                </a>
+            </li>
+            @endcan
+
             <!-- Categoría -->
             @can('view categoria')
             <li>

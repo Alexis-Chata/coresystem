@@ -76,6 +76,10 @@ Route::middleware([
         return view('padron');
     })->middleware('can:view padron')->name('padron.index');
 
+    Route::get('/pedido', function () {
+        return view('pedido');
+    })->middleware('can:view pedido')->name('pedido.index');
+
     Route::get('/empresas', function () {
         return view('empresas');
     })->middleware('can:view empresa')->name('empresa.index');

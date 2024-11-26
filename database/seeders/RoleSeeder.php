@@ -17,6 +17,7 @@ class RoleSeeder extends Seeder
         'proveedor' => ['view', 'create', 'edit', 'delete'],
         'ruta' => ['view', 'create', 'edit', 'delete'],
         'padron' => ['view', 'create', 'edit', 'delete'],
+        'pedido' => ['view', 'create', 'edit', 'delete'],
         'empleado' => ['view', 'create', 'edit', 'delete'],
         'usuarios' => ['view', 'create', 'edit', 'delete'],
         'empresa' => ['view', 'create', 'edit', 'delete'],
@@ -33,6 +34,7 @@ class RoleSeeder extends Seeder
             'ruta' => ['view'],
             'padron' => ['view'],
             'producto' => ['view'],
+            'pedido' => ['view'],
         ],
         'conductor' => [
             'ruta' => ['view'],
