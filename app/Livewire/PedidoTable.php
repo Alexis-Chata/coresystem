@@ -11,12 +11,14 @@ use App\Models\Empresa;
 use App\Models\ListaPrecio;
 use App\Models\Producto;
 use App\Models\FTipoComprobante;
+use App\Traits\CalculosTrait;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
 class PedidoTable extends Component
 {
+    use CalculosTrait;
     // Propiedades del formulario
     public $empresa;
     public $fecha_emision;
@@ -298,6 +300,8 @@ class PedidoTable extends Component
                     "importe" => $detalle["importe"],
                 ]);
             }
+
+            $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
 
             // Actualizar el pedido con el total final (por si acaso)
             $pedido->update([

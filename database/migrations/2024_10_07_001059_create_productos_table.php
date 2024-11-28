@@ -23,6 +23,10 @@ return new class extends Migration
             $table->foreignId('f_tipo_afectacion_id')->constrained('f_tipo_afectacions');
             $table->string('porcentaje_igv')->nullable();
             $table->string('tipo_unidad')->default("NIU");
+            $table->boolean('afecto_icbper')->default(false);
+            $table->double('factor_icbper')->default(0);
+            $table->boolean('afecto_isc')->default(false);
+            $table->double('porcentaje_isc')->default(0);
             $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

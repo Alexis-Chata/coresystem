@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('codigo');
             $table->string('name');
             $table->string('descripcion')->nullable();
+            $table->enum('tipo', ['ingreso', 'salida']);
             $table->foreignId('empleado_id')->constrained('empleados');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

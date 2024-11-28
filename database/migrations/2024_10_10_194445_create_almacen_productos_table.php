@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('stock_disponible')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+
+            $table->unique(['producto_id', 'almacen_id']);
         });
     }
 
