@@ -25,15 +25,11 @@
             <!-- Vendedor -->
             <div class="relative">
                 @if($user->hasRole('admin'))
-                    <select
-                        wire:model.live="vendedor_id"
-                        class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    >
-                        <option value="">Selecciona un Vendedor</option>
-                        @foreach($vendedores as $vendedor)
-                            <option value="{{ $vendedor->id }}">{{ $vendedor->name }}</option>
-                        @endforeach
-                    </select>
+                    <x-floating-searchable-select
+                        :options="$vendedores"
+                        :wire-model="'vendedor_id'"
+                        :placeholder="'Vendedor'"
+                    />
                 @else
                     <input
                         type="text"
@@ -41,34 +37,17 @@
                         value="{{ $empleado->name }}"
                         disabled
                     />
-                @endif
-                <label
+                    <label
                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                >
-                    Vendedor
-                </label>
-                <svg class="-translate-y-1/2 absolute dark:text-gray-500 h-5 pointer-events-none right-3 text-gray-400 top-1/2 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06-.02L10 10.585l3.71-3.395a.75.75 0 011.04 1.08l-4 3.75a.75.75 0 01-1.04 0l-4-3.75a.75.75 0 01-.02-1.06z" fill-rule="evenodd" /></svg>
+                    >
+                        Vendedor
+                    </label>
+                @endif
             </div>
 
             <!-- Cliente -->
             <div class="relative">
-                <select
-                    wire:model.live="cliente_id"
-                    id="cliente"
-                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                >
-                    <option value="">Selecciona un Cliente</option>
-                    @foreach($clientes as $cliente)
-                        <option value="{{ $cliente->id }}">{{ $cliente->razon_social }}</option>
-                    @endforeach
-                </select>
-                <label
-                    for="cliente"
-                    class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-0 scale-8 top-4 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-valid:top-2 peer-valid:scale-8 peer-valid:-translate-y-4 start-1"
-                >
-                    Selecciona un Cliente
-                </label>
-                <svg class="-translate-y-1/2 absolute dark:text-gray-500 h-5 pointer-events-none right-3 text-gray-400 top-1/2 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06-.02L10 10.585l3.71-3.395a.75.75 0 011.04 1.08l-4 3.75a.75.75 0 01-1.04 0l-4-3.75a.75.75 0 01-.02-1.06z" fill-rule="evenodd" /></svg>
+                <livewire:cliente-select :vendedor_id="$vendedor_id" :key="'cliente-select-'.$vendedor_id" wire:model="cliente_id" />
             </div>
 
             <!-- Tipo de Comprobante -->
@@ -91,6 +70,9 @@
                     <path clip-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06-.02L10 10.585l3.71-3.395a.75.75 0 011.04 1.08l-4 3.75a.75.75 0 01-1.04 0l-4-3.75a.75.75 0 01-.02-1.06z" fill-rule="evenodd" />
                 </svg>
             </div>
+            @error('f_tipo_comprobante_id') 
+                <p class="!mt-0 text-sm text-red-600">{{ $message }}</p>
+            @enderror
 
             <!-- Compañía -->
             <div class="relative" style="display: none;">
@@ -182,35 +164,45 @@
             <input
                 type="text"
                 wire:model.live.debounce.300ms="search"
-                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                placeholder="Buscar por código o nombre del producto"
+                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
+                placeholder=" "
+                {{ !$cliente_id ? 'disabled' : '' }}
             />
+            <label class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                {{ !$cliente_id ? 'Seleccione un Cliente primero' : 'Buscar por código o nombre del producto' }}
+            </label>
 
             <!-- Resultados de búsqueda -->
-            @if(!empty($productos))
+            @if($cliente_id && strlen($search) > 0)
                 <div class="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg dark:bg-gray-700">
-                    @foreach($productos as $producto)
-                        @php
-                            $precio = $producto->listaPrecios
-                                ->where('id', $this->lista_precio)
-                                ->first()
-                                ?->pivot
-                                ?->precio ?? 0;
-                        @endphp
-                        <div
-                            wire:click="agregarProducto({{ $producto->id }})"
-                            class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-                        >
-                            <div class="text-sm text-gray-900 dark:text-white">
-                                {{ $producto->id }} - {{ $producto->name }}
+                    @if($productos && count($productos) > 0)
+                        @foreach($productos as $producto)
+                            @php
+                                $precio = $producto->listaPrecios
+                                    ->where('id', $this->lista_precio)
+                                    ->first()
+                                    ?->pivot
+                                    ?->precio ?? 0;
+                            @endphp
+                            <div
+                                wire:click="agregarProducto({{ $producto->id }})"
+                                class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                            >
+                                <div class="text-sm text-gray-900 dark:text-white">
+                                    {{ $producto->id }} - {{ $producto->name }}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    Marca: {{ $producto->marca->name ?? 'N/A' }} |
+                                    Precio: S/. {{ number_format($precio, 2) }} |
+                                    Cantidad: {{ $producto->cantidad }}
+                                </div>
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                Marca: {{ $producto->marca->name ?? 'N/A' }} |
-                                Precio: S/. {{ number_format($precio, 2) }} |
-                                Stock: {{ $producto->cantidad }}
-                            </div>
+                        @endforeach
+                    @else
+                        <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                            No se encontraron productos que coincidan con la búsqueda
                         </div>
-                    @endforeach
+                    @endif
                 </div>
             @endif
         </div>
@@ -234,7 +226,8 @@
                             </td>
                             <td class="px-6 py-4">
                                 <input
-                                    type="text"
+                                    type="number"
+                                    min="0.01"
                                     wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
                                     wire:change="ajustarCantidad({{ $index }})"
                                     class="w-20 px-2 py-1 text-sm border rounded"
@@ -262,14 +255,14 @@
                             <div class="relative">
                                 <textarea 
                                     rows="4" 
-                                    id="comentarios" 
-                                    wire:model="comentarios" 
+                                    id="comentarios"
+                                    wire:model="comentarios"
                                     class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
                                     placeholder="Escribe tus comentarios aquí..."
                                 ></textarea>
                                 <label 
                                     for="comentarios" 
-                                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]"
+                                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-1 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]"
                                 >
                                     Comentarios Adicionales
                                 </label>
@@ -288,6 +281,11 @@
                     </tr>
                 </tfoot>
             </table>
+            @if(count($pedido_detalles) === 0)
+                @error('pedido_detalles') 
+                    <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            @endif
         </div>
     </div>
     <button

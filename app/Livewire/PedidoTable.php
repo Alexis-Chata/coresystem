@@ -36,6 +36,7 @@ class PedidoTable extends Component
     public $nro_doc_liquidacion;
     public $f_tipo_comprobante_id = "";
     public $tipoComprobantes = [];
+    public $comentarios = "";  // Nueva propiedad para los comentarios
 
     // Propiedades para listas y usuario
     public $clientes = [];
@@ -57,6 +58,10 @@ class PedidoTable extends Component
             "Debe seleccionar un tipo de comprobante",
         "pedido_detalles.required" => "Debe agregar al menos un producto",
         "pedido_detalles.min" => "Debe agregar al menos un producto",
+    ];
+
+    protected $listeners = [
+        'cliente-selected' => 'handleClienteSelected'
     ];
 
     public function mount()
@@ -90,7 +95,7 @@ class PedidoTable extends Component
                 "tipo_empleado",
                 "vendedor"
             )->get();
-            $this->clientes = Cliente::all();
+            $this->clientes = collect([]); // Inicializar como colección vacía
         } else {
             $rutasDelVendedor = Ruta::where(
                 "vendedor_id",
@@ -105,7 +110,11 @@ class PedidoTable extends Component
 
     private function loadTipoComprobantes()
     {
-        $this->tipoComprobantes = FTipoComprobante::all();
+        if ($this->user->hasRole("admin")) {
+            $this->tipoComprobantes = FTipoComprobante::all();
+        } else {
+            $this->tipoComprobantes = FTipoComprobante::where("estado",true)->get();
+        }
     }
 
     public function updatedClienteId($value)
@@ -298,6 +307,7 @@ class PedidoTable extends Component
                     "producto_precio" =>
                         $detalle["importe"] / $detalle["cantidad"],
                     "importe" => $detalle["importe"],
+                    "comentario" => $this->comentarios, // Agregamos el comentario
                 ]);
             }
 
@@ -321,6 +331,7 @@ class PedidoTable extends Component
                 "importe_total",
                 "nro_doc_liquidacion",
                 "f_tipo_comprobante_id",
+                "comentarios", // Agregar comentarios a la limpieza
             ]);
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
@@ -442,5 +453,27 @@ class PedidoTable extends Component
     public function calcularSubtotal()
     {
         return array_sum(array_column($this->pedido_detalles, 'importe'));
+    }
+
+    // Método que se ejecuta cuando cambia el vendedor_id
+    public function updatedVendedorId($value)
+    {
+        if ($this->user->hasRole("admin")) {
+            $this->cliente_id = null;
+            if ($value) {
+                $this->dispatch('vendedorSelected', $value);
+            }
+        }
+    }
+
+    public function handleClienteSelected($clienteId)
+    {
+        if ($clienteId) {
+            $this->cliente_id = $clienteId;
+            $this->updatedClienteId($clienteId);
+        } else {
+            $this->resetClienteData();
+            $this->cliente_id = null;
+        }
     }
 }

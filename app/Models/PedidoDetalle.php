@@ -16,6 +16,7 @@ class PedidoDetalle extends Model
         'producto_name',
         'cantidad',
         'producto_precio',
+        'comentario',
         'importe'
     ];
 
