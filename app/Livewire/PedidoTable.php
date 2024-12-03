@@ -119,6 +119,10 @@ class PedidoTable extends Component
 
     public function updatedClienteId($value)
     {
+        // Limpiar los productos del pedido al cambiar de cliente
+        $this->pedido_detalles = [];
+        $this->importe_total = 0;
+
         if (!$value) {
             $this->resetClienteData();
             return;
@@ -298,16 +302,20 @@ class PedidoTable extends Component
             ]);
 
             foreach ($this->pedido_detalles as $index => $detalle) {
+                $producto = Producto::find($detalle["producto_id"]);
+                $precioCaja = $producto->listaPrecios->where('id', $this->lista_precio)->first()->pivot->precio ?? 0;
+                $cantidadProducto = $producto->cantidad;
+                $precioPorPaquete = $cantidadProducto > 0 ? $precioCaja / $cantidadProducto : 0;
+
                 PedidoDetalle::create([
                     "pedido_id" => $pedido->id,
                     "item" => $index + 1,
                     "producto_id" => $detalle["producto_id"],
                     "producto_name" => $detalle["nombre"],
                     "cantidad" => $detalle["cantidad"],
-                    "producto_precio" =>
-                        $detalle["importe"] / $detalle["cantidad"],
+                    "producto_precio" =>$precioPorPaquete,
                     "importe" => $detalle["importe"],
-                    "comentario" => $this->comentarios, // Agregamos el comentario
+                    "comentario" => $this->comentarios,
                 ]);
             }
 
@@ -331,8 +339,14 @@ class PedidoTable extends Component
                 "importe_total",
                 "nro_doc_liquidacion",
                 "f_tipo_comprobante_id",
-                "comentarios", // Agregar comentarios a la limpieza
+                "comentarios",
             ]);
+
+            // Emitir eventos para limpiar los componentes
+            if ($this->user->hasRole("admin")) {
+                $this->dispatch('reset-vendedor-select');
+            }
+            $this->dispatch('reset-cliente-select');
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
         } catch (\Exception $e) {

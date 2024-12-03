@@ -15,6 +15,10 @@ class ClienteSelect extends Component
     public $clientes = [];
     public $showDropdown = false;
 
+    protected $listeners = [
+        'reset-cliente-select' => 'clearSelection'
+    ];
+
     public function mount($vendedor_id = null, $cliente_id = null)
     {
         $this->vendedor_id = $vendedor_id;
@@ -90,7 +94,7 @@ class ClienteSelect extends Component
         $this->search = '';
         $this->loadClientes();
         $this->dispatch('cliente-selected', null);
-        $this->dispatch('dropdown-opened');
+        //$this->dispatch('dropdown-opened');
         Log::info('Selección limpiada');
     }
 

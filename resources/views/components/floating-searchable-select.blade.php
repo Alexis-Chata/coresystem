@@ -15,7 +15,8 @@
     options: {{ $options->toJson() }},
     filteredOptions() {
         return this.options.filter(option => 
-            option.name.toLowerCase().includes(this.search.toLowerCase())
+            option.name.toLowerCase().includes(this.search.toLowerCase()) ||
+            (option.id && option.id.toString().toLowerCase().includes(this.search.toLowerCase()))
         );
     },
     selectOption(option) {
@@ -40,6 +41,12 @@
                     $wire.set('{{ $wireModel }}', null);
                 @endif
             }
+        });
+
+        // Escuchar el evento de reset
+        Livewire.on('reset-vendedor-select', () => {
+            this.search = '';
+            this.selected = null;
         });
         @endif
     }
@@ -75,9 +82,11 @@ class="relative">
         <template x-for="option in filteredOptions()" :key="option.id">
             <div
                 @click="selectOption(option)"
-                class="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                x-text="option.name"
-            ></div>
+                class="px-4 py-2 cursor-pointer hover:bg-gray-100 items-center"
+            >
+                #<span x-text="option.id" class="text-sm text-gray-500"></span> -
+                <span x-text="option.name"></span>
+            </div>
         </template>
         <div x-show="filteredOptions().length === 0" class="px-4 py-2 text-gray-500">
             No se encontraron resultados
