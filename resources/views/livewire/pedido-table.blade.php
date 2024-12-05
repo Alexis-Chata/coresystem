@@ -55,6 +55,7 @@
                 <select
                     wire:model.live="f_tipo_comprobante_id"
                     class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    @disabled(str_starts_with($documento, 'RUC'))
                 >
                     <option value="">Selecciona un Tipo de Comprobante</option>
                     @foreach($tipoComprobantes as $tipo)
@@ -220,11 +221,17 @@
                 td input{
                     width: clamp(35px, calc(34px + 4vw), 70px);
                 }
-                thead th:last-child svg{
-                    margin: auto;
+                thead th:last-child{
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: center;
                 }
+                
                 tbody td:last-child{
                     text-align: center;
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: center;
                 }
             }
         </style>
@@ -233,8 +240,7 @@
                     <tr>
                         <th scope="col">Código - Producto</th>
                         <th scope="col">Cantidad</th>
-                        <th scope="col">Importe</th>
-                        <th scope="col"><svg width="25" height="25" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z" fill="currentColor"></path></svg></th>
+                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z" fill="currentColor"></path></svg></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -254,8 +260,6 @@
                             </td>
                             <td class="px-6 py-4">
                                 S/. {{ number_format($detalle['importe'], 2) }}
-                            </td>
-                            <td class="px-6 py-4">
                                 <button
                                     wire:click="eliminarDetalle({{ $index }})"
                                     class="font-medium text-red-600 dark:text-red-500 hover:underline"
@@ -289,16 +293,13 @@
                                 </label>
                             </div>
                         </td>
-                        <td class="px-6 py-3 text-right">Subtotal:</td>
-                        <td class="px-6 py-3 text-right">S/. {{ number_format($this->calcularSubtotal(), 2) }}</td>
+                        <td class="px-6 py-3 text-right">Subtotal: S/. {{ number_format($totales['valorVenta'], 2) }}</td>
                     </tr>
                     <tr class="font-semibold text-gray-900 dark:text-white">
-                        <td class="px-6 py-3 text-right">IGV (18%):</td>
-                        <td class="px-6 py-3 text-right">S/.</td>
+                        <td class="px-6 py-3 text-right">IGV (18%): S/. {{ number_format($totales['totalImpuestos'], 2) }}</td>
                     </tr>
                     <tr class="font-semibold text-gray-900 dark:text-white">
-                        <td class="px-6 py-3 text-right">Total:</td>
-                        <td class="px-6 py-3 text-right">S/. {{ number_format($this->calcularSubtotal(), 2) }}</td>
+                        <td class="px-6 py-3 text-right">Total: S/. {{ number_format($totales['subTotal'], 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -311,8 +312,8 @@
     </div>
     <button
         wire:click="guardarPedido"
-        class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
-        Guardar Pedido
+        Registrar Pedido
     </button>
 </div>

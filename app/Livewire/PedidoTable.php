@@ -31,12 +31,17 @@ class PedidoTable extends Component
     public $search = "";
     public $productos = [];
     public $pedido_detalles = [];
-    public $cantidad = 1;
+    public $cantidad = 0.01;
     public $importe_total = 0;
     public $nro_doc_liquidacion;
     public $f_tipo_comprobante_id = "";
     public $tipoComprobantes = [];
-    public $comentarios = "";  // Nueva propiedad para los comentarios
+    public $comentarios = "";
+    public $totales = [
+        'valorVenta' => 0,
+        'totalImpuestos' => 0,
+        'subTotal' => 0
+    ];
 
     // Propiedades para listas y usuario
     public $clientes = [];
@@ -156,6 +161,14 @@ class PedidoTable extends Component
             $cliente->tipoDocumento->tipo_documento .
             " - " .
             $cliente->numero_documento;
+        
+        // Si el tipo de documento es RUC, establecer automáticamente Factura
+        if ($cliente->tipoDocumento->tipo_documento === 'RUC') {
+            $facturaComprobante = FTipoComprobante::where('tipo_comprobante', '01')->first();
+            if ($facturaComprobante) {
+                $this->f_tipo_comprobante_id = $facturaComprobante->id;
+            }
+        }
     }
 
     public function getRutaNameProperty()
@@ -233,28 +246,41 @@ class PedidoTable extends Component
         });
 
         if (!$existe) {
-            $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
-
-            if ($precio > 0) {
-                $this->pedido_detalles[] = [
-                    "producto_id" => $producto->id,
-                    "codigo" => $producto->id,
-                    "nombre" => $producto->name,
-                    "cantidad" => $this->cantidad,
-                    "importe" => $precio * $this->cantidad,
-                ];
-            }
+            // Agregar el producto al detalle
+            $this->pedido_detalles[] = [
+                "producto_id" => $producto->id,
+                "codigo" => $producto->id,
+                "nombre" => $producto->name,
+                "cantidad" => $this->cantidad,
+                "importe" => 0, // Se calculará en el siguiente paso
+            ];
+            
+            // Calcular el importe usando el método existente
+            $this->calcularImporte(count($this->pedido_detalles) - 1);
         }
 
         // Limpiar búsqueda
         $this->search = "";
         $this->productos = [];
+
+        $this->actualizarTotales();
+    }
+
+    private function actualizarTotales()
+    {
+        $totalesTemp = $this->setSubTotalesIgv($this->pedido_detalles);
+        $this->totales = [
+            'valorVenta' => $totalesTemp['valorVenta'],
+            'totalImpuestos' => $totalesTemp['totalImpuestos'],
+            'subTotal' => $totalesTemp['subTotal']
+        ];
     }
 
     public function eliminarDetalle($index)
     {
         unset($this->pedido_detalles[$index]);
         $this->pedido_detalles = array_values($this->pedido_detalles);
+        $this->actualizarTotales();
     }
 
     public function actualizarCantidad($index)
@@ -440,11 +466,11 @@ class PedidoTable extends Component
         // Separar la cantidad ingresada en cajas y paquetes
         if (strpos($cantidad, '.') !== false) {
             list($cajas, $paquetes) = explode('.', $cantidad);
-            $cajas = (int)$cajas; // Convertir a entero
-            $paquetes = (int)$paquetes; // Convertir a entero
+            $cajas = $cajas; // Convertir a entero
+            $paquetes = str_pad($paquetes, 2, '0'); // Mantener formato de dos dígitos
         } else {
-            $cajas = (int)$cantidad;
-            $paquetes = 0;
+            $cajas = $cantidad;
+            $paquetes = '00';
         }
 
         // Validar que los paquetes no excedan la cantidad de productos por caja
@@ -454,14 +480,15 @@ class PedidoTable extends Component
         if ($paquetes >= $cantidadProducto) {
             // Ajustar la cantidad si los paquetes son iguales o mayores que la cantidad de productos por caja
             $cajas += floor($paquetes / $cantidadProducto);
-            $paquetes = $paquetes % $cantidadProducto; // Obtener el resto de paquetes
+            $paquetes = str_pad($paquetes % $cantidadProducto, 2, '0', STR_PAD_LEFT); // Mantener formato de dos dígitos
         }
 
         // Actualizar la cantidad en el detalle
-        $this->pedido_detalles[$index]['cantidad'] = $cajas + ($paquetes / 100); // Convertir de nuevo a formato X.Y
+        $this->pedido_detalles[$index]['cantidad'] = $cajas . '.' . $paquetes;
 
         // Recalcular el importe
         $this->calcularImporte($index);
+        $this->actualizarTotales();
     }
 
     public function calcularSubtotal()
