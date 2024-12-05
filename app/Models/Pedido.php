@@ -20,6 +20,7 @@ class Pedido extends Model
         'importe_total',
         'nro_doc_liquidacion',
         'lista_precio',
+        'comentario',
         'empresa_id',
     ];
 

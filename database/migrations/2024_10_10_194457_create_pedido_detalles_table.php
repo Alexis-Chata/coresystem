@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('producto_name')->nullable();
             $table->string('cantidad')->nullable();
             $table->string('producto_precio')->nullable();
-            $table->string('comentario')->nullable();
+            $table->string('lista_precio')->nullable();
             $table->string('importe')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

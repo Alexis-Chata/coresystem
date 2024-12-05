@@ -324,14 +324,13 @@ class PedidoTable extends Component
                 "importe_total" => $this->importe_total,
                 "nro_doc_liquidacion" => $this->nro_doc_liquidacion,
                 "lista_precio" => $this->lista_precio,
+                "comentario" => $this->comentarios,
                 "empresa_id" => $this->empresa->id,
             ]);
 
             foreach ($this->pedido_detalles as $index => $detalle) {
                 $producto = Producto::find($detalle["producto_id"]);
                 $precioCaja = $producto->listaPrecios->where('id', $this->lista_precio)->first()->pivot->precio ?? 0;
-                $cantidadProducto = $producto->cantidad;
-                $precioPorPaquete = $cantidadProducto > 0 ? $precioCaja / $cantidadProducto : 0;
 
                 PedidoDetalle::create([
                     "pedido_id" => $pedido->id,
@@ -339,9 +338,9 @@ class PedidoTable extends Component
                     "producto_id" => $detalle["producto_id"],
                     "producto_name" => $detalle["nombre"],
                     "cantidad" => $detalle["cantidad"],
-                    "producto_precio" =>$precioPorPaquete,
+                    "producto_precio" =>$precioCaja,
                     "importe" => $detalle["importe"],
-                    "comentario" => $this->comentarios,
+                    "lista_precio" => $this->lista_precio,
                 ]);
             }
 

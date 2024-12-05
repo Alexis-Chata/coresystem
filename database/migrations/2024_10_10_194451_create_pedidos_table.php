@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('importe_total')->nullable();
             $table->string('nro_doc_liquidacion')->nullable();
             $table->string('lista_precio')->nullable();
+            $table->string('comentario')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
