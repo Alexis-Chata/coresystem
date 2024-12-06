@@ -23,6 +23,11 @@ class Pedido extends Model
         'comentario',
         'empresa_id',
     ];
+    
+    public function pedidoDetalles()
+    {
+        return $this->hasMany(PedidoDetalle::class);
+    }
 
     public function ruta(): BelongsTo
     {

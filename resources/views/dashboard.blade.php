@@ -107,4 +107,5 @@
         </div>
     </div>
 </div>
+<livewire:pedido-reporte-diario />
 @endsection
