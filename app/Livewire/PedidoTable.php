@@ -31,16 +31,15 @@ class PedidoTable extends Component
     public $search = "";
     public $productos = [];
     public $pedido_detalles = [];
-    public $cantidad = 0.01;
     public $importe_total = 0;
     public $nro_doc_liquidacion;
     public $f_tipo_comprobante_id = "";
     public $tipoComprobantes = [];
     public $comentarios = "";
     public $totales = [
-        'valorVenta' => 0,
-        'totalImpuestos' => 0,
-        'subTotal' => 0
+        "valorVenta" => 0,
+        "totalImpuestos" => 0,
+        "subTotal" => 0,
     ];
 
     // Propiedades para listas y usuario
@@ -66,7 +65,7 @@ class PedidoTable extends Component
     ];
 
     protected $listeners = [
-        'cliente-selected' => 'handleClienteSelected'
+        "cliente-selected" => "handleClienteSelected",
     ];
 
     public function mount()
@@ -118,7 +117,10 @@ class PedidoTable extends Component
         if ($this->user->hasRole("admin")) {
             $this->tipoComprobantes = FTipoComprobante::all();
         } else {
-            $this->tipoComprobantes = FTipoComprobante::where("estado",true)->get();
+            $this->tipoComprobantes = FTipoComprobante::where(
+                "estado",
+                true
+            )->get();
         }
     }
 
@@ -161,10 +163,13 @@ class PedidoTable extends Component
             $cliente->tipoDocumento->tipo_documento .
             " - " .
             $cliente->numero_documento;
-        
+
         // Si el tipo de documento es RUC, establecer automáticamente Factura
-        if ($cliente->tipoDocumento->tipo_documento === 'RUC') {
-            $facturaComprobante = FTipoComprobante::where('tipo_comprobante', '01')->first();
+        if ($cliente->tipoDocumento->tipo_documento === "RUC") {
+            $facturaComprobante = FTipoComprobante::where(
+                "tipo_comprobante",
+                "01"
+            )->first();
             if ($facturaComprobante) {
                 $this->f_tipo_comprobante_id = $facturaComprobante->id;
             }
@@ -251,10 +256,10 @@ class PedidoTable extends Component
                 "producto_id" => $producto->id,
                 "codigo" => $producto->id,
                 "nombre" => $producto->name,
-                "cantidad" => $this->cantidad,
+                "cantidad" => $producto->cantidad == 1 ? 1 : 0.01, // <-- Nueva lógica
                 "importe" => 0, // Se calculará en el siguiente paso
             ];
-            
+
             // Calcular el importe usando el método existente
             $this->calcularImporte(count($this->pedido_detalles) - 1);
         }
@@ -270,9 +275,9 @@ class PedidoTable extends Component
     {
         $totalesTemp = $this->setSubTotalesIgv($this->pedido_detalles);
         $this->totales = [
-            'valorVenta' => $totalesTemp['valorVenta'],
-            'totalImpuestos' => $totalesTemp['totalImpuestos'],
-            'subTotal' => $totalesTemp['subTotal']
+            "valorVenta" => $totalesTemp["valorVenta"],
+            "totalImpuestos" => $totalesTemp["totalImpuestos"],
+            "subTotal" => $totalesTemp["subTotal"],
         ];
     }
 
@@ -330,7 +335,10 @@ class PedidoTable extends Component
 
             foreach ($this->pedido_detalles as $index => $detalle) {
                 $producto = Producto::find($detalle["producto_id"]);
-                $precioCaja = $producto->listaPrecios->where('id', $this->lista_precio)->first()->pivot->precio ?? 0;
+                $precioCaja =
+                    $producto->listaPrecios
+                        ->where("id", $this->lista_precio)
+                        ->first()->pivot->precio ?? 0;
 
                 PedidoDetalle::create([
                     "pedido_id" => $pedido->id,
@@ -338,7 +346,7 @@ class PedidoTable extends Component
                     "producto_id" => $detalle["producto_id"],
                     "producto_name" => $detalle["nombre"],
                     "cantidad" => $detalle["cantidad"],
-                    "producto_precio" =>$precioCaja,
+                    "producto_precio" => $precioCaja,
                     "importe" => $detalle["importe"],
                     "lista_precio" => $this->lista_precio,
                 ]);
@@ -369,9 +377,9 @@ class PedidoTable extends Component
 
             // Emitir eventos para limpiar los componentes
             if ($this->user->hasRole("admin")) {
-                $this->dispatch('reset-vendedor-select');
+                $this->dispatch("reset-vendedor-select");
             }
-            $this->dispatch('reset-cliente-select');
+            $this->dispatch("reset-cliente-select");
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
         } catch (\Exception $e) {
@@ -395,20 +403,26 @@ class PedidoTable extends Component
     public function calcularImporte($index)
     {
         $detalle = $this->pedido_detalles[$index];
-        $producto = Producto::find($detalle['producto_id']);
+        $producto = Producto::find($detalle["producto_id"]);
 
         if ($producto) {
-            $precioCaja = $producto->listaPrecios->where('id', $this->lista_precio)->first()->pivot->precio ?? 0;
+            $precioCaja =
+                $producto->listaPrecios
+                    ->where("id", $this->lista_precio)
+                    ->first()->pivot->precio ?? 0;
             $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
 
             // Validar que la cantidad del producto no sea cero
             if ($cantidadProducto <= 0) {
-                logger("Error: La cantidad del producto es cero o negativa para el producto:", [
-                    "producto_id" => $producto->id,
-                    "precioCaja" => $precioCaja,
-                    "cantidadProducto" => $cantidadProducto,
-                ]);
-                $this->pedido_detalles[$index]['importe'] = 0;
+                logger(
+                    "Error: La cantidad del producto es cero o negativa para el producto:",
+                    [
+                        "producto_id" => $producto->id,
+                        "precioCaja" => $precioCaja,
+                        "cantidadProducto" => $cantidadProducto,
+                    ]
+                );
+                $this->pedido_detalles[$index]["importe"] = 0;
                 return;
             }
 
@@ -416,7 +430,7 @@ class PedidoTable extends Component
             $precioPorPaquete = $precioCaja / $cantidadProducto; // 108.00 / 36 = 3.00
 
             // Interpretar la cantidad ingresada
-            $cantidad = $detalle['cantidad']; // Cantidad ingresada en cajas y paquetes
+            $cantidad = $detalle["cantidad"]; // Cantidad ingresada en cajas y paquetes
 
             // Separar la cantidad en cajas y paquetes
             $cajas = floor($cantidad); // Parte entera representa las cajas
@@ -424,23 +438,26 @@ class PedidoTable extends Component
 
             // Validar que los paquetes no excedan la cantidad de productos por caja
             if ($paquetes >= $cantidadProducto) {
-                logger("Error: La cantidad de paquetes no puede ser mayor o igual a la cantidad de productos por caja.", [
-                    "cantidadIngresada" => $cantidad,
-                    "paquetes" => $paquetes,
-                    "cantidadProducto" => $cantidadProducto,
-                ]);
-                $this->pedido_detalles[$index]['importe'] = 0; // O puedes lanzar un mensaje de error
+                logger(
+                    "Error: La cantidad de paquetes no puede ser mayor o igual a la cantidad de productos por caja.",
+                    [
+                        "cantidadIngresada" => $cantidad,
+                        "paquetes" => $paquetes,
+                        "cantidadProducto" => $cantidadProducto,
+                    ]
+                );
+                $this->pedido_detalles[$index]["importe"] = 0; // O puedes lanzar un mensaje de error
                 return;
             }
 
             // Calcular cantidad total de paquetes
-            $cantidadPaquetes = ($cajas * $cantidadProducto) + $paquetes; // Total de paquetes
+            $cantidadPaquetes = $cajas * $cantidadProducto + $paquetes; // Total de paquetes
 
             // Calcular importe total
             $importe = $cantidadPaquetes * $precioPorPaquete; // Total de paquetes * precio por paquete
 
             // Actualizar el importe en el detalle
-            $this->pedido_detalles[$index]['importe'] = $importe;
+            $this->pedido_detalles[$index]["importe"] = $importe;
 
             // Log para verificar el cálculo
             logger("Cálculo de importe:", [
@@ -460,30 +477,35 @@ class PedidoTable extends Component
     public function ajustarCantidad($index)
     {
         $detalle = $this->pedido_detalles[$index];
-        $cantidad = $detalle['cantidad'];
+        $cantidad = $detalle["cantidad"];
 
         // Separar la cantidad ingresada en cajas y paquetes
-        if (strpos($cantidad, '.') !== false) {
-            list($cajas, $paquetes) = explode('.', $cantidad);
+        if (strpos($cantidad, ".") !== false) {
+            list($cajas, $paquetes) = explode(".", $cantidad);
             $cajas = $cajas; // Convertir a entero
-            $paquetes = str_pad($paquetes, 2, '0'); // Mantener formato de dos dígitos
+            $paquetes = str_pad($paquetes, 2, "0"); // Mantener formato de dos dígitos
         } else {
             $cajas = $cantidad;
-            $paquetes = '00';
+            $paquetes = "00";
         }
 
         // Validar que los paquetes no excedan la cantidad de productos por caja
-        $producto = Producto::find($detalle['producto_id']);
+        $producto = Producto::find($detalle["producto_id"]);
         $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
 
         if ($paquetes >= $cantidadProducto) {
             // Ajustar la cantidad si los paquetes son iguales o mayores que la cantidad de productos por caja
             $cajas += floor($paquetes / $cantidadProducto);
-            $paquetes = str_pad($paquetes % $cantidadProducto, 2, '0', STR_PAD_LEFT); // Mantener formato de dos dígitos
+            $paquetes = str_pad(
+                $paquetes % $cantidadProducto,
+                2,
+                "0",
+                STR_PAD_LEFT
+            ); // Mantener formato de dos dígitos
         }
 
         // Actualizar la cantidad en el detalle
-        $this->pedido_detalles[$index]['cantidad'] = $cajas . '.' . $paquetes;
+        $this->pedido_detalles[$index]["cantidad"] = $cajas . "." . $paquetes;
 
         // Recalcular el importe
         $this->calcularImporte($index);
@@ -492,7 +514,7 @@ class PedidoTable extends Component
 
     public function calcularSubtotal()
     {
-        return array_sum(array_column($this->pedido_detalles, 'importe'));
+        return array_sum(array_column($this->pedido_detalles, "importe"));
     }
 
     // Método que se ejecuta cuando cambia el vendedor_id
@@ -501,7 +523,7 @@ class PedidoTable extends Component
         if ($this->user->hasRole("admin")) {
             $this->cliente_id = null;
             if ($value) {
-                $this->dispatch('vendedorSelected', $value);
+                $this->dispatch("vendedorSelected", $value);
             }
         }
     }

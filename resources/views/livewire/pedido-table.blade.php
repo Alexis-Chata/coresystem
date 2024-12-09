@@ -71,7 +71,7 @@
                     <path clip-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06-.02L10 10.585l3.71-3.395a.75.75 0 011.04 1.08l-4 3.75a.75.75 0 01-1.04 0l-4-3.75a.75.75 0 01-.02-1.06z" fill-rule="evenodd" />
                 </svg>
             </div>
-            @error('f_tipo_comprobante_id') 
+            @error('f_tipo_comprobante_id')
                 <p class="!mt-0 text-sm text-red-600">{{ $message }}</p>
             @enderror
 
@@ -226,7 +226,7 @@
                     justify-content: space-around;
                     align-items: center;
                 }
-                
+
                 tbody td:last-child{
                     text-align: center;
                     display: flex;
@@ -250,13 +250,28 @@
                                 {{ $detalle['codigo'] }} - {{ $detalle['nombre'] }}
                             </td>
                             <td class="px-6 py-4">
-                                <input
-                                    type="number"
-                                    min="0.01"
-                                    wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
-                                    wire:change="ajustarCantidad({{ $index }})"
-                                    class="w-20 px-2 py-1 text-sm border rounded"
-                                />
+                                @php
+                                    $producto = App\Models\Producto::find($detalle['producto_id']);
+                                    $esPaqueteUnico = $producto->cantidad == 1;
+                                @endphp
+
+                                @if($esPaqueteUnico)
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
+                                        wire:change="ajustarCantidad({{ $index }})"
+                                        class="w-20 px-2 py-1 text-sm border rounded"
+                                    />
+                                @else
+                                    <input
+                                        type="number"
+                                        min="0.01"
+                                        wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
+                                        wire:change="ajustarCantidad({{ $index }})"
+                                        class="w-20 px-2 py-1 text-sm border rounded"
+                                    />
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 S/. {{ number_format($detalle['importe'], 2) }}
@@ -278,15 +293,15 @@
                         <td class="px-6 py-6" colspan="2" rowspan="3">
                             <!-- Textarea para comentarios -->
                             <div class="relative">
-                                <textarea 
-                                    rows="4" 
+                                <textarea
+                                    rows="4"
                                     id="comentarios"
                                     wire:model="comentarios"
-                                    class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                                    class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="Escribe tus comentarios aquí..."
                                 ></textarea>
-                                <label 
-                                    for="comentarios" 
+                                <label
+                                    for="comentarios"
                                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-1 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]"
                                 >
                                     Comentarios Adicionales
@@ -304,7 +319,7 @@
                 </tfoot>
             </table>
             @if(count($pedido_detalles) === 0)
-                @error('pedido_detalles') 
+                @error('pedido_detalles')
                     <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             @endif

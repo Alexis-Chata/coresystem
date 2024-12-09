@@ -1,10 +1,13 @@
-<div class="cont_reporte space-y-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+<div class="cont_reporte">
     <style>
         main > :first-child{
-            padding: calc(2px + 2vw);
+            padding: calc(-1px + 2vw);
         }
         .cont_reporte {
-            padding: calc(2px + 1vw);
+
+            & summary{
+                padding: calc(-1px + 1vw);
+            }
             & :is(th, td) {
                 padding: calc(2px + 0.5vw);
             }
@@ -31,7 +34,7 @@
         @forelse($pedidosPorVendedor as $vendedorId => $pedidosVendedor)
             <details class="mb-2 my-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
                 <summary class="bg-blue-50 dark:bg-blue-800 p-4 flex justify-between items-center cursor-pointer group-open:bg-blue-100 dark:group-open:bg-blue-700 transition-colors">
-                    <div class="flex items-center space-x-3 gap-2">
+                    <div class="flex items-center gap-2">
                         <span class="flex-none rounded-full bg-blue-100 p-2 dark:bg-blue-900">
                             <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -57,6 +60,9 @@
                                 <span class="font-semibold text-gray-700 dark:text-gray-300">
                                     Ruta: {{ $pedidosRuta->first()->ruta->name }}
                                 </span>
+                                <span class="ml-auto px-3 py-1 text-sm font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-400" style="margin-left:auto">
+                                    Monto: S/. {{ number_format($pedidosRuta->sum('importe_total'), 2) }}
+                                </span>
                             </summary>
                             <div class="p-1 bg-green-100 dark:bg-green-800">
                                 @foreach($pedidosRuta->groupBy('cliente_id') as $clienteId => $pedidosCliente)
@@ -69,12 +75,16 @@
                                             </span>
                                             <div>
                                                 <span class="text-gray-800 dark:text-gray-300 font-medium">
-                                                    Cliente: {{ $pedidosCliente->first()->cliente->name }}
+                                                    Cliente: {{ $pedidosCliente->first()->cliente->razon_social }}
                                                 </span>
                                                 <span class="block text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $pedidosCliente->first()->cliente->direccion }}
                                                 </span>
                                             </div>
+                                            <span class="ml-auto px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full dark:bg-purple-900 dark:text-purple-400" style="margin-left:auto">
+                                                Total: S/. {{ number_format($pedidosCliente->sum('importe_total'), 2) }} |
+                                                    Lista: {{ $pedidosCliente->first()->listaPrecio->name ?? 'Sin lista' }}
+                                            </span>
                                         </summary>
                                         <div class="bg-purple-50 dark:bg-purple-800">
                                             <div class="overflow-x-auto">
