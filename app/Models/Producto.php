@@ -60,4 +60,9 @@ class Producto extends Model
         return $this->belongsToMany(Producto::class, 'producto_components', 'producto_id', 'component_id')
                     ->withPivot('cantidad', 'subcantidad', 'cantidad_total');
     }
+
+    public function almacenProductos()
+    {
+        return $this->hasMany(AlmacenProducto::class);
+    }
 }

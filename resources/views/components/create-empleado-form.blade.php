@@ -77,16 +77,16 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="empresa_id">
-                    Empresa
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="f_sede_id">
+                    Sede
                 </label>
-                <select wire:model="newEmpleado.empresa_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="empresa_id">
-                    <option value="">Seleccione una empresa</option>
-                    @foreach(App\Models\Empresa::all() as $empresa)
-                        <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
+                <select wire:model="newEmpleado.f_sede_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_sede_id">
+                    <option value="">Seleccione una Sede</option>
+                    @foreach(App\Models\FSede::all() as $f_sede)
+                        <option value="{{ $f_sede->id }}">{{ $f_sede->name }}</option>
                     @endforeach
                 </select>
-                @error('newEmpleado.empresa_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
+                @error('newEmpleado.f_sede_id') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
             <div class="mb-4">

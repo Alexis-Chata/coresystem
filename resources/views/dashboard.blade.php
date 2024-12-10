@@ -11,7 +11,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @php
             $empleado = auth()->user()->empleados()->first();
-            $empresa_id = $empleado?->empresa_id ?? auth()->user()->empresa_id;
+            $empresa_id = $empleado?->fSede->empresa_id ?? auth()->user()->fSede->empresa_id;
+            $f_sede_id = $empleado?->f_sede_id ?? auth()->user()->f_sede_id;
         @endphp
 
         <!-- Clientes -->
@@ -73,7 +74,7 @@
                 <div class="ml-4">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Empleados</h3>
                     <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                        {{ \App\Models\Empleado::where('empresa_id', $empresa_id)->count() }}
+                        {{ \App\Models\Empleado::where('f_sede_id', $f_sede_id)->count() }}
                     </p>
                     <p class="text-sm text-gray-500">Activos</p>
                 </div>

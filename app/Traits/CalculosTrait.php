@@ -19,8 +19,9 @@ trait CalculosTrait
             $data_detalle['porcentajeIgv'] = $producto->porcentaje_igv ?? 0;
             $data_detalle['porcentajeIsc'] = $producto->porcentaje_isc ?? 0;
             $data_detalle['factorIcbper'] = $producto->porcentaje_icbper ?? 0;
-
-            $data_detalle['mtoValorUnitario'] = number_format(($data_detalle['mtoPrecioUnitario'] - $data_detalle['factorIcbper']) / (1 + (($data_detalle['porcentajeIgv'] + $data_detalle['porcentajeIsc']) / 100)), 4, '.', '');
+            $diferencia = ($data_detalle['mtoPrecioUnitario'] - $data_detalle['factorIcbper']);
+            $porcentaje = ($data_detalle['porcentajeIgv'] + $data_detalle['porcentajeIsc']);
+            $data_detalle['mtoValorUnitario'] = number_format(($diferencia) / (1 + ($porcentaje / 100)), 4, '.', '');
             $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorUnitario'] * $data_detalle['cantidad'];
 
             $data_detalle['mtoBaseIgv'] = $data_detalle['mtoValorVenta'] ?? 0;
@@ -32,6 +33,7 @@ trait CalculosTrait
             $data_detalle['tipSisIsc'] = $data_detalle['tipSisIsc'] ?? "01";
             $data_detalles[$key] = $data_detalle;
         }
+        // dd($data_detalles);
         $details = collect($data_detalles);
 
         $data['mtoOperGravadas'] = $details->where('tipAfeIgv', 10)->sum('mtoValorVenta');
@@ -51,7 +53,7 @@ trait CalculosTrait
         $data['mtoImpVenta'] = floor($data['subTotal'] * 10) / 10; // total con redondeo
 
         $data['redondeo'] = $data['mtoImpVenta'] - $data['subTotal'];
-        //dd($details, $data);
+        // dd($details, $data);
         return $data;
     }
 

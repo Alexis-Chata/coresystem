@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Empleado;
 use App\Models\FTipoDocumento;
-use App\Models\Empresa;
+use App\Models\FSede;
 use App\Models\Vehiculo;
 use Illuminate\Support\Facades\DB;
 
@@ -19,9 +19,9 @@ class EmpleadoSeeder extends Seeder
             throw new \Exception('No hay tipos de documento en la base de datos. Asegúrate de ejecutar FTipoDocumentoSeeder primero.');
         }
 
-        $empresa = Empresa::first();
-        if (!$empresa) {
-            throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
+        $sede = FSede::first();
+        if (!$sede) {
+            throw new \Exception('No hay sedes en la base de datos. Asegúrate de ejecutar FSedeSeeder primero.');
         }
 
         // Obtener todos los vehículos disponibles
@@ -32,7 +32,7 @@ class EmpleadoSeeder extends Seeder
         }
 
         DB::insert("insert  into `empleados`
-        (`id`,`codigo`,`name`,`direccion`,`celular`,`f_tipo_documento_id`,`numero_documento`,`tipo_empleado`,`numero_brevete`,`empresa_id`,`vehiculo_id`) values
+        (`id`,`codigo`,`name`,`direccion`,`celular`,`f_tipo_documento_id`,`numero_documento`,`tipo_empleado`,`numero_brevete`,`f_sede_id`,`vehiculo_id`) values
         (1,NULL,'ALEXIS CHATA','MARISCAL CACERES','987654321',1,'99999999','vendedor',NULL,1,NULL),
         (2,NULL,'CHARLIE JARA','JICAMARCA','987654321',1,'99999999','vendedor',NULL,1,NULL),
         (3,NULL,'ROSELVI SEGURA','MZ 62 LT 24 CANTOGRANDE','987654322',1,'72728861','vendedor',NULL,1,NULL),
@@ -69,7 +69,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->numero_documento = '45678912';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
-        $empleado->empresa_id = $empresa->id;
+        $empleado->f_sede_id = $sede->id;
         $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
@@ -80,7 +80,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678913';
         $empleado->tipo_empleado = 'vendedor';
-        $empleado->empresa_id = $empresa->id;
+        $empleado->f_sede_id = $sede->id;
         $empleado->save();
 
         $empleado = new Empleado();
@@ -91,7 +91,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->numero_documento = '45678914';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '2345678';
-        $empleado->empresa_id = $empresa->id;
+        $empleado->f_sede_id = $sede->id;
         $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
@@ -102,7 +102,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678915';
         $empleado->tipo_empleado = 'vendedor';
-        $empleado->empresa_id = $empresa->id;
+        $empleado->f_sede_id = $sede->id;
         $empleado->save();
 
         $empleado = new Empleado();
@@ -113,7 +113,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->numero_documento = '45678916';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '3456789';
-        $empleado->empresa_id = $empresa->id;
+        $empleado->f_sede_id = $sede->id;
         $empleado->vehiculo_id = $vehiculos->shift()->id;
         $empleado->save();
 

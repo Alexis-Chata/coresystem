@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Empresa;
+use App\Models\FSede;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             EmpresaSeeder::class,
             FTipoDocumentoSeeder::class,
             VehiculoSeeder::class,
+            FSedeSeeder::class,
             EmpleadoSeeder::class,
             FTipoComprobanteSeeder::class,
             ListaPrecioSeeder::class,
@@ -32,14 +33,13 @@ class DatabaseSeeder extends Seeder
             PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,
-            FSedeSeeder::class,
             SerieSeeder::class,
             AlmacenSeeder::class,
             TipoMovimientoSeeder::class,
         ]);
 
-        $empresa = Empresa::first();
-        if ($empresa) {
+        $sede = FSede::first();
+        if ($sede) {
             // Verifica si el usuario ya existe
             $testUser = User::where('email', 'test@example.com')->first();
 
@@ -47,24 +47,24 @@ class DatabaseSeeder extends Seeder
                 User::factory()->create([
                     'name' => 'Test User',
                     'email' => 'test@example.com',
-                    'empresa_id' => $empresa->id,
+                    'f_sede_id' => $sede->id,
                 ])->assignRole('admin')->user_empleado()->create(['empleado_id' => 1, 'tipo' => 'main']);
             }
 
             User::factory()->create([
                 'name' => 'Vendedor 1',
                 'email' => 'vendedor@example.com',
-                'empresa_id' => $empresa->id,
+                'f_sede_id' => $sede->id,
             ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 2, 'tipo' => 'main']);
 
             User::factory()->create([
                 'name' => 'Vendedor 2',
                 'email' => 'vendedor2@example.com',
-                'empresa_id' => $empresa->id,
+                'f_sede_id' => $sede->id,
                 'deleted_at' => now(),
             ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 3, 'tipo' => 'main']);
         } else {
-            throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
+            throw new \Exception('No hay sedes en la base de datos. Asegúrate de ejecutar FSedeSeeder primero.');
         }
     }
 }

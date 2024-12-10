@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('numero_documento')->nullable();
             $table->string('tipo_empleado'); // 'conductor', 'vendedor', 'almacenero', etc
             $table->string('numero_brevete')->nullable();
-            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->foreignId('f_sede_id')->constrained('f_sedes');
             $table->foreignId('vehiculo_id')->nullable()->constrained('vehiculos');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

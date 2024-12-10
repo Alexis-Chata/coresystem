@@ -25,4 +25,9 @@ class FSede extends Model
     {
         return $this->belongsTo(Empresa::class);
     }
+
+    public function almacen()
+    {
+        return $this->hasOne(Almacen::class);
+    }
 }

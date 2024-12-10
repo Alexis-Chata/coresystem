@@ -20,6 +20,7 @@ class Empleado extends Model
         'numero_brevete',
         'empresa_id',
         'vehiculo_id',
+        'f_sede_id',
     ];
 
     public function tipoDocumento()
@@ -33,5 +34,10 @@ class Empleado extends Model
     public function vehiculo()
     {
         return $this->belongsTo(Vehiculo::class);
+    }
+
+    public function fSede()
+    {
+        return $this->belongsTo(FSede::class, 'f_sede_id');
     }
 }

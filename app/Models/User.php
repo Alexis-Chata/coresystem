@@ -31,7 +31,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'empresa_id',
+        'f_sede_id',
     ];
 
     /**
@@ -68,9 +68,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function empresa()
+    public function fsede()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(FSede::class);
     }
 
     public function user_empleado()

@@ -19,7 +19,7 @@ class AlmacenSeeder extends Seeder
             'telefono' => '999888999',
             'email' => 'almacen@example.com',
             'encargado_id' => '1',
-            'empresa_id' => '1',
+            'f_sede_id' => '1',
         ]);
     }
 }

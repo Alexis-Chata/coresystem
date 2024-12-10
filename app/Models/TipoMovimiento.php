@@ -14,6 +14,7 @@ class TipoMovimiento extends Model
         'codigo',
         'name',
         'descripcion',
+        'tipo',
         'empleado_id',
     ];
 }

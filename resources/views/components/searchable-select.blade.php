@@ -6,7 +6,8 @@
     'label' => null,
     'placeholder' => 'Buscar...',
     'isEditing' => false,
-    'modelId' => null
+    'modelId' => null,
+    'class_list' => 'absolute bg-white'
 ])
 
 <div class="relative">
@@ -15,16 +16,17 @@
         {{ $label }}
     </label>
     @endif
-    
+
     <div x-data="{
         open: false,
         search: '',
         selected: {{ $selected ? json_encode($options->firstWhere('id', $selected)) : 'null' }},
         options: {{ $options->toJson() }},
         filteredOptions() {
-            return this.options.filter(option => 
-                option.name.toLowerCase().includes(this.search.toLowerCase())
-            );
+            return this.options.filter(option =>{
+                return option.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                option.id.toString().includes(this.search.toLowerCase());
+            });
         },
         selectOption(option) {
             this.selected = option;
@@ -53,7 +55,7 @@
             });
             @endif
         }
-    }" 
+    }"
     @if(!$isEditing)
     @cliente-created.window="search = ''; selected = null; open = false"
     @producto-lista-precio-created.window="search = ''; selected = null; open = false"
@@ -70,23 +72,23 @@
                 autocomplete="off"
                 placeholder="{{ $placeholder }}"
             >
-            <div x-show="open" 
-                class="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+            <div x-show="open"
+                class="{{ $class_list }} z-50 w-full mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
                 <template x-for="option in filteredOptions()" :key="option.id">
                     <div
                         @click="selectOption(option)"
-                        class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                        class="px-4 py-2 cursor-pointer hover:bg-gray-300"
                         x-text="option.name">
                     </div>
                 </template>
-                <div x-show="filteredOptions().length === 0" 
+                <div x-show="filteredOptions().length === 0"
                     class="px-4 py-2 text-gray-500">
                     No se encontraron resultados
                 </div>
             </div>
         </div>
-        @error($wireModel) 
-            <span class="text-red-500 text-xs italic">{{ $message }}</span> 
+        @error($wireModel)
+            <span class="text-red-500 text-xs italic">{{ $message }}</span>
         @enderror
     </div>
 </div>

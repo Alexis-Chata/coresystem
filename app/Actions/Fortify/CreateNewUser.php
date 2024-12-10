@@ -27,12 +27,12 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
-        $empresa_id = optional(Empleado::find($input['empleado_id']))->empresa_id;
+        $f_sede_id = optional(Empleado::find($input['empleado_id']))->f_sede_id;
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
-            'empresa_id' => $empresa_id ?? null,
+            'f_sede_id' => $f_sede_id ?? null,
         ]);
         $user->user_empleado()->create(['tipo' => 'main', 'empleado_id' => $input['empleado_id'] ?? null]);
 

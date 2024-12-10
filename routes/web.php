@@ -45,7 +45,7 @@ Route::middleware([
         Route::get('/', function () {
             return view('producto');
         })->middleware('can:edit producto')
-          ->name('producto.index');
+            ->name('producto.index');
 
         Route::get('/precios-mayorista', function () {
             return view('producto.precios-mayorista');
@@ -54,6 +54,10 @@ Route::middleware([
         Route::get('/precios-bodega', function () {
             return view('producto.precios-bodega');
         })->name('producto.precios-bodega');
+
+        Route::get('/stock', function () {
+            return view('producto.stock');
+        })->name('producto.stock');
     });
 
     Route::get('/categoria', function () {
@@ -83,6 +87,14 @@ Route::middleware([
     Route::get('/empresas', function () {
         return view('empresas');
     })->middleware('can:view empresa')->name('empresa.index');
+
+    Route::get('/movimientos/create', function () {
+        return view('movimiento');
+    })->middleware('can:create movimiento')->name('movimiento.create');
+
+    Route::get('/movimientos/view', function () {
+        return view('movimiento');
+    })->middleware('can:view movimiento')->name('movimiento.view');
 
     Route::get('/comprobantes', function () {
         return view('comprobantes');

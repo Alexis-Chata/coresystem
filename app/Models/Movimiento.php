@@ -16,9 +16,40 @@ class Movimiento extends Model
         'fecha_movimiento',
         'conductor_id',
         'vehiculo_id',
+        'nro_doc_liquidacion',
         'fecha_liquidacion',
         'comentario',
         'tipo_movimiento_name',
         'empleado_id',
     ];
+
+    public function movimientoDetalles()
+    {
+        return $this->hasMany(MovimientoDetalle::class);
+    }
+
+    public function tipoMovimiento()
+    {
+        return $this->belongsTo(TipoMovimiento::class);
+    }
+
+    public function almacen()
+    {
+        return $this->belongsTo(Almacen::class);
+    }
+
+    public function conductor()
+    {
+        return $this->belongsTo(Empleado::class, 'conductor_id');
+    }
+
+    public function vehiculo()
+    {
+        return $this->belongsTo(Vehiculo::class, 'vehiculo_id');
+    }
+
+    public function empleado()
+    {
+        return $this->belongsTo(Empleado::class, 'empleado_id');
+    }
 }

@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Empleado;
-use App\Models\Empresa;
+use App\Models\FSede;
 use App\Models\FTipoDocumento;
 use App\Models\Vehiculo;
 use Illuminate\Support\Carbon;
@@ -31,8 +31,8 @@ final class EmpleadoTable extends PowerGridComponent
         'numero_documento' => '',
         'tipo_empleado' => '',
         'numero_brevete' => '',
-        'empresa_id' => '',
-        'vehiculo_id' => '',
+        'f_sede_id' => '',
+        'vehiculo_id' => null,
     ];
 
     public function setUp(): array
@@ -53,11 +53,11 @@ final class EmpleadoTable extends PowerGridComponent
     {
         return Empleado::query()
             ->join('f_tipo_documentos', 'empleados.f_tipo_documento_id', '=', 'f_tipo_documentos.id')
-            ->join('empresas', 'empleados.empresa_id', '=', 'empresas.id')
+            ->join('f_sedes', 'empleados.f_sede_id', '=', 'f_sedes.id')
             ->leftJoin('vehiculos', 'empleados.vehiculo_id', '=', 'vehiculos.id')
             ->select('empleados.*',
                      'f_tipo_documentos.name as tipo_documento_nombre',
-                     'empresas.razon_social as empresa_nombre',
+                     'f_sedes.name as sede_nombre',
                      'vehiculos.placa as vehiculo_placa');
     }
 
@@ -65,7 +65,7 @@ final class EmpleadoTable extends PowerGridComponent
     {
         return [
             'tipoDocumento' => ['name'],
-            'empresa' => ['razon_social'],
+            'fSede' => ['name'],
             'vehiculo' => ['placa'],
         ];
     }
@@ -86,8 +86,8 @@ final class EmpleadoTable extends PowerGridComponent
                 return $this->selectComponent('tipo_empleado', $empleado->id, $empleado->tipo_empleado, $this->tipoEmpleadoSelectOptions());
             })
             ->add('numero_brevete')
-            ->add('empresa_id', function ($empleado) {
-                return $this->selectComponent('empresa_id', $empleado->id, $empleado->empresa_id, $this->empresaSelectOptions());
+            ->add('f_sede_id', function ($empleado) {
+                return $this->selectComponent('f_sede_id', $empleado->id, $empleado->f_sede_id, $this->sedeSelectOptions());
             })
             ->add('vehiculo_id', function ($empleado) {
                 return $this->selectComponent('vehiculo_id', $empleado->id, $empleado->vehiculo_id, $this->vehiculoSelectOptions());
@@ -142,7 +142,7 @@ final class EmpleadoTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Empresa', 'empresa_id')
+            Column::make('Sede', 'f_sede_id')
                 ->sortable(),
             Column::make('Vehículo', 'vehiculo_id')
                 ->sortable(),
@@ -195,12 +195,12 @@ final class EmpleadoTable extends PowerGridComponent
     public function createEmpleado()
     {
         $this->validate([
-            'newEmpleado.codigo' => 'required',
+            //'newEmpleado.codigo' => 'required',
             'newEmpleado.name' => 'required',
             'newEmpleado.f_tipo_documento_id' => 'required|exists:f_tipo_documentos,id',
             'newEmpleado.numero_documento' => 'required',
             'newEmpleado.tipo_empleado' => 'required',
-            'newEmpleado.empresa_id' => 'required|exists:empresas,id',
+            'newEmpleado.f_sede_id' => 'required|exists:f_sedes,id',
         ]);
 
         Empleado::create($this->newEmpleado);
@@ -220,9 +220,9 @@ final class EmpleadoTable extends PowerGridComponent
         return Empleado::distinct()->pluck('tipo_empleado', 'tipo_empleado')->toArray();
     }
 
-    public function empresaSelectOptions()
+    public function sedeSelectOptions()
     {
-        return Empresa::all()->pluck('razon_social', 'id');
+        return FSede::all()->pluck('name', 'id');
     }
 
     public function vehiculoSelectOptions()

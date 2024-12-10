@@ -15,7 +15,7 @@ class Almacen extends Model
         'telefono',
         'email',
         'encargado_id',
-        'empresa_id',
+        'f_sede_id',
     ];
 
     public function empresa()

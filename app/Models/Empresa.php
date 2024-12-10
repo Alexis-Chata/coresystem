@@ -22,4 +22,9 @@ class Empresa extends Model
         'client_secret',
         'production',
     ];
+
+    public function sedes()
+    {
+        return $this->hasMany(FSede::class);
+    }
 }

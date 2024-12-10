@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('telefono')->nullable();
             $table->string('email')->nullable();
             $table->foreignId('encargado_id')->nullable()->constrained('empleados');
-            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->foreignId('f_sede_id')->constrained('f_sedes');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+
+            $table->unique(['f_sede_id']);
         });
     }
 
