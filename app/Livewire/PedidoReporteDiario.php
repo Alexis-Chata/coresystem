@@ -5,10 +5,20 @@ namespace App\Livewire;
 use App\Models\Pedido;
 use Carbon\Carbon;
 use Livewire\Component;
+use App\Models\PedidoDetalle;
+use App\Models\Producto;
+use Illuminate\Support\Facades\DB;
+use App\Traits\CalculosTrait;
 
 class PedidoReporteDiario extends Component
 {
+    use CalculosTrait;
     public $fecha;
+    public $totales = [
+        "valorVenta" => 0,
+        "totalImpuestos" => 0,
+        "subTotal" => 0,
+    ];
 
     public function mount()
     {
@@ -53,5 +63,557 @@ class PedidoReporteDiario extends Component
         return view("livewire.pedido-reporte-diario", [
             "pedidosPorVendedor" => $pedidosPorVendedor,
         ]);
+    }
+
+    public $search = "";
+    public $productos = [];
+    public $pedidoEnEdicion = null;
+    public $detallesEdit = [];
+    public $comentarios;
+
+    public function editarPedido($pedidoId)
+    {
+        $this->pedidoEnEdicion = Pedido::with([
+            "cliente",
+            "pedidoDetalles.producto", // Incluir la relación con producto
+        ])->find($pedidoId);
+
+        $this->comentarios = $this->pedidoEnEdicion->comentario;
+
+        foreach ($this->pedidoEnEdicion->pedidoDetalles as $detalle) {
+            $this->detallesEdit[$detalle->id] = [
+                "cantidad" => $detalle->cantidad,
+                "importe" => $detalle->importe,
+            ];
+        }
+
+        // Calcular totales iniciales
+        $detallesArray = $this->pedidoEnEdicion->pedidoDetalles
+            ->map(function ($detalle) {
+                return [
+                    "producto_id" => $detalle->producto_id,
+                    "cantidad" => $detalle->cantidad,
+                    "importe" => $detalle->importe,
+                    "tipAfeIgv" =>
+                        $detalle->producto->f_tipo_afectacion_id ?? 10,
+                    "tipSisIsc" => "01",
+                ];
+            })
+            ->toArray();
+
+        $this->totales = $this->setSubTotalesIgv($detallesArray);
+
+        $this->dispatch("open-modal");
+    }
+
+    public function updatedSearch()
+    {
+        if (strlen($this->search) > 0) {
+            $this->productos = Producto::where(function ($query) {
+                $query
+                    ->where("name", "like", "%" . $this->search . "%")
+                    ->orWhere("id", "like", "%" . $this->search . "%");
+            })
+                ->with([
+                    "marca",
+                    "listaPrecios" => function ($query) {
+                        $query->where(
+                            "lista_precio_id",
+                            $this->pedidoEnEdicion->lista_precio
+                        );
+                    },
+                ])
+                ->take(5)
+                ->get();
+
+            // Debug para verificar los precios
+            logger("Productos encontrados:", [
+                "lista_precio" => $this->pedidoEnEdicion->lista_precio,
+                "productos" => $this->productos->map(function ($producto) {
+                    return [
+                        "id" => $producto->id,
+                        "name" => $producto->name,
+                        "precio" => $producto->listaPrecios->first()?->pivot
+                            ?->precio,
+                    ];
+                }),
+            ]);
+        } else {
+            $this->productos = [];
+        }
+    }
+
+    public function agregarProducto($productoId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $producto = Producto::with([
+                "listaPrecios" => function ($query) {
+                    $query->where(
+                        "lista_precio_id",
+                        $this->pedidoEnEdicion->lista_precio
+                    );
+                },
+            ])->find($productoId);
+
+            if (!$producto) {
+                throw new \Exception("Producto no encontrado");
+            }
+
+            $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
+
+            // Verificar si el producto ya existe en el pedido
+            $detalleExistente = $this->pedidoEnEdicion
+                ->pedidoDetalles()
+                ->where("producto_id", $productoId)
+                ->first();
+
+            if ($detalleExistente) {
+                // Si existe, aumentar cantidad
+                $nuevaCantidad =
+                    $producto->cantidad == 1
+                        ? $detalleExistente->cantidad + 1
+                        : $detalleExistente->cantidad + 0.01;
+
+                $nuevoImporte = $this->calcularImporteDetalle(
+                    $nuevaCantidad,
+                    $precio,
+                    $producto->cantidad
+                );
+
+                $detalleExistente->update([
+                    "cantidad" => $nuevaCantidad,
+                    "importe" => $nuevoImporte,
+                ]);
+
+                // Actualizar detallesEdit para el producto existente
+                $this->detallesEdit[$detalleExistente->id] = [
+                    "cantidad" => $nuevaCantidad,
+                    "importe" => $nuevoImporte,
+                ];
+            } else {
+                // Si no existe, crear nuevo detalle
+                $cantidad = $producto->cantidad == 1 ? 1 : 0.01;
+                $importe =
+                    $producto->cantidad == 1
+                        ? $precio
+                        : $precio / $producto->cantidad;
+
+                $nuevoDetalle = $this->pedidoEnEdicion
+                    ->pedidoDetalles()
+                    ->create([
+                        "producto_id" => $productoId,
+                        "producto_name" => $producto->name,
+                        "producto_precio" => $precio,
+                        "cantidad" => $cantidad,
+                        "importe" => $importe,
+                    ]);
+
+                // Agregar el nuevo detalle a detallesEdit
+                $this->detallesEdit[$nuevoDetalle->id] = [
+                    "cantidad" => $cantidad,
+                    "importe" => $importe,
+                ];
+            }
+
+            // Recalcular totales
+            $detallesArray = $this->pedidoEnEdicion
+                ->pedidoDetalles()
+                ->get()
+                ->map(function ($detalle) {
+                    return [
+                        "producto_id" => $detalle->producto_id,
+                        "cantidad" => $detalle->cantidad,
+                        "importe" => $detalle->importe,
+                        "tipAfeIgv" =>
+                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        "tipSisIsc" => "01",
+                    ];
+                })
+                ->toArray();
+
+            $this->totales = $this->setSubTotalesIgv($detallesArray);
+
+            // Actualizar el pedido
+            $this->pedidoEnEdicion->update([
+                "valor_venta" => $this->totales["valorVenta"],
+                "total_impuestos" => $this->totales["totalImpuestos"],
+                "importe_total" => $this->totales["subTotal"],
+            ]);
+
+            // Recargar el pedido
+            $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
+                "pedidoDetalles.producto",
+            ]);
+
+            // Limpiar búsqueda
+            $this->search = "";
+            $this->productos = [];
+
+            DB::commit();
+
+            $this->dispatch("notify", [
+                "message" => "Producto agregado correctamente",
+                "type" => "success",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger("Error al agregar producto:", [
+                "error" => $e->getMessage(),
+                "stack" => $e->getTraceAsString(),
+            ]);
+            $this->dispatch("notify", [
+                "message" => "Error al agregar producto: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
+    }
+
+    public function actualizarCantidad($detalleId, $cantidad)
+    {
+        try {
+            DB::beginTransaction();
+
+            $detalle = PedidoDetalle::find($detalleId);
+            if (!$detalle) {
+                throw new \Exception("Detalle no encontrado");
+            }
+
+            // Calcular nuevo importe
+            $nuevoImporte = $detalle->producto_precio * $cantidad;
+
+            // Actualizar detalle
+            $detalle->update([
+                "cantidad" => $cantidad,
+                "importe" => $nuevoImporte,
+            ]);
+
+            // Actualizar importe total del pedido
+            $this->actualizarTotalesPedido($detalle->pedido_id);
+
+            $this->detallesEdit[$detalleId]["importe"] = $nuevoImporte;
+
+            DB::commit();
+            $this->dispatch("notify", [
+                "message" => "Cantidad actualizada correctamente",
+                "type" => "success",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch("notify", [
+                "message" => "Error al actualizar: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
+    }
+
+    public function eliminarDetalle($detalleId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $detalle = PedidoDetalle::find($detalleId);
+            if (!$detalle) {
+                throw new \Exception("Detalle no encontrado");
+            }
+
+            // Guardar el ID del pedido antes de eliminar el detalle
+            $pedidoId = $detalle->pedido_id;
+
+            // Eliminar el detalle
+            $detalle->delete();
+
+            // Eliminar de detallesEdit si existe
+            if (isset($this->detallesEdit[$detalleId])) {
+                unset($this->detallesEdit[$detalleId]);
+            }
+
+            // Recalcular totales con los detalles restantes
+            $detallesArray = $this->pedidoEnEdicion
+                ->pedidoDetalles()
+                ->get()
+                ->map(function ($detalle) {
+                    return [
+                        "producto_id" => $detalle->producto_id,
+                        "cantidad" => $detalle->cantidad,
+                        "importe" => $detalle->importe,
+                        "tipAfeIgv" =>
+                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        "tipSisIsc" => "01",
+                    ];
+                })
+                ->toArray();
+
+            $this->totales = $this->setSubTotalesIgv($detallesArray);
+
+            // Actualizar el pedido con los nuevos totales
+            $this->pedidoEnEdicion->update([
+                "valor_venta" => $this->totales["valorVenta"],
+                "total_impuestos" => $this->totales["totalImpuestos"],
+                "importe_total" => $this->totales["subTotal"],
+            ]);
+
+            // Recargar el pedido para actualizar la vista
+            $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
+                "pedidoDetalles.producto",
+            ]);
+
+            DB::commit();
+
+            $this->dispatch("notify", [
+                "message" => "Producto eliminado correctamente",
+                "type" => "success",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger("Error al eliminar detalle:", [
+                "error" => $e->getMessage(),
+                "stack" => $e->getTraceAsString(),
+            ]);
+            $this->dispatch("notify", [
+                "message" =>
+                    "Error al eliminar el producto: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
+    }
+
+    private function actualizarTotalesPedido($pedidoId)
+    {
+        // Obtener los detalles del pedido actualizados
+        $detalles = PedidoDetalle::where("pedido_id", $pedidoId)
+            ->get()
+            ->map(function ($detalle) {
+                return [
+                    "importe" => $detalle->importe,
+                ];
+            })
+            ->toArray();
+
+        // Usar el mismo método del trait para calcular los totales
+        $totalesTemp = $this->setSubTotalesIgv($detalles);
+        $this->totales = [
+            "valorVenta" => $totalesTemp["valorVenta"],
+            "totalImpuestos" => $totalesTemp["totalImpuestos"],
+            "subTotal" => $totalesTemp["subTotal"],
+        ];
+
+        // Actualizar el pedido con los nuevos totales
+        Pedido::where("id", $pedidoId)->update([
+            "valor_venta" => $this->totales["valorVenta"],
+            "total_impuestos" => $this->totales["totalImpuestos"],
+            "importe_total" => $this->totales["subTotal"],
+        ]);
+    }
+
+    public function guardarCambios()
+    {
+        try {
+            DB::beginTransaction();
+
+            // Recalcular totales basados en los detalles actuales
+            $detalles = $this->pedidoEnEdicion->pedidoDetalles;
+
+            // Mapear los detalles en el formato exacto que espera setSubTotalesIgv
+            $detallesArray = $detalles
+                ->map(function ($detalle) {
+                    return [
+                        "producto_id" => $detalle->producto_id,
+                        "cantidad" => $detalle->cantidad,
+                        "importe" => $detalle->importe,
+                        // Campos adicionales que el trait necesita
+                        "tipAfeIgv" =>
+                            $detalle->producto->f_tipo_afectacion_id ?? 10, // Valor por defecto 10 (gravado)
+                        "tipSisIsc" => "01", // Valor por defecto según el trait
+                    ];
+                })
+                ->toArray();
+
+            // Calcular los totales usando el trait
+            $totalesTemp = $this->setSubTotalesIgv($detallesArray);
+
+            // Actualizar el pedido con los valores calculados
+            $this->pedidoEnEdicion->update([
+                "comentario" => $this->comentarios,
+                "valor_venta" => $totalesTemp["valorVenta"],
+                "total_impuestos" => $totalesTemp["totalImpuestos"],
+                "importe_total" => $totalesTemp["subTotal"],
+                "monto_redondeo" => $totalesTemp["redondeo"] ?? 0,
+            ]);
+
+            // Debug para verificar valores
+            logger("Guardando pedido con valores:", [
+                "detalles" => $detallesArray,
+                "totales_calculados" => $totalesTemp,
+            ]);
+
+            DB::commit();
+
+            // Notificar éxito
+            $this->dispatch("notify", [
+                "message" => "Cambios guardados correctamente",
+                "type" => "success",
+            ]);
+
+            // Cerrar el modal y refrescar datos
+            $this->dispatch("close-modal");
+            $this->pedidoEnEdicion = null;
+            $this->detallesEdit = [];
+            $this->comentarios = "";
+
+            // Refrescar la vista principal
+            $this->mount();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger("Error al guardar cambios:", [
+                "error" => $e->getMessage(),
+                "stack_trace" => $e->getTraceAsString(),
+            ]);
+            $this->dispatch("notify", [
+                "message" =>
+                    "Error al guardar los cambios: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
+    }
+
+    public function actualizarCantidadDetalle($detalleId, $nuevaCantidad)
+    {
+        try {
+            DB::beginTransaction();
+
+            $detalle = PedidoDetalle::find($detalleId);
+            $producto = Producto::find($detalle->producto_id);
+
+            if ($producto->cantidad == 1) {
+                // Para productos de paquete único
+                $cantidad = floor($nuevaCantidad);
+                $importe = $cantidad * $detalle->producto_precio;
+            } else {
+                // Para productos con múltiples unidades por caja
+                $cantidad = $this->ajustarCantidadDetalle(
+                    $nuevaCantidad,
+                    $producto->cantidad
+                );
+                $importe = $this->calcularImporteDetalle(
+                    $cantidad,
+                    $detalle->producto_precio,
+                    $producto->cantidad
+                );
+            }
+
+            // Actualizar detalle en la base de datos
+            $detalle->update([
+                "cantidad" => $cantidad,
+                "importe" => $importe,
+            ]);
+
+            // Actualizar el array de detalles en edición
+            $this->detallesEdit[$detalleId] = [
+                "cantidad" => $cantidad,
+                "importe" => $importe,
+            ];
+
+            // Recalcular totales
+            $detallesArray = $this->pedidoEnEdicion->pedidoDetalles
+                ->fresh()
+                ->map(function ($det) {
+                    return [
+                        "producto_id" => $det->producto_id,
+                        "cantidad" => $det->cantidad,
+                        "importe" => $det->importe,
+                        "tipAfeIgv" =>
+                            $det->producto->f_tipo_afectacion_id ?? 10,
+                        "tipSisIsc" => "01",
+                    ];
+                })
+                ->toArray();
+
+            $this->totales = $this->setSubTotalesIgv($detallesArray);
+
+            // Actualizar el pedido con los nuevos totales
+            $this->pedidoEnEdicion->update([
+                "valor_venta" => $this->totales["valorVenta"],
+                "total_impuestos" => $this->totales["totalImpuestos"],
+                "importe_total" => $this->totales["subTotal"],
+            ]);
+
+            // Debug para verificar
+            logger("Actualizando cantidad:", [
+                "detalle_id" => $detalleId,
+                "cantidad_nueva" => $cantidad,
+                "importe_nuevo" => $importe,
+                "totales" => $this->totales,
+            ]);
+
+            DB::commit();
+
+            // Recargar el pedido para actualizar la vista
+            $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
+                "pedidoDetalles.producto",
+            ]);
+
+            $this->dispatch("notify", [
+                "message" => "Cantidad actualizada correctamente",
+                "type" => "success",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger("Error al actualizar cantidad:", [
+                "error" => $e->getMessage(),
+                "stack" => $e->getTraceAsString(),
+            ]);
+            $this->dispatch("notify", [
+                "message" =>
+                    "Error al actualizar cantidad: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
+    }
+
+    private function ajustarCantidadDetalle($cantidad, $cantidadPorCaja)
+    {
+        // Si la cantidad es menor a 1, asumimos que son paquetes
+        if ($cantidad < 1) {
+            $paquetes = round($cantidad * 100); // Convertir a paquetes
+            if ($paquetes >= $cantidadPorCaja) {
+                $cajas = floor($paquetes / $cantidadPorCaja);
+                $paquetes = $paquetes % $cantidadPorCaja;
+                return $cajas . "." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+            }
+            return "0." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+        }
+
+        // Para cantidades mayores a 1 (cajas)
+        $cajas = floor($cantidad);
+        $paquetes = round(($cantidad - $cajas) * 100);
+
+        if ($paquetes >= $cantidadPorCaja) {
+            $cajas += floor($paquetes / $cantidadPorCaja);
+            $paquetes = $paquetes % $cantidadPorCaja;
+        }
+
+        return $cajas . "." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+    }
+
+    private function calcularImporteDetalle(
+        $cantidad,
+        $precioCaja,
+        $cantidadPorCaja
+    ) {
+        // Separar cajas y paquetes
+        list($cajas, $paquetes) = explode(".", $cantidad);
+        $cajas = intval($cajas);
+        $paquetes = intval($paquetes);
+
+        // Calcular precio por paquete
+        $precioPorPaquete = $precioCaja / $cantidadPorCaja;
+
+        // Calcular importe total
+        $importeCajas = $cajas * $precioCaja;
+        $importePaquetes = $paquetes * $precioPorPaquete;
+
+        return $importeCajas + $importePaquetes;
     }
 }
