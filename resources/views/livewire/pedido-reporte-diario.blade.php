@@ -159,6 +159,19 @@
      style="display: none;">
          <style>
              .edit_modal {
+                 z-index: 9999999 !important;
+                 &>div{
+                     padding: calc(0px + 0.5vw);
+                     @media (width < 550px){
+                         padding:0;
+                     }
+                 }
+                 .modal_pad{
+                     padding: 0 calc(0px + 0.5vw);
+                     @media (width < 550px){
+                         border-radius:0;
+                     }
+                 }
                  & :is(th, td) {
                      padding: calc(2px + 0.5vw);
                  }
@@ -179,14 +192,14 @@
                  }
              }
          </style>
-    <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="flex items-center justify-center min-h-screen">
         <!-- Overlay -->
         <div class="fixed inset-0 bg-black opacity-50"></div>
 
         <!-- Modal -->
-        <div class="relative bg-white dark:bg-gray-800 w-full max-w-6xl rounded-lg shadow-xl">
+        <div class="modal_pad relative bg-white dark:bg-gray-800 w-full max-w-6xl rounded-lg shadow-xl">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between py-4 border-b dark:border-gray-700">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                     Editar Pedido
                 </h3>
@@ -198,7 +211,7 @@
             </div>
 
             <!-- Modal Content -->
-            <div class="p-6">
+            <div class="py-6">
                 @if($pedidoEnEdicion)
                     <!-- Información básica -->
                     <div class="grid md:grid-cols-2 gap-6 mb-4">
@@ -363,7 +376,7 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex justify-end p-4 border-t dark:border-gray-700">
+            <div class="flex justify-end py-4 border-t dark:border-gray-700">
                 <button
                     wire:click="guardarCambios"
                     class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

@@ -51,13 +51,14 @@ class PedidoReporteDiario extends Component
             $pedidosPorVendedor = Pedido::where("fecha_emision", $fechaBusqueda)
                 ->where("vendedor_id", $vendedorId)
                 ->with([
+                    "vendedor",
                     "ruta",
                     "cliente",
                     "listaPrecio",
                     "pedidoDetalles.producto",
                 ])
                 ->get()
-                ->groupBy("ruta_id");
+                ->groupBy("vendedor_id");
         }
 
         return view("livewire.pedido-reporte-diario", [
@@ -407,30 +408,36 @@ class PedidoReporteDiario extends Component
         ]);
     }
 
+    public $cambiosTemporales = [];
     public function guardarCambios()
     {
         try {
             DB::beginTransaction();
 
-            // Recalcular totales basados en los detalles actuales
-            $detalles = $this->pedidoEnEdicion->pedidoDetalles;
+            // Aplicar los cambios temporales
+            foreach ($this->cambiosTemporales as $detalleId => $cambio) {
+                $detalle = PedidoDetalle::find($detalleId);
+                $detalle->update([
+                    "cantidad" => $cambio["cantidad"],
+                    "importe" => $cambio["importe"],
+                ]);
+            }
 
-            // Mapear los detalles en el formato exacto que espera setSubTotalesIgv
+            // Recalcular totales basados en los detalles actualizados
+            $detalles = $this->pedidoEnEdicion->pedidoDetalles()->get();
             $detallesArray = $detalles
                 ->map(function ($detalle) {
                     return [
                         "producto_id" => $detalle->producto_id,
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
-                        // Campos adicionales que el trait necesita
                         "tipAfeIgv" =>
-                            $detalle->producto->f_tipo_afectacion_id ?? 10, // Valor por defecto 10 (gravado)
-                        "tipSisIsc" => "01", // Valor por defecto según el trait
+                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        "tipSisIsc" => "01",
                     ];
                 })
                 ->toArray();
 
-            // Calcular los totales usando el trait
             $totalesTemp = $this->setSubTotalesIgv($detallesArray);
 
             // Actualizar el pedido con los valores calculados
@@ -442,34 +449,24 @@ class PedidoReporteDiario extends Component
                 "monto_redondeo" => $totalesTemp["redondeo"] ?? 0,
             ]);
 
-            // Debug para verificar valores
-            logger("Guardando pedido con valores:", [
-                "detalles" => $detallesArray,
-                "totales_calculados" => $totalesTemp,
-            ]);
-
             DB::commit();
 
-            // Notificar éxito
+            // Limpiar cambios temporales
+            $this->cambiosTemporales = [];
+
             $this->dispatch("notify", [
                 "message" => "Cambios guardados correctamente",
                 "type" => "success",
             ]);
 
-            // Cerrar el modal y refrescar datos
             $this->dispatch("close-modal");
             $this->pedidoEnEdicion = null;
             $this->detallesEdit = [];
             $this->comentarios = "";
 
-            // Refrescar la vista principal
             $this->mount();
         } catch (\Exception $e) {
             DB::rollBack();
-            logger("Error al guardar cambios:", [
-                "error" => $e->getMessage(),
-                "stack_trace" => $e->getTraceAsString(),
-            ]);
             $this->dispatch("notify", [
                 "message" =>
                     "Error al guardar los cambios: " . $e->getMessage(),
@@ -481,17 +478,15 @@ class PedidoReporteDiario extends Component
     public function actualizarCantidadDetalle($detalleId, $nuevaCantidad)
     {
         try {
-            DB::beginTransaction();
-
+            // Obtiene el detalle del pedido y el producto
             $detalle = PedidoDetalle::find($detalleId);
             $producto = Producto::find($detalle->producto_id);
 
+            // Procesa la cantidad según el tipo de producto
             if ($producto->cantidad == 1) {
-                // Para productos de paquete único
                 $cantidad = floor($nuevaCantidad);
                 $importe = $cantidad * $detalle->producto_precio;
             } else {
-                // Para productos con múltiples unidades por caja
                 $cantidad = $this->ajustarCantidadDetalle(
                     $nuevaCantidad,
                     $producto->cantidad
@@ -503,26 +498,30 @@ class PedidoReporteDiario extends Component
                 );
             }
 
-            // Actualizar detalle en la base de datos
-            $detalle->update([
+            // Almacena los cambios temporalmente
+            $this->cambiosTemporales[$detalleId] = [
                 "cantidad" => $cantidad,
                 "importe" => $importe,
-            ]);
+            ];
 
-            // Actualizar el array de detalles en edición
+            // Actualiza el array de detalles en edición (solo para visualización)
             $this->detallesEdit[$detalleId] = [
                 "cantidad" => $cantidad,
                 "importe" => $importe,
             ];
 
-            // Recalcular totales
+            // Recalcula totales temporales
             $detallesArray = $this->pedidoEnEdicion->pedidoDetalles
-                ->fresh()
-                ->map(function ($det) {
+                ->map(function ($det) use ($detalleId) {
+                    $cambio = $this->cambiosTemporales[$det->id] ?? null;
                     return [
                         "producto_id" => $det->producto_id,
-                        "cantidad" => $det->cantidad,
-                        "importe" => $det->importe,
+                        "cantidad" => $cambio
+                            ? $cambio["cantidad"]
+                            : $det->cantidad,
+                        "importe" => $cambio
+                            ? $cambio["importe"]
+                            : $det->importe,
                         "tipAfeIgv" =>
                             $det->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
@@ -532,38 +531,12 @@ class PedidoReporteDiario extends Component
 
             $this->totales = $this->setSubTotalesIgv($detallesArray);
 
-            // Actualizar el pedido con los nuevos totales
-            $this->pedidoEnEdicion->update([
-                "valor_venta" => $this->totales["valorVenta"],
-                "total_impuestos" => $this->totales["totalImpuestos"],
-                "importe_total" => $this->totales["subTotal"],
-            ]);
-
-            // Debug para verificar
-            logger("Actualizando cantidad:", [
-                "detalle_id" => $detalleId,
-                "cantidad_nueva" => $cantidad,
-                "importe_nuevo" => $importe,
-                "totales" => $this->totales,
-            ]);
-
-            DB::commit();
-
-            // Recargar el pedido para actualizar la vista
-            $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
-                "pedidoDetalles.producto",
-            ]);
-
             $this->dispatch("notify", [
-                "message" => "Cantidad actualizada correctamente",
-                "type" => "success",
+                "message" =>
+                    "Cantidad actualizada. No olvide guardar los cambios.",
+                "type" => "info",
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            logger("Error al actualizar cantidad:", [
-                "error" => $e->getMessage(),
-                "stack" => $e->getTraceAsString(),
-            ]);
             $this->dispatch("notify", [
                 "message" =>
                     "Error al actualizar cantidad: " . $e->getMessage(),
