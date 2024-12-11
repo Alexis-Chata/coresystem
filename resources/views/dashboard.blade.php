@@ -109,5 +109,38 @@
     </div>
 </div>
 <livewire:pedido-reporte-diario />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <livewire:asignar-conductor-table/>
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('limpiarCheckboxHeader', () => {
+            const headerCheckbox = document.querySelector('thead input[type="checkbox"]');
+            if (headerCheckbox) {
+                headerCheckbox.checked = false;
+            }
+        });
+        
+        Livewire.on('pg:notification', (data) => {
+            const notification = data[0];
+
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'center',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: notification.type === 'success' ? 'success' : 'error',
+                title: notification.title,
+                text: notification.message
+            });
+        });
+    });
+</script>
 @endsection
