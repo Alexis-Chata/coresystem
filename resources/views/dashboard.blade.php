@@ -109,4 +109,5 @@
     </div>
 </div>
 <livewire:pedido-reporte-diario />
+<livewire:asignar-conductor-table/>
 @endsection
