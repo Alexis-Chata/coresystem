@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Almacen;
 use App\Models\User;
 use App\Models\FSede;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
             SerieSeeder::class,
             AlmacenSeeder::class,
             TipoMovimientoSeeder::class,
+            AlmacenProductoSeeder::class,
         ]);
 
         $sede = FSede::first();
