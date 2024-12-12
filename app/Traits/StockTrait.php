@@ -9,6 +9,46 @@ use Illuminate\Support\Facades\DB;
 
 trait StockTrait
 {
+    public function validarStock_arraydetalles($array_detalles, $almacen_id)
+    {
+        $array_detalles = collect($array_detalles);
+        // Variable para almacenar productos sin suficiente stock
+        $errores = [];
+        $mesaje_error = "";
+        $ids_productos = $array_detalles->pluck('producto_id')->toArray();
+        $stock_productos = Producto::with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
+        //dd($stock_productos, $array_detalles->pluck(['producto_id']));
+
+        foreach ($array_detalles as $detalle) {
+            // Obtener el stock actual del producto desde la base de datos
+            $producto_stock = $stock_productos->find($detalle['producto_id'])->almacenProductos->firstWhere('almacen_id', $almacen_id);
+            $stock_disponible = optional($producto_stock)->stock_disponible ?? 0;
+
+            // Comparar el stock disponible con la cantidad solicitada
+            if ($stock_disponible < $detalle['cantidad']) {
+                $errores[] = [
+                    'producto_id' => $detalle['producto_id'],
+                    'nombre' => $detalle['nombre'],
+                    'stock_disponible' => $stock_disponible,
+                    'cantidad_solicitada' => $detalle['cantidad'],
+                ];
+            }
+        }
+
+        // Mostrar errores si hay productos sin suficiente stock
+        if (!empty($errores)) {
+            foreach ($errores as $error) {
+                $mesaje_error .= "Producto: {$error['nombre']} ({$error['producto_id']})<br />";
+                $mesaje_error .= "Stock disponible: {$error['stock_disponible']} | Cantidad solicitada: {$error['cantidad_solicitada']}<br />";
+                $mesaje_error .= "-----------<br />";
+            }
+            throw new \Exception("Stock insuficiente:<br />" . $mesaje_error);
+            //logger("Lanzando excepción por stock insuficiente.");
+        } else {
+            $mesaje_error .= "Todos los productos tienen suficiente stock.<br />";
+        }
+    }
+
     public function actualizarStock(Movimiento|Pedido $movimiento_or_pedido, $anulando = false)
     {
         if ($movimiento_or_pedido instanceof Movimiento) {
@@ -56,7 +96,7 @@ trait StockTrait
     public function pedidoStock(Pedido $pedido, $anulando = false)
     {
         $almacenId = $pedido->empresa->almacenes->first()->id;
-        $pedido->pedidoDetalles->each(function ($detalle) use ($pedido, $almacenId, $anulando) {
+        $pedido->pedidoDetalles->each(function ($detalle) use ($almacenId, $anulando) {
             $producto = Producto::find($detalle->producto_id);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $almacenId)->first();
 

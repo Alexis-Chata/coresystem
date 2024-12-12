@@ -42,11 +42,11 @@ class ClienteSelect extends Component
         Log::info('Rutas del vendedor', ['rutas' => $rutasDelVendedor]);
 
         $query = Cliente::whereIn('ruta_id', $rutasDelVendedor);
-        
+
         if (!empty($this->search)) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('razon_social', 'like', '%' . $this->search . '%')
-                  ->orWhere('id', 'like', '%' . $this->search . '%');
+                    ->orWhere('id', 'like', '%' . $this->search . '%');
             });
         }
 
@@ -78,6 +78,7 @@ class ClienteSelect extends Component
 
     public function selectCliente($clienteId)
     {
+        $this->resetValidation();
         $cliente = Cliente::find($clienteId);
         if ($cliente) {
             $this->cliente_id = $cliente->id;

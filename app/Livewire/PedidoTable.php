@@ -12,6 +12,8 @@ use App\Models\ListaPrecio;
 use App\Models\Producto;
 use App\Models\FTipoComprobante;
 use App\Traits\CalculosTrait;
+use App\Traits\StockTrait;
+use Exception;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 class PedidoTable extends Component
 {
     use CalculosTrait;
+    use StockTrait;
     // Propiedades del formulario
     public $empresa;
     public $fecha_emision;
@@ -311,6 +314,7 @@ class PedidoTable extends Component
 
     public function guardarPedido()
     {
+        $this->resetValidation();
         $this->validate();
 
         try {
@@ -319,6 +323,9 @@ class PedidoTable extends Component
             $this->importe_total = collect($this->pedido_detalles)->sum(
                 "importe"
             );
+
+            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
+            $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
 
             $pedido = Pedido::create([
                 "ruta_id" => $this->ruta_id,
@@ -382,10 +389,12 @@ class PedidoTable extends Component
             $this->dispatch("reset-cliente-select");
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollback();
             logger("Error al guardar pedido:", ["error" => $e->getMessage()]);
-            $this->dispatch("error", "Error al guardar el pedido");
+            //throw $e; // Relanza la excepción si necesitas propagarla
+            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido"."<br>". $e->getMessage());
+            $this->addError("error_guardar", $e->getMessage());
         }
     }
 
@@ -530,6 +539,7 @@ class PedidoTable extends Component
 
     public function handleClienteSelected($clienteId)
     {
+        $this->resetValidation('cliente_id');
         if ($clienteId) {
             $this->cliente_id = $clienteId;
             $this->updatedClienteId($clienteId);
