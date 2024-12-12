@@ -85,7 +85,7 @@ class PedidoTable extends Component
     private function initializeDefaultData()
     {
         $this->empresa = Empresa::first();
-        $this->fecha_emision = Carbon::now()->format("d-m-Y");
+        $this->fecha_emision = Carbon::now()->format("Y-m-d");
 
         if (!$this->user->hasRole("admin")) {
             $this->vendedor_id = $this->empleado->id;

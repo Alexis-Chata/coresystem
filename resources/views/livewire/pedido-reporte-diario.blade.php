@@ -41,7 +41,7 @@
                             </svg>
                         </span>
                         <span class="text-lg font-semibold text-gray-800 dark:text-white">
-                            {{ $pedidosVendedor->first()->vendedor->name }}
+                            #{{ $pedidosVendedor->first()->vendedor->id }} - {{ $pedidosVendedor->first()->vendedor->name }}
                         </span>
                     </div>
                     <span class="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-400">
@@ -58,14 +58,14 @@
                                     </svg>
                                 </span>
                                 <span class="font-semibold text-gray-700 dark:text-gray-300">
-                                    Ruta: {{ $pedidosRuta->first()->ruta->name }}
+                                    #{{ $pedidosRuta->first()->ruta->id }} - {{ $pedidosRuta->first()->ruta->name }}
                                 </span>
                                 <span class="ml-auto px-3 py-1 text-sm font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-400" style="margin-left:auto">
                                     Monto: S/. {{ number_format($pedidosRuta->sum('importe_total'), 2) }}
                                 </span>
                             </summary>
                             <div class="p-1 bg-green-100 dark:bg-green-800">
-                                @foreach($pedidosRuta->groupBy('cliente_id') as $clienteId => $pedidosCliente)
+                                @foreach($pedidosRuta as $pedido)
                                     <details class="mb-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
                                         <summary class="bg-purple-100 dark:bg-purple-800 p-3 flex items-center cursor-pointer group-open:bg-purple-200 dark:group-open:bg-purple-700 transition-colors">
                                             <span class="flex-none rounded-full bg-purple-100 p-1.5 mr-3 dark:bg-purple-900">
@@ -75,24 +75,24 @@
                                             </span>
                                             <div>
                                                 <span class="text-gray-800 dark:text-gray-300 font-medium">
-                                                    Cliente: {{ $pedidosCliente->first()->cliente->razon_social }}
+                                                    #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }}
                                                 </span>
                                                 <span class="block text-sm text-gray-600 dark:text-gray-400">
-                                                    {{ $pedidosCliente->first()->cliente->direccion }}
+                                                    {{ $pedido->cliente->direccion }}
                                                 </span>
                                             </div>
                                             <span class="ml-auto px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full dark:bg-purple-900 dark:text-purple-400" style="margin-left:auto">
-                                                Total: S/. {{ number_format($pedidosCliente->sum('importe_total'), 2) }} |
-                                                    Lista: {{ $pedidosCliente->first()->listaPrecio->name ?? 'Sin lista' }}
+                                                Total: S/. {{ number_format($pedido->importe_total, 2) }} |
+                                                Lista: {{ $pedido->listaPrecio->name ?? 'Sin lista' }}
                                             </span>
                                             <button
-                                                        wire:click="editarPedido({{ $pedidosCliente->first()->id }})"
-                                                        class="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
-                                                    >
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                        </svg>
-                                                    </button>
+                                                wire:click="editarPedido({{ $pedido->id }})"
+                                                class="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </button>
                                         </summary>
                                         <div class="bg-purple-50 dark:bg-purple-800">
                                             <div class="overflow-x-auto">
@@ -106,9 +106,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-400">
-                                                        @foreach($pedidosCliente->first()->pedidoDetalles as $detalle)
+                                                        @foreach($pedido->pedidoDetalles as $detalle)
                                                             <tr>
-                                                                <td class="px-6 py-4">{{ $detalle->producto_name }}</td>
+                                                                <td class="px-6 py-4">#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
                                                                 <td class="px-6 py-4">{{ $detalle->cantidad }}</td>
                                                                 <td class="px-6 py-4">S/. {{ number_format($detalle->producto_precio, 2) }}</td>
                                                                 <td class="px-6 py-4">S/. {{ number_format($detalle->importe, 2) }}</td>
@@ -117,21 +117,21 @@
                                                     </tbody>
                                                     <tfoot class="bg-gray-100 dark:bg-gray-700">
                                                         <tr>
-                                                                <td colspan="2" class="px-6 py-4">
-                                                                    @if($pedidosCliente->first()->comentario)
-                                                                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                                                                            <span class="font-medium">Nota:</span>
-                                                                            {{ $pedidosCliente->first()->comentario }}
-                                                                        </div>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="px-6 py-4 text-right font-medium text-gray-800 dark:text-white">
-                                                                    Total Pedido:
-                                                                </td>
-                                                                <td class="px-6 py-4 text-gray-800 dark:text-white">
-                                                                    S/. {{ number_format($pedidosCliente->first()->importe_total, 2) }}
-                                                                </td>
-                                                            </tr>
+                                                            <td colspan="2" class="px-6 py-4">
+                                                                @if($pedido->comentario)
+                                                                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                                                                        <span class="font-medium">Nota:</span>
+                                                                        {{ $pedido->comentario }}
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                            <td class="px-6 py-4 text-right font-medium text-gray-800 dark:text-white">
+                                                                Total Pedido:
+                                                            </td>
+                                                            <td class="px-6 py-4 text-gray-800 dark:text-white">
+                                                                S/. {{ number_format($pedido->importe_total, 2) }}
+                                                            </td>
+                                                        </tr>
                                                     </tfoot>
                                                 </table>
                                             </div>
@@ -220,7 +220,7 @@
                             <input
                                 type="text"
                                 class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                value="{{ $pedidoEnEdicion->cliente->razon_social }}"
+                                value="#{{ $pedidoEnEdicion->cliente->id }} - {{ $pedidoEnEdicion->cliente->razon_social }}"
                                 disabled
                             />
                             <label
@@ -299,7 +299,7 @@
                         <tbody>
                             @foreach($pedidoEnEdicion->pedidoDetalles as $detalle)
                                 <tr>
-                                    <td>{{ $detalle->producto_name }}</td>
+                                    <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
                                     <td>
                                             @php
                                                 $producto = App\Models\Producto::find($detalle->producto_id);
@@ -376,13 +376,22 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex justify-end py-4 border-t dark:border-gray-700">
-                <button
-                    wire:click="guardarCambios"
-                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                    Guardar Cambios
-                </button>
+            <div class="flex justify-end gap-3 py-4 border-t dark:border-gray-700">
+                @if($pedidoEnEdicion)
+                    <button
+                        wire:click="eliminarPedido"
+                        wire:confirm="¿Está seguro de eliminar este pedido? Esta acción no se puede deshacer."
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                        Eliminar Pedido
+                    </button>
+                    <button
+                        wire:click="guardarCambios"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                        Guardar Cambios
+                    </button>
+                @endif
             </div>
         </div>
     </div>

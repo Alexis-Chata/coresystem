@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('vendedor_id')->constrained('empleados')->where('tipo_empleado', 'vendedor');
             $table->foreignId('conductor_id')->nullable()->constrained('empleados')->where('tipo_empleado', 'conductor');
             $table->foreignId('cliente_id')->constrained('clientes');
-            $table->string('fecha_emision')->nullable();
+            $table->date('fecha_emision')->nullable();
             $table->string('importe_total')->nullable();
             $table->string('nro_doc_liquidacion')->nullable();
             $table->string('lista_precio')->nullable();

@@ -33,7 +33,7 @@ class PedidoReporteDiario extends Component
     public function render()
     {
         $user = auth()->user();
-        $fechaBusqueda = Carbon::parse($this->fecha)->format("d-m-Y");
+        $fechaBusqueda = Carbon::parse($this->fecha);
 
         if ($user->hasRole("admin")) {
             $pedidosPorVendedor = Pedido::where("fecha_emision", $fechaBusqueda)
@@ -588,5 +588,46 @@ class PedidoReporteDiario extends Component
         $importePaquetes = $paquetes * $precioPorPaquete;
 
         return $importeCajas + $importePaquetes;
+    }
+
+    public function eliminarPedido()
+    {
+        try {
+            if (!$this->pedidoEnEdicion) {
+                throw new \Exception(
+                    "No hay pedido seleccionado para eliminar"
+                );
+            }
+
+            DB::beginTransaction();
+
+            // Eliminamos los detalles del pedido
+            $this->pedidoEnEdicion->pedidoDetalles()->delete();
+
+            // Luego eliminamos el pedido
+            $this->pedidoEnEdicion->delete();
+
+            DB::commit();
+
+            $this->dispatch("notify", [
+                "message" => "Pedido eliminado correctamente",
+                "type" => "success",
+            ]);
+
+            // Cerrar el modal y limpiar el estado
+            $this->dispatch("close-modal");
+            $this->pedidoEnEdicion = null;
+            $this->detallesEdit = [];
+            $this->comentarios = "";
+
+            // Recargar los datos
+            $this->mount();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch("notify", [
+                "message" => "Error al eliminar el pedido: " . $e->getMessage(),
+                "type" => "error",
+            ]);
+        }
     }
 }
