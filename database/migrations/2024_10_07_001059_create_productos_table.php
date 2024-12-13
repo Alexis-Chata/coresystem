@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('cantidad');
             $table->string('sub_cantidad')->default(0);
+            $table->string('peso')->default(1);
             $table->string('tipo')->default('estandar');
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('marca_id')->constrained('marcas');

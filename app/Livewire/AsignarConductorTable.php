@@ -18,12 +18,34 @@ final class AsignarConductorTable extends PowerGridComponent
 {
     public string $tableName = "asignar-conductor-table-wah29z-table";
     public $selectedConductor = "";
+    public $fecha_reparto = "";
+
+    public $startDate = null;
+    public $endDate = null;
+    protected function initProperties(): void
+    {
+        $this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
+        $this->endDate = Carbon::now()->format("Y-m-d");
+    }
+
+    public function updatedStartDate($value)
+    {
+        $this->dispatch("pg:eventRefresh-" . $this->tableName);
+    }
+
+    public function updatedEndDate($value)
+    {
+        $this->dispatch("pg:eventRefresh-" . $this->tableName);
+    }
 
     public function setUp(): array
     {
+        $this->initProperties();
         $this->showCheckBox();
         return [
-            //PowerGrid::header()->showSearchInput(),
+            PowerGrid::header()->includeViewOnTop(
+                "components.date-range-filter"
+            ),
             PowerGrid::footer()->showPerPage()->showRecordCount(),
         ];
     }
@@ -65,6 +87,12 @@ final class AsignarConductorTable extends PowerGridComponent
                 "vendedores.id"
             )
             ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
+            ->when($this->startDate && $this->endDate, function ($query) {
+                return $query->whereBetween("pedidos.created_at", [
+                    $this->startDate . " 00:00:00",
+                    $this->endDate . " 23:59:59",
+                ]);
+            })
             ->select(
                 "pedidos.*",
                 "rutas.name as ruta_nombre",
@@ -168,6 +196,12 @@ final class AsignarConductorTable extends PowerGridComponent
                     Asignar Conductor
                 </label>
             </div>
+            <div class="relative w-72">
+                <input type="date" wire:model="fecha_reparto" class="block px-2.5 pb-2.5 pt-4 text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
+                <label class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                    Fecha de Reparto
+                </label>
+            </div>
             <button
                 wire:click="asignarConductorASeleccionados"
                 class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out"
@@ -224,9 +258,11 @@ final class AsignarConductorTable extends PowerGridComponent
         try {
             Pedido::whereIn("id", $this->checkboxValues)->update([
                 "conductor_id" => $this->selectedConductor,
+                "fecha_reparto" => $this->fecha_reparto,
             ]);
 
             $this->selectedConductor = "";
+            $this->fecha_reparto = "";
             $this->checkboxValues = [];
 
             $this->dispatch("pg:notification", [

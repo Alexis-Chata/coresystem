@@ -14,6 +14,7 @@ class Producto extends Model
         'name',
         'cantidad',
         'sub_cantidad',
+        'peso',
         'tipo',
         'empresa_id',
         'marca_id',

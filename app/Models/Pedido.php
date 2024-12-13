@@ -17,6 +17,7 @@ class Pedido extends Model
         "conductor_id",
         "cliente_id",
         "fecha_emision",
+        "fecha_reparto",
         "importe_total",
         "nro_doc_liquidacion",
         "lista_precio",
