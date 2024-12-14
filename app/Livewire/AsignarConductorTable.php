@@ -13,6 +13,7 @@ use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 final class AsignarConductorTable extends PowerGridComponent
 {
@@ -281,5 +282,80 @@ final class AsignarConductorTable extends PowerGridComponent
                 "message" => "Hubo un error al asignar el conductor",
             ]);
         }
+    }
+
+    public function exportarPedidosPDF()
+    {
+        $startDate = $this->startDate;
+        $endDate = $this->endDate;
+        // Validar las fechas
+        if (!$this->startDate || !$this->endDate) {
+            $this->dispatch("pg:notification", [
+                "type" => "error",
+                "title" => "Error",
+                "message" => "Debe seleccionar un rango de fechas válido.",
+            ]);
+            return;
+        }
+
+        // Obtener los pedidos en el rango
+        $pedidos = Pedido::query()
+            ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
+            ->join("empleados as vendedores", "pedidos.vendedor_id", "=", "vendedores.id")
+            ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
+            ->join("empleados as conductores", "pedidos.conductor_id", "=", "conductores.id")
+            ->join("vehiculos", "conductores.vehiculo_id", "=", "vehiculos.id")
+            ->whereBetween("pedidos.created_at", [
+                $this->startDate . " 00:00:00",
+                $this->endDate . " 23:59:59",
+            ])
+            ->select(
+                "pedidos.id as numero_pedido",
+                "pedidos.importe_total",
+                "rutas.id as ruta_id",
+                "rutas.name as ruta_nombre",
+                "vendedores.id as vendedor_id",
+                "vendedores.name as vendedor_nombre",
+                "conductores.id as conductor_id",
+                "conductores.name as conductor_nombre",
+                "vehiculos.placa as vehiculo_placa",
+                "vehiculos.marca as vehiculo_marca",
+                "vehiculos.tonelaje_maximo as vehiculo_tonelaje"
+            )
+            ->get();
+            $pedidosAgrupados = $pedidos->groupBy('conductor_id')->map(function ($grupo) {
+                $clientesPorRuta = $grupo->groupBy('ruta_id')->map(function ($pedidosPorRuta) {
+                    return $pedidosPorRuta->unique('cliente_id')->count();
+                });
+        
+                return [
+                    'pedidos' => $grupo,
+                    'importeTotal' => $grupo->sum('importe_total'),
+                    'clientesPorRuta' => $clientesPorRuta,
+                    'totalClientes' => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
+                ];
+            });
+
+        if ($pedidos->isEmpty()) {
+            $this->dispatch("pg:notification", [
+                "type" => "warning",
+                "title" => "Sin resultados",
+                "message" =>
+                    "No se encontraron pedidos en el rango seleccionado.",
+            ]);
+            return;
+        }
+
+        // Generar el PDF
+        $pdf = Pdf::loadView(
+            "pdf.pedidos",
+            compact("pedidosAgrupados", "startDate", "endDate")
+        );
+
+        // Descargar el PDF
+        return response()->streamDownload(
+            fn() => print $pdf->output(),
+            "pedidos_" . $this->startDate . "_a_" . $this->endDate . ".pdf"
+        );
     }
 }
