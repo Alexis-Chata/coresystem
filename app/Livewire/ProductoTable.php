@@ -292,7 +292,6 @@ final class ProductoTable extends PowerGridComponent
                 'newProducto.porcentaje_igv' => 'required|numeric',
                 'newProducto.tipo' => 'required|in:estandar,compuesto',
                 'newProducto.tipo_unidad' => 'required|string',
-                'newProducto.cantidad_total' => 'required|numeric|min:1',
             ];
 
             // Validación específica según el tipo de producto
@@ -300,6 +299,7 @@ final class ProductoTable extends PowerGridComponent
                 $baseValidation['newProducto.cantidad'] = 'required|numeric|min:0';
                 $baseValidation['newProducto.sub_cantidad'] = 'nullable|numeric|min:0';
             } else {
+                $baseValidation['newProducto.cantidad_total'] = 'required|numeric|min:1';
                 $baseValidation['newProducto.components'] = 'required|array|min:1';
                 $baseValidation['newProducto.components.*.producto_id'] = 'required|exists:productos,id';
                 $baseValidation['newProducto.components.*.cantidad'] = 'required|numeric|min:1';
