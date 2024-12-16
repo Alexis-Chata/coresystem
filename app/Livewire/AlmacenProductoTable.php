@@ -24,7 +24,7 @@ final class AlmacenProductoTable extends PowerGridComponent
     public function setUp(): array
     {
         $this->showCheckBox();
-        $this->user = auth()->user();
+        $this->user = auth_user();
         $this->empleado = $this->user->empleados()->first();
         $this->f_sede = $this->user->empleados()->first()->FSede->name;
         $this->empresas = Empresa::all();
@@ -40,12 +40,16 @@ final class AlmacenProductoTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return AlmacenProducto::query()->with(['producto', 'almacen']);
+        return AlmacenProducto::query()->with(['producto.marca', 'almacen']);
     }
 
     public function relationSearch(): array
     {
-        return [];
+        return [
+            'producto' => ['name'],
+            'almacen' => ['name'],
+            'producto.marca' => ['name'],
+        ];
     }
 
     public function fields(): PowerGridFields
@@ -53,13 +57,23 @@ final class AlmacenProductoTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('producto_id', function ($row) {
+                return $row->producto->id;
+            })
+            ->add('producto_name', function ($row) {
                 return $row->producto->name;
             })
             ->add('almacen_id', function ($row) {
                 return $row->almacen->name;
             })
-            ->add('stock_disponible')
-            ->add('stock_fisico')
+            ->add('stock_disponible', function ($row) {
+                return number_format_punto2($row->stock_disponible);
+            })
+            ->add('stock_fisico', function ($row) {
+                return number_format_punto2($row->stock_fisico);
+            })
+            ->add('marca_name', function ($row) {
+                return $row->producto->marca->name;
+            })
             ->add('created_at_formatted', fn($model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
             ->add('created_at');
     }
@@ -67,23 +81,22 @@ final class AlmacenProductoTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
             Column::make('Producto id', 'producto_id'),
-            Column::make('Almacen id', 'almacen_id'),
+            Column::make('Producto Name', 'producto_name'),
+
             Column::make('Stock disponible', 'stock_disponible')
-                ->sortable()
-                ->searchable(),
+            ->sortable()
+            ->searchable(),
 
             Column::make('Stock fisico', 'stock_fisico')
-                ->sortable()
-                ->searchable(),
+            ->sortable()
+            ->searchable(),
 
+            Column::make('Marca', 'marca_name'),
+            Column::make('Almacen', 'almacen_id'),
             Column::make('Created at', 'created_at_formatted', 'created_at')
-                ->sortable(),
-
-            Column::make('Created at', 'created_at')
-                ->sortable()
-                ->searchable(),
+            ->sortable()
+            ->searchable(),
 
             Column::action('Action')
         ];
@@ -98,6 +111,7 @@ final class AlmacenProductoTable extends PowerGridComponent
     public function edit($rowId): void
     {
         $this->js('alert(' . $rowId . ')');
+        $this->dispatch('SweetAlert2', $rowId);
     }
 
     public function actions(AlmacenProducto $row): array

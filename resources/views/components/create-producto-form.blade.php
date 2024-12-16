@@ -1,4 +1,4 @@
-<div x-data="{ 
+<div x-data="{
     open: false,
     isCompuesto: 'estandar',
     components: [],
@@ -9,7 +9,7 @@
     init() {
         this.$watch('isCompuesto', value => {
             $wire.set('newProducto.tipo', value);
-            
+
             if (value === 'compuesto' && this.components.length === 0) {
                 this.addComponent();
             }
@@ -111,7 +111,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
                     Nombre
                 </label>
-                <input wire:model="newProducto.name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Nombre del producto">
+                <input wire:model="newProducto.name" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Nombre del producto">
                 @error('newProducto.name') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
@@ -119,7 +119,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="empresa_id">
                     Empresa
                 </label>
-                <select wire:model="newProducto.empresa_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="empresa_id">
+                <select wire:model="newProducto.empresa_id" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="empresa_id">
                     <option value="">Seleccione una empresa</option>
                     @foreach(App\Models\Empresa::all() as $empresa)
                         <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
@@ -132,7 +132,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="marca_id">
                     Marca
                 </label>
-                <select wire:model="newProducto.marca_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="marca_id">
+                <select wire:model="newProducto.marca_id" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="marca_id">
                     <option value="">Seleccione una marca</option>
                     @foreach(App\Models\Marca::all() as $marca)
                         <option value="{{ $marca->id }}">{{ $marca->name }}</option>
@@ -145,7 +145,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="categoria_id">
                     Categoría
                 </label>
-                <select wire:model="newProducto.categoria_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoria_id">
+                <select wire:model="newProducto.categoria_id" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoria_id">
                     <option value="">Seleccione una categoría</option>
                     @foreach(App\Models\Categoria::all() as $categoria)
                         <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
@@ -158,7 +158,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="f_tipo_afectacion_id">
                     Tipo de Afectación
                 </label>
-                <select wire:model="newProducto.f_tipo_afectacion_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_tipo_afectacion_id">
+                <select wire:model="newProducto.f_tipo_afectacion_id" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="f_tipo_afectacion_id">
                     <option value="">Seleccione un tipo de afectación</option>
                     @foreach(App\Models\FTipoAfectacion::all() as $tipoAfectacion)
                         <option value="{{ $tipoAfectacion->id }}">{{ $tipoAfectacion->name }}</option>
@@ -171,7 +171,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="porcentaje_igv">
                     Porcentaje IGV
                 </label>
-                <input wire:model="newProducto.porcentaje_igv" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="porcentaje_igv" type="number" step="0.01" placeholder="Porcentaje IGV">
+                <input wire:model="newProducto.porcentaje_igv" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="porcentaje_igv" type="number" step="0.01" placeholder="Porcentaje IGV">
                 @error('newProducto.porcentaje_igv') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
 
@@ -179,10 +179,10 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="tipo">
                     Tipo de Producto
                 </label>
-                <select 
+                <select
                     x-model="isCompuesto"
                     wire:model="newProducto.tipo"
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     id="tipo">
                     <option value="estandar">Estándar</option>
                     <option value="compuesto">Compuesto</option>
@@ -193,10 +193,10 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="cantidad">
                     Cantidad
                 </label>
-                <input wire:model="newProducto.cantidad" 
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                       id="cantidad" 
-                       type="number" 
+                <input wire:model="newProducto.cantidad"
+                       class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="cantidad"
+                       type="number"
                        placeholder="Cantidad">
                 @error('newProducto.cantidad') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
@@ -205,10 +205,10 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="sub_cantidad">
                     Sub Cantidad
                 </label>
-                <input wire:model="newProducto.sub_cantidad" 
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                       id="sub_cantidad" 
-                       type="number" 
+                <input wire:model="newProducto.sub_cantidad"
+                       class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="sub_cantidad"
+                       type="number"
                        placeholder="Sub Cantidad">
                 @error('newProducto.sub_cantidad') <span class="text-red-500 text-xs italic">{{ $message }}</span> @enderror
             </div>
@@ -235,7 +235,7 @@
                             <!-- Stock -->
                             <div class="flex-1">
                                 <label class="block text-gray-700 text-sm mb-1">Stock</label>
-                                <input type="text" 
+                                <input type="text"
                                     x-model="component.stock"
                                     class="w-full border rounded px-3 py-2 bg-gray-100"
                                     placeholder="Stock"
@@ -245,9 +245,9 @@
                             <!-- Cantidad -->
                             <div class="flex-1">
                                 <label class="block text-gray-700 text-sm mb-1">Cantidad</label>
-                                <input type="number" 
+                                <input type="number"
                                     x-model="component.cantidad"
-                                    @input="if(parseFloat(component.cantidad) > parseFloat(component.stock)) { 
+                                    @input="if(parseFloat(component.cantidad) > parseFloat(component.stock)) {
                                         component.cantidad = component.stock;
                                         alert('La cantidad no puede superar el stock disponible');
                                     }
@@ -261,7 +261,7 @@
                             <!-- Subcantidad -->
                             <div class="flex-1">
                                 <label class="block text-gray-700 text-sm mb-1">Subcantidad</label>
-                                <input type="number" 
+                                <input type="number"
                                     x-model="component.subcantidad"
                                     @input="$wire.updateComponents(components)"
                                     class="w-full border rounded px-3 py-2"
@@ -270,7 +270,7 @@
                             </div>
 
                             <!-- Botón de eliminar -->
-                            <button type="button" 
+                            <button type="button"
                                 @click="removeComponent(component.id)"
                                 class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
                                 x-show="components.length > 1">
@@ -284,7 +284,7 @@
                 </template>
 
                 <!-- Botón para agregar nuevo componente -->
-                <button type="button" 
+                <button type="button"
                     @click="addComponent"
                     class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mt-2">
                     + Agregar Producto
@@ -294,10 +294,10 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="cantidad_total">
                         Cantidad Total de Productos Compuestos
                     </label>
-                    <input wire:model="newProducto.cantidad_total" 
-                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                           id="cantidad_total" 
-                           type="number" 
+                    <input wire:model="newProducto.cantidad_total"
+                           class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="cantidad_total"
+                           type="number"
                            min="1"
                            :max="Math.min(...components.map(comp => comp.cantidad && comp.stock ? Math.floor(comp.stock / comp.cantidad) : Infinity))"
                            @input="
@@ -305,7 +305,7 @@
                                    if (!comp.cantidad || !comp.stock) return Infinity;
                                    return Math.floor(parseFloat(comp.stock) / parseFloat(comp.cantidad));
                                }));
-                               
+
                                if (parseFloat($event.target.value) > maxPosible) {
                                    alert('La cantidad total excede el stock disponible de uno o más componentes');
                                    $event.target.value = maxPosible;
@@ -321,7 +321,7 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="tipo_unidad">
                     Tipo de Unidad
                 </label>
-                <select wire:model="newProducto.tipo_unidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="tipo_unidad">
+                <select wire:model="newProducto.tipo_unidad" class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="tipo_unidad">
                     <option value="NIU">NIU</option>
                     <option value="otro">Otro</option>
                 </select>
@@ -337,14 +337,14 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <button type="submit" class="focus:ring bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Crear Producto
                 </button>
             </div>
         </form>
     </div>
 
-    <div x-show="showEditComponents" 
+    <div x-show="showEditComponents"
          @click.away="showEditComponents = false"
          class="absolute z-10 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-4"
          x-cloak>
@@ -370,7 +370,7 @@
                     <!-- Stock -->
                     <div class="flex-1">
                         <label class="block text-gray-700 text-sm mb-1">Stock</label>
-                        <input type="text" 
+                        <input type="text"
                             x-model="component.stock"
                             class="w-full border rounded px-3 py-2 bg-gray-100"
                             placeholder="Stock"
@@ -380,9 +380,9 @@
                     <!-- Cantidad -->
                     <div class="flex-1">
                         <label class="block text-gray-700 text-sm mb-1">Cantidad</label>
-                        <input type="number" 
+                        <input type="number"
                             x-model="component.cantidad"
-                            @input="if(parseFloat(component.cantidad) > parseFloat(component.stock)) { 
+                            @input="if(parseFloat(component.cantidad) > parseFloat(component.stock)) {
                                 component.cantidad = component.stock;
                                 alert('La cantidad no puede superar el stock disponible');
                             }"
@@ -395,7 +395,7 @@
                     <!-- Subcantidad -->
                     <div class="flex-1">
                         <label class="block text-gray-700 text-sm mb-1">Subcantidad</label>
-                        <input type="number" 
+                        <input type="number"
                             x-model="component.subcantidad"
                             class="w-full border rounded px-3 py-2"
                             placeholder="Subcantidad"
@@ -403,7 +403,7 @@
                     </div>
 
                     <!-- Botón de eliminar -->
-                    <button type="button" 
+                    <button type="button"
                         @click="removeEditingComponent(component.id)"
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
                         x-show="editingComponents.length > 1">
@@ -416,7 +416,7 @@
             </div>
         </template>
 
-        <button type="button" 
+        <button type="button"
             @click="addEditingComponent"
             class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mt-2">
             + Agregar Producto
@@ -426,14 +426,14 @@
             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_cantidad_total">
                 Cantidad Total de Productos Compuestos
             </label>
-            <input type="number" 
+            <input type="number"
                    x-model="cantidadTotal"
                    @input="
                        const maxPosible = Math.min(...editingComponents.map(comp => {
                            if (!comp.cantidad || !comp.stock) return Infinity;
                            return Math.floor(parseFloat(comp.stock) / parseFloat(comp.cantidad));
                        }));
-                       
+
                        if (parseFloat($event.target.value) > maxPosible) {
                            alert('La cantidad total excede el stock disponible de uno o más componentes');
                            cantidadTotal = maxPosible;
@@ -449,12 +449,12 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-4">
-            <button 
-                @click="showEditComponents = false" 
+            <button
+                @click="showEditComponents = false"
                 class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                 Cancelar
             </button>
-            <button 
+            <button
                 @click="$wire.updateEditingComponents({components: editingComponents, cantidadTotal: cantidadTotal})"
                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                 Guardar Cambios

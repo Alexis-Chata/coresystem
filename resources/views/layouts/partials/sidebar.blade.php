@@ -316,6 +316,16 @@
                                             </a>
                                         </li>
                                     @endcan
+
+                                    @can('view movimiento')
+                                        <li>
+                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
+                                                href="{{ route('movimiento.generar-movimientoliq') }}"
+                                                :class="{ 'text-white': '{{ request()->routeIs('movimiento.generar-movimientoliq') }}' }">
+                                                Generar Movimiento Liquido-Conductor
+                                            </a>
+                                        </li>
+                                    @endcan
                                 </ul>
                             </div>
                             <!-- Dropdown Menu End -->

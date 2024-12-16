@@ -16,7 +16,9 @@ return new class extends Migration
             $table->foreignId('producto_id')->constrained('productos');
             $table->foreignId('almacen_id')->constrained('almacens');
             $table->string('stock_fisico')->nullable();
+            $table->string('stock_subcantidad_fisico')->default(0);
             $table->string('stock_disponible')->nullable();
+            $table->string('stock_subcantidad_disponible')->default(0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 

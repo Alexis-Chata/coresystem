@@ -143,19 +143,19 @@ class Movimiento extends Component
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
             $cantidad = 1;
 
-            if ($precio > 0) {
-                $this->detalles[] = [
-                    "producto_id" => $producto->id,
-                    "producto_name" => $producto->name,
-                    "cantidad" => number_format($cantidad, 2, '.', ''),
-                    "codigo" => $producto->id,
-                    "precio_venta_unitario" => $precio,
-                    "precio_venta_total" => $precio * $cantidad,
-                    "costo_unitario" => $precio,
-                    "costo_total" => $precio * $cantidad,
-                    "empleado_id" => $this->user->user_empleado->empleado_id,
-                ];
-            }
+            //if ($precio > 0) {
+            $this->detalles[] = [
+                "producto_id" => $producto->id,
+                "producto_name" => $producto->name,
+                "cantidad" => number_format($cantidad, 2, '.', ''),
+                "codigo" => $producto->id,
+                "precio_venta_unitario" => $precio,
+                "precio_venta_total" => $precio * $cantidad,
+                "costo_unitario" => $precio,
+                "costo_total" => $precio * $cantidad,
+                "empleado_id" => $this->user->user_empleado->empleado_id,
+            ];
+            //}
         }
 
         // Limpiar búsqueda
@@ -287,16 +287,16 @@ class Movimiento extends Component
         } catch (LockTimeoutException $e) {
             // Si no se pudo adquirir el bloqueo dentro del tiempo de espera, se lanzará una excepción.
             // Maneja la excepción según tu lógica de negocio.
-            Log::error("GC " . "No se pudo adquirir el bloqueo: " . $e->getMessage());
-            throw new Exception("GC " . "No se pudo adquirir el bloqueo: " . $e->getMessage());
+            Log::error("No se pudo adquirir el bloqueo: " . $e->getMessage());
+            throw new Exception("No se pudo adquirir el bloqueo: " . $e->getMessage());
         } catch (ParseError $e) {
             // Manejo de la excepción ParseError
-            Log::error("GC " . $e->getMessage() . "Monto maximo 999 999 999");
-            throw new Exception("GC " . $e->getMessage() . "Monto maximo 999 999 999");
+            Log::error($e->getMessage() . "Monto maximo 999 999 999");
+            throw new Exception($e->getMessage() . "Monto maximo 999 999 999");
         } catch (Exception $e) {
             // Manejar la excepción
-            Log::error("GC " . $e->getMessage());
-            throw new Exception("GC " . $e->getMessage());
+            Log::error("No se pudo generar movimiento" . $e->getMessage());
+            throw new Exception("No se pudo generar movimiento" . $e->getMessage());
         }
     }
 

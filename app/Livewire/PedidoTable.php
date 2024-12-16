@@ -14,6 +14,7 @@ use App\Models\FTipoComprobante;
 use App\Traits\CalculosTrait;
 use App\Traits\StockTrait;
 use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +63,7 @@ class PedidoTable extends Component
         "cliente_id.required" => "Debe seleccionar un cliente",
         "vendedor_id.required" => "Debe seleccionar un vendedor",
         "f_tipo_comprobante_id.required" =>
-            "Debe seleccionar un tipo de comprobante",
+        "Debe seleccionar un tipo de comprobante",
         "pedido_detalles.required" => "Debe agregar al menos un producto",
         "pedido_detalles.min" => "Debe agregar al menos un producto",
     ];
@@ -261,6 +262,7 @@ class PedidoTable extends Component
                 "nombre" => $producto->name,
                 "cantidad" => $producto->cantidad == 1 ? 1 : 0.01, // <-- Nueva lógica
                 "importe" => 0, // Se calculará en el siguiente paso
+                "marca_id" => $producto->marca_id,
             ];
 
             // Calcular el importe usando el método existente
@@ -272,6 +274,11 @@ class PedidoTable extends Component
         $this->productos = [];
 
         $this->actualizarTotales();
+
+        // Ordenar el detalle por producto_id ascendentemente
+        usort($this->pedido_detalles, function ($a, $b) {
+            return $a["producto_id"] <=> $b["producto_id"];
+        });
     }
 
     private function actualizarTotales()
@@ -298,9 +305,9 @@ class PedidoTable extends Component
 
         $precio =
             $producto
-                ->listaPrecios()
-                ->where("lista_precio_id", $this->lista_precio)
-                ->first()->pivot->precio ?? 0;
+            ->listaPrecios()
+            ->where("lista_precio_id", $this->lista_precio)
+            ->first()->pivot->precio ?? 0;
 
         $this->pedido_detalles[$index]["importe"] =
             $precio * $this->pedido_detalles[$index]["cantidad"];
@@ -344,8 +351,8 @@ class PedidoTable extends Component
                 $producto = Producto::find($detalle["producto_id"]);
                 $precioCaja =
                     $producto->listaPrecios
-                        ->where("id", $this->lista_precio)
-                        ->first()->pivot->precio ?? 0;
+                    ->where("id", $this->lista_precio)
+                    ->first()->pivot->precio ?? 0;
 
                 PedidoDetalle::create([
                     "pedido_id" => $pedido->id,
@@ -358,6 +365,8 @@ class PedidoTable extends Component
                     "lista_precio" => $this->lista_precio,
                 ]);
             }
+
+            $this->actualizarStock($pedido);
 
             $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
 
@@ -389,11 +398,11 @@ class PedidoTable extends Component
             $this->dispatch("reset-cliente-select");
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
-        } catch (Exception $e) {
+        } catch (Exception|LockTimeoutException $e) {
             DB::rollback();
             logger("Error al guardar pedido:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido"."<br>". $e->getMessage());
+            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());
         }
     }
@@ -417,8 +426,8 @@ class PedidoTable extends Component
         if ($producto) {
             $precioCaja =
                 $producto->listaPrecios
-                    ->where("id", $this->lista_precio)
-                    ->first()->pivot->precio ?? 0;
+                ->where("id", $this->lista_precio)
+                ->first()->pivot->precio ?? 0;
             $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
 
             // Validar que la cantidad del producto no sea cero

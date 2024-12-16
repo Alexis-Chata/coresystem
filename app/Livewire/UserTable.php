@@ -33,7 +33,7 @@ final class UserTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return User::query()->with(['user_empleado', 'empresa', 'user_empleado.empleado']);
+        return User::query()->with(['user_empleado', 'fsede.empresa', 'user_empleado.empleado']);
     }
 
     public function relationSearch(): array
@@ -48,7 +48,7 @@ final class UserTable extends PowerGridComponent
             ->add('name')
             ->add('email')
             ->add('name_vendedor', fn($user) => e(optional(optional($user->user_empleado)->empleado)->id . ' - ' . optional(optional($user->user_empleado)->empleado)->name))
-            ->add('empresa', fn($user) => e($user->empresa->razon_social))
+            ->add('empresa', fn($user) => e($user->fsede->empresa->razon_social))
             ->add('created_at_formatted', function ($user) {
                 return Carbon::parse($user->created_at)->format('d/m/Y H:i'); //20/01/2024 10:05
             })

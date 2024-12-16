@@ -252,21 +252,21 @@ final class ProductoTable extends PowerGridComponent
         try {
             $producto = Producto::findOrFail($productoId);
             $stock = $producto->cantidad ?? 0;
-            
+
             // Agregar un log para depuración
             \Log::info('Stock obtenido:', [
                 'productoId' => $productoId,
                 'componentId' => $componentId,
                 'stock' => $stock
             ]);
-            
+
             $this->dispatch('update-component-stock', [
                 'componentId' => $componentId,
                 'stock' => $stock
             ]);
-            
+
             return $stock; // Retornamos el stock para confirmación
-            
+
         } catch (\Exception $e) {
             \Log::error('Error al obtener stock:', [
                 'error' => $e->getMessage(),
@@ -296,7 +296,7 @@ final class ProductoTable extends PowerGridComponent
 
             // Validación específica según el tipo de producto
             if ($this->newProducto['tipo'] === 'estandar') {
-                $baseValidation['newProducto.cantidad'] = 'required|numeric|min:0';
+                $baseValidation['newProducto.cantidad'] = 'required|numeric|min:1';
                 $baseValidation['newProducto.sub_cantidad'] = 'nullable|numeric|min:0';
             } else {
                 $baseValidation['newProducto.cantidad_total'] = 'required|numeric|min:1';
@@ -317,7 +317,7 @@ final class ProductoTable extends PowerGridComponent
                 'porcentaje_igv' => $this->newProducto['porcentaje_igv'],
                 'tipo' => $this->newProducto['tipo'],
                 'tipo_unidad' => $this->newProducto['tipo_unidad'],
-                'cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['cantidad'] : 0,
+                'cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['cantidad'] : 1,
                 'sub_cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['sub_cantidad'] : 0,
                 'cantidad_total' => $this->newProducto['cantidad_total'],
             ];
@@ -337,7 +337,7 @@ final class ProductoTable extends PowerGridComponent
             }
 
             DB::commit();
-            
+
             $this->dispatch('producto-created', 'Producto creado exitosamente');
             $this->reset('newProducto');
             $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
@@ -377,10 +377,10 @@ final class ProductoTable extends PowerGridComponent
             $cantidadTotal = ProductoComponent::where('producto_id', $productoId)
                 ->first()
                 ->cantidad_total ?? '';
-            
+
             $components = $producto->componentProducts->map(function($component) use ($cantidadTotal) {
                 $componentProduct = Producto::find($component->id);
-                
+
                 return [
                     'id' => $component->pivot->id ?? uniqid(),
                     'producto_id' => $component->id,
@@ -391,7 +391,7 @@ final class ProductoTable extends PowerGridComponent
                     'name' => $componentProduct->name
                 ];
             })->toArray();
-            
+
             $this->dispatch('show-edit-components', [
                 'components' => $components,
                 'cantidadTotal' => $cantidadTotal
@@ -403,36 +403,36 @@ final class ProductoTable extends PowerGridComponent
     {
         try {
             DB::beginTransaction();
-            
+
             if (!$this->editingProductoId) {
                 throw new \Exception('No se ha seleccionado ningún producto para editar');
             }
-            
+
             $components = $data['components'];
             $cantidadTotal = $data['cantidadTotal'];
-            
+
             // Validar que haya al menos 2 componentes
             if (count($components) < 1) {
                 throw new \Exception('Debe haber al menos 2 componentes');
             }
-            
+
             // Validar cantidad total
             if (empty($cantidadTotal) || $cantidadTotal < 1) {
                 throw new \Exception('La cantidad total debe ser mayor a 0');
             }
-            
+
             // Validar componentes
             foreach ($components as $component) {
-                if (empty($component['producto_id']) || 
-                    empty($component['cantidad']) || 
+                if (empty($component['producto_id']) ||
+                    empty($component['cantidad']) ||
                     $component['cantidad'] > $component['stock']) {
                     throw new \Exception('Datos de componentes inválidos');
                 }
             }
-            
+
             // Eliminar componentes existentes
             ProductoComponent::where('producto_id', $this->editingProductoId)->delete();
-            
+
             // Crear nuevos componentes
             foreach ($components as $component) {
                 ProductoComponent::create([
@@ -443,13 +443,13 @@ final class ProductoTable extends PowerGridComponent
                     'cantidad_total' => $cantidadTotal
                 ]);
             }
-            
+
             DB::commit();
-            
+
             // Actualizar la interfaz
             $this->dispatch('components-updated');
             $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Error al actualizar los componentes: ' . $e->getMessage());

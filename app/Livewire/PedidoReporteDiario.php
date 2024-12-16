@@ -9,10 +9,14 @@ use App\Models\PedidoDetalle;
 use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use App\Traits\CalculosTrait;
+use App\Traits\StockTrait;
+use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 
 class PedidoReporteDiario extends Component
 {
     use CalculosTrait;
+    use StockTrait;
     public $fecha;
     public $totales = [
         "valorVenta" => 0,
@@ -601,6 +605,8 @@ class PedidoReporteDiario extends Component
 
             DB::beginTransaction();
 
+            $this->actualizarStock($this->pedidoEnEdicion, true);
+
             // Eliminamos los detalles del pedido
             $this->pedidoEnEdicion->pedidoDetalles()->delete();
 
@@ -622,7 +628,7 @@ class PedidoReporteDiario extends Component
 
             // Recargar los datos
             $this->mount();
-        } catch (\Exception $e) {
+        } catch (Exception|LockTimeoutException $e) {
             DB::rollBack();
             $this->dispatch("notify", [
                 "message" => "Error al eliminar el pedido: " . $e->getMessage(),

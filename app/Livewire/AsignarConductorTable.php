@@ -27,6 +27,7 @@ final class AsignarConductorTable extends PowerGridComponent
     {
         $this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
         $this->endDate = Carbon::now()->format("Y-m-d");
+        $this->fecha_reparto = Carbon::now()->format("Y-m-d");
     }
 
     public function updatedStartDate($value)
@@ -79,7 +80,7 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Pedido::query()
+        return Pedido::query()->whereIn('estado', ['pendiente', 'asignado'])
             ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
             ->join(
                 "empleados as vendedores",
@@ -123,7 +124,7 @@ final class AsignarConductorTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make("Conductor id", "conductor_id")->editOnClick(),
+            Column::make("Conductor id", "conductor_id")->sortable()->editOnClick(),
             Column::make("Ruta", "ruta_nombre")->sortable()->searchable(),
             Column::make("Vendedor", "vendedor_nombre")
                 ->sortable()
@@ -140,6 +141,7 @@ final class AsignarConductorTable extends PowerGridComponent
         string $field,
         string $value
     ): void {
+        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : now()->format("Y-m-d");
         // Verificar si existe un conductor con ese ID
         $conductor = Empleado::where("id", $value)
             ->where("tipo_empleado", "conductor")
@@ -147,7 +149,7 @@ final class AsignarConductorTable extends PowerGridComponent
 
         if ($conductor) {
             // Si existe, actualiza el pedido
-            Pedido::find($id)->update([$field => $value]);
+            Pedido::find($id)->update([$field => $value, "estado" => "asignado", "fecha_reparto" => $this->fecha_reparto]);
         } else {
             // Si no existe, lanza un error
             $this->addError(
@@ -238,6 +240,8 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public function asignarConductorASeleccionados(): void
     {
+        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : now()->format("Y-m-d");
+
         if (empty($this->selectedConductor)) {
             $this->dispatch("pg:notification", [
                 "type" => "error",
@@ -260,17 +264,18 @@ final class AsignarConductorTable extends PowerGridComponent
             Pedido::whereIn("id", $this->checkboxValues)->update([
                 "conductor_id" => $this->selectedConductor,
                 "fecha_reparto" => $this->fecha_reparto,
+                "estado" => "asignado",
             ]);
 
             $this->selectedConductor = "";
-            $this->fecha_reparto = "";
+            //$this->fecha_reparto = "";
             $this->checkboxValues = [];
 
             $this->dispatch("pg:notification", [
                 "type" => "success",
                 "title" => "Éxito",
                 "message" =>
-                    "El conductor ha sido asignado correctamente a los pedidos seleccionados",
+                "El conductor ha sido asignado correctamente a los pedidos seleccionados",
             ]);
 
             // Disparar evento personalizado para limpiar checkbox
@@ -323,25 +328,25 @@ final class AsignarConductorTable extends PowerGridComponent
                 "vehiculos.tonelaje_maximo as vehiculo_tonelaje"
             )
             ->get();
-            $pedidosAgrupados = $pedidos->groupBy('conductor_id')->map(function ($grupo) {
-                $clientesPorRuta = $grupo->groupBy('ruta_id')->map(function ($pedidosPorRuta) {
-                    return $pedidosPorRuta->unique('cliente_id')->count();
-                });
-        
-                return [
-                    'pedidos' => $grupo,
-                    'importeTotal' => $grupo->sum('importe_total'),
-                    'clientesPorRuta' => $clientesPorRuta,
-                    'totalClientes' => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
-                ];
+        $pedidosAgrupados = $pedidos->groupBy('conductor_id')->map(function ($grupo) {
+            $clientesPorRuta = $grupo->groupBy('ruta_id')->map(function ($pedidosPorRuta) {
+                return $pedidosPorRuta->unique('cliente_id')->count();
             });
+
+            return [
+                'pedidos' => $grupo,
+                'importeTotal' => $grupo->sum('importe_total'),
+                'clientesPorRuta' => $clientesPorRuta,
+                'totalClientes' => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
+            ];
+        });
 
         if ($pedidos->isEmpty()) {
             $this->dispatch("pg:notification", [
                 "type" => "warning",
                 "title" => "Sin resultados",
                 "message" =>
-                    "No se encontraron pedidos en el rango seleccionado.",
+                "No se encontraron pedidos en el rango seleccionado.",
             ]);
             return;
         }

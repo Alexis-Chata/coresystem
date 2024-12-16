@@ -2,9 +2,11 @@
 
 namespace App\Traits;
 
+use App\Models\Empleado;
 use App\Models\Movimiento;
 use App\Models\Pedido;
 use App\Models\Producto;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 trait StockTrait
@@ -51,11 +53,13 @@ trait StockTrait
 
     public function actualizarStock(Movimiento|Pedido $movimiento_or_pedido, $anulando = false)
     {
-        if ($movimiento_or_pedido instanceof Movimiento) {
-            $this->movimientoStock($movimiento_or_pedido, $anulando);
-        } elseif ($movimiento_or_pedido instanceof Pedido) {
-            $this->pedidoStock($movimiento_or_pedido, $anulando);
-        }
+        Cache::lock('actualizar_stock', 15)->block(5, function () use ($movimiento_or_pedido, $anulando) {
+            if ($movimiento_or_pedido instanceof Movimiento) {
+                $this->movimientoStock($movimiento_or_pedido, $anulando);
+            } elseif ($movimiento_or_pedido instanceof Pedido) {
+                $this->pedidoStock($movimiento_or_pedido, $anulando);
+            }
+        });
     }
 
     public function movimientoStock(Movimiento $movimiento, $anulando = false)
@@ -95,22 +99,51 @@ trait StockTrait
 
     public function pedidoStock(Pedido $pedido, $anulando = false)
     {
-        $almacenId = $pedido->empresa->almacenes->first()->id;
+        $almacenId = Empleado::with(['fSede.almacen'])->find($pedido->vendedor_id)->fSede->almacen->id;
+        //dd($almacenId);
         $pedido->pedidoDetalles->each(function ($detalle) use ($almacenId, $anulando) {
             $producto = Producto::find($detalle->producto_id);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $almacenId)->first();
+            $nuevo_stock = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), $anulando);
 
             if (!$almacenProducto) {
                 $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $almacenId, "stock_disponible" => 0, "stock_fisico" => 0]);
             }
-
+            //dd($nuevo_stock);
             if ($almacenProducto->stock_disponible < $detalle->cantidad) {
                 throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Stock disponible: {$almacenProducto->stock_disponible}");
             }
 
             $almacenProducto->update([
-                "stock_disponible" => DB::raw("stock_disponible - {$detalle->cantidad}"),
+                "stock_disponible" => $nuevo_stock,
             ]);
         });
+    }
+
+    public function calculandoNuevoStock($producto, $stock_disponible, $cantidad_detalle, $anulando)
+    {
+        list($stock_disponible_entero, $stock_disponible_decimal) = explode('.', $stock_disponible);
+
+        $stock_disponible_display = ($stock_disponible_entero * $producto->cantidad) + $stock_disponible_decimal;
+
+        list($cantidad_detalle_entero, $cantidad_detalle_decimal) = explode('.', $cantidad_detalle);
+
+        $cantidad_detalle_display = ($cantidad_detalle_entero * $producto->cantidad) + $cantidad_detalle_decimal;
+
+        //dd($stock_disponible_display, $cantidad_detalle_display);
+        if ($anulando) {
+            $nuevo_stock_display = $stock_disponible_display + $cantidad_detalle_display;
+        } else {
+            $nuevo_stock_display = $stock_disponible_display - $cantidad_detalle_display;
+        }
+        $nuevo_stock = intval($nuevo_stock_display / $producto->cantidad) + intval($nuevo_stock_display % $producto->cantidad) / 100;
+        return $nuevo_stock;
+    }
+
+    public function validarPrecio($producto, $detalle)
+    {
+        if ($producto->f_tipo_afectacion_id != 21 && $detalle->importe <= 0) {
+            throw new \Exception("El precio del producto {$producto->id} no valido.");
+        }
     }
 }

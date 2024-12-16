@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->date('fecha_emision')->nullable();
             $table->date('fecha_reparto')->nullable();
+            $table->enum('estado', ['pendiente', 'asignado', 'movimiento-generado', 'facturado'])->default('pendiente');
             $table->string('importe_total')->nullable();
             $table->string('nro_doc_liquidacion')->nullable();
             $table->string('lista_precio')->nullable();

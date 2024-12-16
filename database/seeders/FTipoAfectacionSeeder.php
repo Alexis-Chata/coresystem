@@ -15,7 +15,7 @@ class FTipoAfectacionSeeder extends Seeder
         $tiposAfectacion = [
             [
                 'id' => '10',
-                'name' => 'Gravado',
+                'name' => 'Gravado - 10',
                 'descripcion' => 'Operación Gravada',
                 'letra' => 'S',
                 'codigo' => '1000',
@@ -23,7 +23,7 @@ class FTipoAfectacionSeeder extends Seeder
             ],
             [
                 'id' => '20',
-                'name' => 'Exonerado',
+                'name' => 'Exonerado - 20',
                 'descripcion' => 'Operación Exonerada',
                 'letra' => 'E',
                 'codigo' => '9997',
@@ -31,10 +31,18 @@ class FTipoAfectacionSeeder extends Seeder
             ],
             [
                 'id' => '30',
-                'name' => 'Inafecto',
+                'name' => 'Inafecto - 30',
                 'descripcion' => 'Operación Inafecta',
                 'letra' => 'O',
                 'codigo' => '9998',
+                'tipo' => 'FRE'
+            ],
+            [
+                'id' => '21',
+                'name' => 'Exonerado - 21',
+                'descripcion' => 'Transferencia Gratuita',
+                'letra' => 'Z',
+                'codigo' => '9996',
                 'tipo' => 'FRE'
             ],
             // Puedes agregar más tipos de afectación según sea necesario

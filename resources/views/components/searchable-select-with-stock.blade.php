@@ -7,8 +7,8 @@
     'placeholder' => 'Buscar...'
 ])
 
-<div class="relative" 
-    x-data="{ 
+<div class="relative"
+    x-data="{
         open: false,
         search: '',
         selected: null,
@@ -17,7 +17,7 @@
         init() {
             // Obtener el componente actual del contexto
             this.currentComponent = Alpine.$data(this.$root.parentElement).component;
-            
+
             // Inicializar el valor seleccionado usando el componente actual
             if (this.currentComponent?.producto_id) {
                 const selectedOption = this.options.find(opt => opt.id === this.currentComponent.producto_id);
@@ -28,22 +28,22 @@
             }
         },
         filteredOptions() {
-            return this.options.filter(option => 
+            return this.options.filter(option =>
                 option.name.toLowerCase().includes(this.search.toLowerCase())
             );
         },
         selectOption(option) {
             this.selected = option;
             this.search = option.name;
-            
+
             // Actualizar el componente actual
             if (this.currentComponent) {
                 const previousStock = this.currentComponent.stock;
                 const previousCantidad = this.currentComponent.cantidad;
-                
+
                 this.currentComponent.producto_id = option.id;
                 this.currentComponent.name = option.name;
-                
+
                 // Obtener el stock y validar cantidad
                 $wire.getProductoStock(option.id, this.currentComponent.id).then(() => {
                     if (this.currentComponent.cantidad > this.currentComponent.stock) {
@@ -52,11 +52,11 @@
                     }
                 });
             }
-            
+
             this.open = false;
         }
     }">
-    
+
     @if($label)
         <label class="block text-gray-700 text-sm font-bold mb-2" x-bind:for="'component_' + currentComponent?.id + '_search'">
             {{ $label }}
@@ -70,12 +70,12 @@
             x-model="search"
             @focus="open = true"
             @click.away="open = false"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             autocomplete="off"
             placeholder="{{ $placeholder }}"
         >
-        
-        <div x-show="open" 
+
+        <div x-show="open"
             class="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
             <template x-for="opt in filteredOptions()" :key="opt.id">
                 <div
@@ -84,7 +84,7 @@
                     x-text="opt.name">
                 </div>
             </template>
-            <div x-show="filteredOptions().length === 0" 
+            <div x-show="filteredOptions().length === 0"
                 class="px-4 py-2 text-gray-500">
                 No se encontraron resultados
             </div>

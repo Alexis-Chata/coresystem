@@ -29,4 +29,16 @@ class PedidoDetalle extends Model
     {
         return $this->belongsTo(Producto::class);
     }
+
+    protected $appends = ['qcanpedbultos', 'qcanpedunidads'];
+
+    public function getQcanpedbultosAttribute()
+    {
+        return explode(localeconv()['decimal_point'],number_format_punto2($this->cantidad))[0] ?? 0;
+    }
+
+    public function getQcanpedunidadsAttribute()
+    {
+        return explode(localeconv()['decimal_point'], number_format_punto2($this->cantidad))[1] ?? 0;
+    }
 }

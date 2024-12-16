@@ -70,7 +70,7 @@ class User extends Authenticatable
 
     public function fsede()
     {
-        return $this->belongsTo(FSede::class);
+        return $this->belongsTo(FSede::class, 'f_sede_id');
     }
 
     public function user_empleado()

@@ -96,6 +96,10 @@ Route::middleware([
         return view('movimiento');
     })->middleware('can:view movimiento')->name('movimiento.view');
 
+    Route::get('/movimientos/generar-movimientoliq', function () {
+        return view('movimiento');
+    })->middleware('can:view movimiento')->name('movimiento.generar-movimientoliq');
+
     Route::get('/comprobantes', function () {
         return view('comprobantes');
     })->name('comprobantes.index');

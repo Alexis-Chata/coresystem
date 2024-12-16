@@ -20,3 +20,10 @@ if (!function_exists('auth_user')) {
         return auth()->user();
     }
 }
+
+if (!function_exists('number_format_punto2')) {
+    function number_format_punto2($number)
+    {
+        return number_format($number, 2, '.', '');
+    }
+}
