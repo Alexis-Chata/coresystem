@@ -49,14 +49,13 @@ final class RutaTable extends PowerGridComponent
             $header,
             PowerGrid::footer()
                 ->showPerPage()
-                ->showRecordCount(),
+                ->showRecordCount()
+                ->pageName('rutaPage'),
         ];
     }
 
     public function datasource(): Builder
     {
-        $empleado = auth()->user()->empleados()->first();
-
         $query = Ruta::query()
             ->join('empleados', 'rutas.vendedor_id', '=', 'empleados.id')
             ->join('empresas', 'rutas.empresa_id', '=', 'empresas.id')
@@ -67,8 +66,13 @@ final class RutaTable extends PowerGridComponent
                      'lista_precios.name as lista_precio_nombre')
             ->withCount('clientes');
 
-        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
-            $query->where('rutas.vendedor_id', $empleado->id);
+        // OJO: Filtro registros por rol de administrador o vendedor
+        if (auth()->user()->hasRole("admin")) {
+        } elseif (auth()->user()->hasRole("vendedor")) {
+            $empleado = auth()->user()->empleados()->first();
+            if ($empleado) {
+                $query->where('rutas.vendedor_id', $empleado->id);
+            }
         }
 
         return $query;

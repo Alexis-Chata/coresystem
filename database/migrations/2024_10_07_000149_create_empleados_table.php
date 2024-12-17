@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('numero_brevete')->nullable();
             $table->foreignId('f_sede_id')->constrained('f_sedes');
             $table->foreignId('vehiculo_id')->nullable()->constrained('vehiculos');
+            $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -34,5 +35,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('empleados');
+        Schema::table('empleados', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

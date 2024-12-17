@@ -85,6 +85,7 @@
                                                 Total: S/. {{ number_format($pedido->importe_total, 2) }} |
                                                 Lista: {{ $pedido->listaPrecio->name ?? 'Sin lista' }}
                                             </span>
+                                            @if($pedido->estado === 'pendiente')
                                             <button
                                                 wire:click="editarPedido({{ $pedido->id }})"
                                                 class="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
@@ -93,6 +94,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
                                             </button>
+                                            @endif
                                         </summary>
                                         <div class="bg-purple-50 dark:bg-purple-800">
                                             <div class="overflow-x-auto">

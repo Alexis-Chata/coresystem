@@ -325,7 +325,8 @@ final class AsignarConductorTable extends PowerGridComponent
                 "conductores.name as conductor_nombre",
                 "vehiculos.placa as vehiculo_placa",
                 "vehiculos.marca as vehiculo_marca",
-                "vehiculos.tonelaje_maximo as vehiculo_tonelaje"
+                "vehiculos.tonelaje_maximo as vehiculo_tonelaje",
+                "pedidos.cliente_id"
             )
             ->get();
         $pedidosAgrupados = $pedidos->groupBy('conductor_id')->map(function ($grupo) {

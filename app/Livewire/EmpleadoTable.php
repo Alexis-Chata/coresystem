@@ -42,7 +42,8 @@ final class EmpleadoTable extends PowerGridComponent
         return [
             PowerGrid::header()
                 ->showSearchInput()
-                ->includeViewOnTop('components.create-empleado-form'),
+                ->includeViewOnTop('components.create-empleado-form')
+                ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -159,19 +160,45 @@ final class EmpleadoTable extends PowerGridComponent
 
     public function actions(Empleado $row): array
     {
-        return [
-            Button::add('delete')
+        $actions = [];
+
+        if ($row->deleted_at) {
+            $actions[] = Button::add('restore')
+                ->slot('Restaurar')
+                ->id()
+                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->dispatch('restoreEmpleado', ['empleadoId' => $row->id]);
+        } else {
+            $actions[] = Button::add('delete')
                 ->slot('Eliminar')
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deleteEmpleado', ['empleadoId' => $row->id])
-        ];
+                ->dispatch('deleteEmpleado', ['empleadoId' => $row->id]);
+        }
+
+        return $actions;
     }
 
     #[On('deleteEmpleado')]
     public function deleteEmpleado($empleadoId): void
     {
-        Empleado::destroy($empleadoId);
+        $empleado = Empleado::find($empleadoId);
+        if ($empleado) {
+            $empleado->delete();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('empleado-deleted', 'Empleado eliminado exitosamente');
+        }
+    }
+
+    #[On('restoreEmpleado')]
+    public function restoreEmpleado($empleadoId): void
+    {
+        $empleado = Empleado::withTrashed()->find($empleadoId);
+        if ($empleado) {
+            $empleado->restore();
+            $this->dispatch('pg:eventRefresh-default');
+            $this->dispatch('empleado-restored', 'Empleado restaurado exitosamente');
+        }
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void

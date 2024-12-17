@@ -83,12 +83,12 @@
                 <td></td>
             </tr>
             <tr>
-                <td rowspan="{{ $pedidosPorConductor->count() }}" style="text-align: center;">
+                <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}" style="text-align: center;">
                     {{ $conductor->conductor_id }} - {{ $conductor->conductor_nombre }}<br><br>
                     {{ $conductor->vehiculo_placa }} {{ $conductor->vehiculo_marca }}<br>
                     {{ $conductor->vehiculo_tonelaje }}t.
                 </td>
-                @foreach($pedidosPorConductor as $pedido)
+                @foreach($pedidosPorConductor->unique('ruta_id') as $pedido)
                     @if (!$loop->first)
                         <tr>
                     @endif
@@ -98,7 +98,7 @@
                         <td>{{ $grupo['clientesPorRuta'][$pedido->ruta_id] }}</td>
                         <td>{{ number_format($pedido->importe_total, 2) }}</td>
                         @if ($loop->first)
-                            <td rowspan="{{ $pedidosPorConductor->count() }}">-50,000.00</td>
+                            <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}">-50,000.00</td>
                         @endif
                     @if (!$loop->first)
                         </tr>

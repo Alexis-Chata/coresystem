@@ -51,14 +51,15 @@ final class PadronTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        $empleado = $this->empleado;
-
         $query = Padron::query()
             ->join('clientes', 'padrons.cliente_id', '=', 'clientes.id')
             ->join('rutas', 'padrons.ruta_id', '=', 'rutas.id')
             ->select('padrons.*', 'clientes.razon_social as cliente_nombre', 'rutas.name as ruta_nombre');
 
-        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+        // OJO: Filtro registros por rol de administrador o vendedor
+        $empleado = $this->empleado;
+        if ($this->user->hasRole("admin")) {
+        } elseif ($this->user->hasRole("vendedor")) {
             $query->where('rutas.vendedor_id', $empleado->id);
         }
 

@@ -71,9 +71,10 @@ final class ClienteTable extends PowerGridComponent
                 'rutas.name as ruta_nombre'
             );
 
-        // OJO: Filtro registros por vendedor
+        // OJO: Filtro registros por rol de administrador o vendedor
         $empleado = $this->empleado;
-        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+        if ($this->user->hasRole("admin")) {
+        } elseif ($this->user->hasRole("vendedor")) {
             $query->where('rutas.vendedor_id', $empleado->id);
         }
 

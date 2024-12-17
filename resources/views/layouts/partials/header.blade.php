@@ -304,13 +304,16 @@
                                     </span>
                                     <span class="block text-xs font-medium">
                                         @php
-                                            $empleado = auth()->user()->empleados()->first();
-                                            $rol = match($empleado?->tipo_empleado) {
-                                                'vendedor' => 'Vendedor',
-                                                'conductor' => 'Conductor',
-                                                'almacenero' => 'Almacenero',
-                                                default => 'Administrador'
-                                            };
+                                            $rol = 'Sin rol asignado'; // Valor predeterminado
+                                            if (auth()->user()->hasRole("admin")) {
+                                                $rol = 'Administrador';
+                                            } elseif (auth()->user()->hasRole("vendedor")) {
+                                                $rol = 'Vendedor';
+                                            } elseif (auth()->user()->hasRole("conductor")) {
+                                                $rol = 'Conductor';
+                                            } elseif (auth()->user()->hasRole("almacenero")) {
+                                                $rol = 'Almacenero';
+                                            }
                                         @endphp
                                         {{ $rol }}
                                     </span>
