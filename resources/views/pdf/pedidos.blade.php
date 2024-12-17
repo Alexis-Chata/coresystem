@@ -84,9 +84,13 @@
             </tr>
             <tr>
                 <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}" style="text-align: center;">
-                    {{ $conductor->conductor_id }} - {{ $conductor->conductor_nombre }}<br><br>
-                    {{ $conductor->vehiculo_placa }} {{ $conductor->vehiculo_marca }}<br>
-                    {{ $conductor->vehiculo_tonelaje }}t.
+                    @if($conductor->conductor_id)
+                        {{ $conductor->conductor_id }} - {{ $conductor->conductor_nombre }}<br><br>
+                        {{ $conductor->vehiculo_placa }} {{ $conductor->vehiculo_marca }}<br>
+                        {{ $conductor->vehiculo_tonelaje }}t.
+                    @else
+                        <span>Sin asignar<br>Conductor.</span>
+                    @endif
                 </td>
                 @foreach($pedidosPorConductor->unique('ruta_id') as $pedido)
                     @if (!$loop->first)

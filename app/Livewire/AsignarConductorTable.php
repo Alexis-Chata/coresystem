@@ -90,7 +90,7 @@ final class AsignarConductorTable extends PowerGridComponent
             )
             ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
             ->when($this->startDate && $this->endDate, function ($query) {
-                return $query->whereBetween("pedidos.created_at", [
+                return $query->whereBetween("pedidos.fecha_emision", [
                     $this->startDate . " 00:00:00",
                     $this->endDate . " 23:59:59",
                 ]);
@@ -308,9 +308,9 @@ final class AsignarConductorTable extends PowerGridComponent
             ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
             ->join("empleados as vendedores", "pedidos.vendedor_id", "=", "vendedores.id")
             ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
-            ->join("empleados as conductores", "pedidos.conductor_id", "=", "conductores.id")
-            ->join("vehiculos", "conductores.vehiculo_id", "=", "vehiculos.id")
-            ->whereBetween("pedidos.created_at", [
+            ->leftJoin("empleados as conductores", "pedidos.conductor_id", "=", "conductores.id")
+            ->leftJoin("vehiculos", "conductores.vehiculo_id", "=", "vehiculos.id")
+            ->whereBetween("pedidos.fecha_emision", [
                 $this->startDate . " 00:00:00",
                 $this->endDate . " 23:59:59",
             ])
