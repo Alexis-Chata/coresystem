@@ -27,30 +27,62 @@
         th {
             background-color: #f2f2f2;
         }
-        
+
         .total-row td {
             background-color: #f2f2f2;
             font-weight: bold;
+            padding-top: 20px;
         }
-        
+
         .total-row td.total-label {
-            text-align: right;
+            text-align: left;
             padding-right: 10px;
         }
-        
+
         .total-row td.total-value {
             text-align: center;
         }
-        
+
         .empty-row td {
             height: 20px;
             background-color: white;
         }
+
+        /*Tabla Encabezado*/
+        table:nth-of-type(1) td {
+            border: none;
+        }
+        table:nth-of-type(1) td:nth-child(1) {
+            text-align: left;
+            width: 20%;
+        }
+        .center {
+            text-align: center;
+            width: 60%;
+        }
+        .right {
+            text-align: right;
+            width: 20%;
+        }
     </style>
 </head>
 <body>
-    <h2>Reporte de Pedidos</h2>
-    <p>Desde {{ $startDate }}, hasta {{ $endDate }}</p>
+    <table style="width: 100%">
+        <tr>
+            <td>ROMANI GOLOMIX</td>
+            <td class="center">
+                *** REPORTE DE PEDIDOS ***
+            </td>
+            <td class="right">Hora:</td>
+        </tr>
+        <tr>
+            <td>DIVISION GALLETA</td>
+            <td class="center">Desde {{ $startDate }}, hasta {{ $endDate }}</td>
+            <td class="right">{{ now()->format('H:i:s') }}</td>
+        </tr>
+    </table>
+
+    <!-- Tabla Principal -->
     <table>
     <thead>
         <tr>
@@ -76,7 +108,16 @@
                 $conductor = $pedidosPorConductor->first();
             @endphp
             <tr class="total-row">
-                <td colspan="3" class="total-label">TOTALES:</td>
+                <td colspan="3" class="total-label">
+                    @if($conductor->conductor_id)
+                        {{ $conductor->conductor_id }} - {{ $conductor->conductor_nombre }}
+                        {{ $conductor->vehiculo_placa }} {{ $conductor->vehiculo_marca }}
+                        {{ $conductor->vehiculo_tonelaje }}t.
+                    @else
+                        <span>Sin asignar Conductor.</span>
+                    @endif
+                    <span style="float: right;">TOTALES:</span>
+                </td>
                 <td class="total-value">0.00</td>
                 <td class="total-value">{{ $grupo['totalClientes'] }}</td>
                 <td class="total-value">{{ number_format($importeTotalConductor, 2) }}</td>

@@ -18,6 +18,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 final class AsignarConductorTable extends PowerGridComponent
 {
     public string $tableName = "asignar-conductor-table-wah29z-table";
+    public string $sortField = 'conductor_id';
+    public string $sortDirection = 'asc';
     public $selectedConductor = "";
     public $fecha_reparto = "";
 
@@ -340,6 +342,11 @@ final class AsignarConductorTable extends PowerGridComponent
                 'clientesPorRuta' => $clientesPorRuta,
                 'totalClientes' => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
             ];
+        });
+
+        // Ordenar los conductores sin asignar primero
+        $pedidosAgrupados = $pedidosAgrupados->sortBy(function ($grupo, $conductorId) {
+            return $conductorId ? 1 : 0; // Los sin asignar tienen conductorId null o 0
         });
 
         if ($pedidos->isEmpty()) {
