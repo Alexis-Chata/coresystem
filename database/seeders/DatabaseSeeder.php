@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             FTipoAfectacionSeeder::class,
             ProductoSeeder::class,
             ProductoListaPrecioSeeder::class,
-            PedidoSeeder::class,
+            //PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,
             SerieSeeder::class,

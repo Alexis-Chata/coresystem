@@ -14,23 +14,7 @@ class SerieSeeder extends Seeder
     public function run(): void
     {
         FSerie::create([
-            'serie' => 'F001',
-            'correlativo' => 0,
-            'fechaemision' => now(),
-            'f_sede_id' => 1,
-            'f_tipo_comprobante_id' => 1,
-        ]);
-
-        FSerie::create([
-            'serie' => 'F002',
-            'correlativo' => 0,
-            'fechaemision' => now(),
-            'f_sede_id' => 1,
-            'f_tipo_comprobante_id' => 1,
-        ]);
-
-        FSerie::create([
-            'serie' => 'B001',
+            'serie' => 'F010',
             'correlativo' => 0,
             'fechaemision' => now(),
             'f_sede_id' => 1,
@@ -38,7 +22,7 @@ class SerieSeeder extends Seeder
         ]);
 
         FSerie::create([
-            'serie' => 'B002',
+            'serie' => 'F011',
             'correlativo' => 0,
             'fechaemision' => now(),
             'f_sede_id' => 1,
@@ -46,7 +30,7 @@ class SerieSeeder extends Seeder
         ]);
 
         FSerie::create([
-            'serie' => 'FC01',
+            'serie' => 'B010',
             'correlativo' => 0,
             'fechaemision' => now(),
             'f_sede_id' => 1,
@@ -54,11 +38,108 @@ class SerieSeeder extends Seeder
         ]);
 
         FSerie::create([
-            'serie' => 'BC01',
+            'serie' => 'B011',
             'correlativo' => 0,
             'fechaemision' => now(),
             'f_sede_id' => 1,
             'f_tipo_comprobante_id' => 3,
+        ]);
+
+        FSerie::create([
+            'serie' => 'FC10',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 4,
+        ]);
+
+        FSerie::create([
+            'serie' => 'FC11',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 4,
+        ]);
+
+        FSerie::create([
+            'serie' => 'BC10',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 4,
+        ]);
+
+        FSerie::create([
+            'serie' => 'BC11',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 4,
+        ]);
+
+        FSerie::create([
+            'serie' => 'FD10',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 5,
+        ]);
+
+        FSerie::create([
+            'serie' => 'FD11',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 5,
+        ]);
+
+        FSerie::create([
+            'serie' => 'BD10',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 5,
+        ]);
+
+        FSerie::create([
+            'serie' => 'BD11',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 5,
+        ]);
+
+        FSerie::create([
+            'serie' => 'T010',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 6,
+        ]);
+
+        FSerie::create([
+            'serie' => 'T011',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 6,
+        ]);
+
+
+        FSerie::create([
+            'serie' => 'NP10',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 1,
+        ]);
+
+        FSerie::create([
+            'serie' => 'NP11',
+            'correlativo' => 0,
+            'fechaemision' => now(),
+            'f_sede_id' => 1,
+            'f_tipo_comprobante_id' => 1,
         ]);
     }
 }

@@ -51,9 +51,45 @@ trait StockTrait
         }
     }
 
+    public function validarPrecio_arraydetalles($array_detalles, $almacen_id)
+    {
+        $array_detalles = collect($array_detalles);
+        $errores = [];
+        $mesaje_error = "";
+        $ids_productos = $array_detalles->pluck('producto_id')->toArray();
+        $productos = Producto::with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
+        //dd($productos, $array_detalles);
+
+        foreach ($array_detalles as $detalle) {
+            $producto = $productos->find($detalle['producto_id']);
+
+            // Comparar el stock disponible con la cantidad solicitada
+            if ($detalle['importe'] == 0 and $producto->f_tipo_afectacion_id != '21') {
+                $errores[] = [
+                    'producto_id' => $detalle['producto_id'],
+                    'nombre' => $detalle['nombre'],
+                    'importe' => $detalle['importe'],
+                ];
+            }
+        }
+
+        // Mostrar errores si hay productos sin suficiente stock
+        if (!empty($errores)) {
+            foreach ($errores as $error) {
+                $mesaje_error .= "Producto: ({$error['producto_id']}) {$error['nombre']}<br />";
+                $mesaje_error .= "Importe no puede ser: {$error['importe']}<br />";
+                $mesaje_error .= "-----------<br />";
+            }
+            throw new \Exception("Importe no validos:<br />" . $mesaje_error);
+            //logger("Lanzando excepción por stock insuficiente.");
+        } else {
+            $mesaje_error .= "Todos los productos tienen suficiente stock.<br />";
+        }
+    }
+
     public function actualizarStock(Movimiento|Pedido $movimiento_or_pedido, $anulando = false)
     {
-        Cache::lock('actualizar_stock', 15)->block(5, function () use ($movimiento_or_pedido, $anulando) {
+        Cache::lock('actualizar_stock', 15)->block(10, function () use ($movimiento_or_pedido, $anulando) {
             if ($movimiento_or_pedido instanceof Movimiento) {
                 $this->movimientoStock($movimiento_or_pedido, $anulando);
             } elseif ($movimiento_or_pedido instanceof Pedido) {
@@ -82,16 +118,20 @@ trait StockTrait
             }
 
             if ($tipo_movimiento == 'ingreso') {
-                $almacenProducto->update(["stock_disponible" => DB::raw("stock_disponible + {$detalle->cantidad}"), "stock_fisico" => DB::raw("stock_fisico + {$detalle->cantidad}")]);
+                $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), true);
+                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), true);
+                $almacenProducto->update(["stock_disponible" => $nuevo_stock_disponible, "stock_fisico" => $nuevo_stock_fisico]);
             }
             if ($tipo_movimiento == 'salida') {
                 if ($almacenProducto->stock_disponible < $detalle->cantidad) {
                     throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Stock disponible: {$almacenProducto->stock_disponible}");
                 }
 
-                $almacenProducto->update(["stock_fisico" => DB::raw("stock_fisico - {$detalle->cantidad}")]);
+                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), false);
+                $almacenProducto->update(["stock_fisico" => $nuevo_stock_fisico]);
                 if ($codigo_movimiento != '201') {
-                    $almacenProducto->update(["stock_disponible" => DB::raw("stock_disponible - {$detalle->cantidad}")]);
+                    $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), false);
+                    $almacenProducto->update(["stock_disponible" => $nuevo_stock_disponible]);
                 }
             }
         });
@@ -104,18 +144,18 @@ trait StockTrait
         $pedido->pedidoDetalles->each(function ($detalle) use ($almacenId, $anulando) {
             $producto = Producto::find($detalle->producto_id);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $almacenId)->first();
-            $nuevo_stock = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), $anulando);
+            $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), $anulando);
 
             if (!$almacenProducto) {
                 $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $almacenId, "stock_disponible" => 0, "stock_fisico" => 0]);
             }
-            //dd($nuevo_stock);
+            //dd($nuevo_stock_disponible);
             if ($almacenProducto->stock_disponible < $detalle->cantidad) {
                 throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Stock disponible: {$almacenProducto->stock_disponible}");
             }
 
             $almacenProducto->update([
-                "stock_disponible" => $nuevo_stock,
+                "stock_disponible" => $nuevo_stock_disponible,
             ]);
         });
     }

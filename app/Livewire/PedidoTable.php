@@ -333,6 +333,7 @@ class PedidoTable extends Component
 
             $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
             $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
+            $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
 
             $pedido = Pedido::create([
                 "ruta_id" => $this->ruta_id,

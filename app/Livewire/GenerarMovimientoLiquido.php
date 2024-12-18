@@ -4,9 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Almacen;
 use App\Models\Empleado;
+use App\Models\Movimiento;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Producto;
+use App\Models\TipoMovimiento;
+use App\Traits\StockTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\DB;
@@ -14,25 +18,28 @@ use Livewire\Component;
 
 class GenerarMovimientoLiquido extends Component
 {
+    use StockTrait;
     public $fecha_reparto;
     public $fecha_liquidacion;
     public $pedidosAgrupados;
     public $conductores;
     public $checkbox_conductor_seleccionados = [];
+    public $cargas_generadas = [];
 
     public function mount()
     {
         $this->conductores = Empleado::where('tipo_empleado', 'conductor')->get();
         $this->fecha_reparto = date('Y-m-d');
         $this->fecha_liquidacion = date('Y-m-d');
-        $this->pedidos_agrupados();
+        $this->pedidosAgrupados = $this->pedidos_agrupados();
+        $this->cargas_generadas = $this->movimientos_generados();
     }
 
     public function updatedFechaReparto($value)
     {
-        // Aquí puedes manejar el array de seleccionados, por ejemplo:
         $this->fecha_liquidacion = $this->fecha_reparto;
-        $this->pedidos_agrupados();
+        $this->pedidosAgrupados = $this->pedidos_agrupados();
+        $this->cargas_generadas = $this->movimientos_generados();
         //dd($this->fecha_reparto, $this->fecha_liquidacion);
     }
 
@@ -43,7 +50,7 @@ class GenerarMovimientoLiquido extends Component
 
     public function pedidos_agrupados()
     {
-        $this->pedidosAgrupados = Pedido::with('conductor')->where('fecha_reparto', $this->fecha_reparto)
+        return Pedido::with('conductor')->where('fecha_reparto', $this->fecha_reparto)
             ->where('estado', 'asignado')
             ->select(
                 'conductor_id',
@@ -54,14 +61,27 @@ class GenerarMovimientoLiquido extends Component
             ->get();
     }
 
+    public function movimientos_generados(){
+        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen'])->where('fecha_movimiento', $this->fecha_reparto)->get();
+    }
+
     public function generar_movimiento()
     {
+        $this->pedidosAgrupados = $this->pedidos_agrupados();
+        $this->validate([
+            'fecha_reparto' => 'required|date',
+        ]);
+        if (empty($this->checkbox_conductor_seleccionados)) {
+            $this->addError('checkbox_conductor_seleccionados', 'Debe seleccionar al menos un conductor.');
+            return;
+        }
         try {
             DB::beginTransaction();
-            $this->pedidos_agrupados();
+            $fecha_reparto = $this->fecha_reparto;
             $productos = Producto::with('marca')->get();
-            foreach ($this->checkbox_conductor_seleccionados as $value) {
-                $pedidos = Pedido::lockForUpdate()->where('conductor_id', $value)->where('fecha_reparto', $this->fecha_reparto)->where('estado', 'asignado')->get("id");
+            foreach ($this->checkbox_conductor_seleccionados as $conductor_id) {
+
+                $pedidos = Pedido::lockForUpdate()->where('conductor_id', $conductor_id)->where('fecha_reparto', $fecha_reparto)->where('estado', 'asignado')->get("id");
                 $pedidos_id = $pedidos->pluck('id');
                 $pedidos_detalle = PedidoDetalle::lockForUpdate()->whereIn('pedido_id', $pedidos_id)->get()->groupBy('producto_id');
                 $pedidos_detalle->each(function ($item, $key) use ($productos) {
@@ -85,14 +105,16 @@ class GenerarMovimientoLiquido extends Component
                     //dd($item, $key, $productos->find($key), $sumaunidads);
                 });
 
-                $user = auth()->user();
+                $user = auth_user();
                 $f_sede_id = $user->user_empleado->empleado->f_sede_id;
 
                 $sedes_id = $user->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
                 $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
                 $almacen_id = $almacenes->first()->id;
+                $conductor = Empleado::find($conductor_id);
+                $tipo_movimiento = TipoMovimiento::firstWhere("codigo", "201"); //sal. reparto sujeta a liquidacion
 
-                $data_para_movimiento_detalle = $pedidos_detalle->map(function ($item) use ($user){
+                $data_para_movimiento_detalle = $pedidos_detalle->map(function ($item) use ($user) {
                     return [
                         'producto_id' => $item->producto_id,
                         'producto_name' => $item->producto_name,
@@ -102,25 +124,63 @@ class GenerarMovimientoLiquido extends Component
                         'totalqcanpedbultos' => $item->totalqcanpedbultos,
                         'totalqcanpedunidads' => $item->totalqcanpedunidads,
                         'cantidad' => number_format_punto2($item->totalqcanpedbultos + ($item->totalqcanpedunidads / 100)),
-                        'producto_precio' => number_format_punto2($item->precio),
+                        'producto_precio_venta' => number_format_punto2($item->precio),
                         'precio_venta_unitario' => number_format_punto2($item->precio / $item->cantidad),
                         'precio_venta_total' => number_format_punto2($item->importe),
+                        "costo_unitario" => number_format_punto2($item->precio / $item->cantidad),
+                        "costo_total" => number_format_punto2($item->importe),
                         'empleado_id' => $user->user_empleado->empleado->id,
                     ];
                 })->toArray();
 
                 // consolidar detalle para generar movimiento
 
-                dd($pedidos_id, $pedidos_detalle, $data_para_movimiento_detalle);
+                $data_para_movimiento = [
+                    "almacen_id" => $almacen_id,
+                    "tipo_movimiento_id" => $tipo_movimiento->id,
+                    "fecha_movimiento" => $fecha_reparto,
+                    "conductor_id" => $conductor->id,
+                    "vehiculo_id" => $conductor->vehiculo_id,
+                    "nro_doc_liquidacion" => null,
+                    "fecha_liquidacion" => $fecha_reparto,
+                    "tipo_movimiento_name" => $tipo_movimiento->name,
+                    "empleado_id" => $user->id,
+                ];
+
+                //dd($pedidos_id, $pedidos_detalle, $data_para_movimiento, $data_para_movimiento_detalle);
+                $movimiento = Movimiento::create($data_para_movimiento);
+                $movimiento->movimientoDetalles()->createMany($data_para_movimiento_detalle);
+                $this->actualizarStock($movimiento);
+
+                $pedidos->each(function ($pedido) use ($movimiento) {
+                    $pedido->estado = "movimiento-generado";
+                    $pedido->movimiento_id = $movimiento->id;
+                    $pedido->save();
+                });
             }
             $this->checkbox_conductor_seleccionados = [];
+            $this->pedidosAgrupados = $this->pedidos_agrupados();
             DB::commit();
         } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
             logger("Error al guardar movimiento:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-pedido", "Error al guardar el movimiento" . "<br>" . $e->getMessage());
+            $this->dispatch("error-guardando-movimiento", "Error al guardar el movimiento" . "<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());
         }
+    }
+
+    public function exportarMovimientoCargaPDF()
+    {
+        // Generar el PDF
+        $pdf = Pdf::loadView(
+            "pdf.movimiento-carga"
+        );
+
+        // Descargar el PDF
+        return response()->streamDownload(
+            fn() => print $pdf->output(),
+            "movimiento_carga_conductor" . ".pdf"
+        );
     }
 }

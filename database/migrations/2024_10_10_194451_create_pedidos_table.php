@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('estado', ['pendiente', 'asignado', 'movimiento-generado', 'facturado'])->default('pendiente');
             $table->string('importe_total')->nullable();
             $table->string('nro_doc_liquidacion')->nullable();
+            $table->string('movimiento_id')->nullable();
             $table->string('lista_precio')->nullable();
             $table->string('comentario')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');

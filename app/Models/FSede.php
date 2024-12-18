@@ -30,4 +30,9 @@ class FSede extends Model
     {
         return $this->hasOne(Almacen::class);
     }
+
+    public function fSeries()
+    {
+        return $this->hasMany(FSerie::class);
+    }
 }

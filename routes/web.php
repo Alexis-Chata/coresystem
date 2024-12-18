@@ -100,6 +100,10 @@ Route::middleware([
         return view('movimiento');
     })->middleware('can:view movimiento')->name('movimiento.generar-movimientoliq');
 
+    Route::get('/generar-comprobantes', function () {
+        return view('generar-comprobantes');
+    })->name('comprobantes.create');
+
     Route::get('/comprobantes', function () {
         return view('comprobantes');
     })->name('comprobantes.index');
