@@ -23,7 +23,8 @@ class Pedido extends Model
         "lista_precio",
         "comentario",
         "empresa_id",
-        "estado"
+        "estado",
+        "movimiento_id"
     ];
 
     public function pedidoDetalles()

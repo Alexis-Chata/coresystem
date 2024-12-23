@@ -21,6 +21,7 @@ class Movimiento extends Model
         'comentario',
         'tipo_movimiento_name',
         'empleado_id',
+        'estado',
     ];
 
     public function movimientoDetalles()
@@ -51,5 +52,9 @@ class Movimiento extends Model
     public function empleado()
     {
         return $this->belongsTo(Empleado::class, 'empleado_id');
+    }
+
+    public function pedidos(){
+        return $this->hasMany(Pedido::class);
     }
 }

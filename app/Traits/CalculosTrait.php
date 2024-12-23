@@ -8,12 +8,16 @@ use Luecano\NumeroALetras\NumeroALetras;
 trait CalculosTrait
 {
 
-    public function setSubTotalesIgv($detalles)
+    public function setSubTotalesIgv($detalles, bool $devolver_data_detalle = false)
     {
         $data_detalles = $detalles;
+        //dd($data_detalles);
         foreach ($data_detalles as $key => $data_detalle) {
             $producto = Producto::find($data_detalle['producto_id']);
-
+            $data_detalle['codProducto'] = $data_detalle['producto_id'];
+            $data_detalle['unidad'] = "NIU";
+            $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];
+            $data_detalle['cantidad'] = number_format_punto2($data_detalle['cantidad']);
             $data_detalle['tipAfeIgv'] = $producto->f_tipo_afectacion_id;
             $data_detalle['mtoPrecioUnitario'] = $data_detalle['importe'] / $data_detalle['cantidad'];
             $data_detalle['porcentajeIgv'] = $producto->porcentaje_igv ?? 0;
@@ -48,12 +52,16 @@ trait CalculosTrait
         $data['totalImpuestos'] = $data['mtoIGV'] + $data['icbper']; // total de impuestos (igv + icbper)
 
         $data['valorVenta'] = $details->whereIn('tipAfeIgv', [10, 20, 30, 40])->sum('mtoValorVenta'); //  subtotal
-        $data['subTotal'] = $data['valorVenta'] + $data['totalImpuestos']; // total
+        $data['subTotal'] = number_format_punto2($data['valorVenta'] + $data['totalImpuestos']); // total
 
-        $data['mtoImpVenta'] = floor($data['subTotal'] * 10) / 10; // total con redondeo
+        //$data['mtoImpVenta'] = number_format_punto2(floor($data['subTotal'] * 10) / 10); // total con redondeo
+        $data['mtoImpVenta'] = number_format_punto2($data['subTotal']); // total sin redondeo
 
-        $data['redondeo'] = $data['mtoImpVenta'] - $data['subTotal'];
+        $data['redondeo'] = number_format_punto2($data['mtoImpVenta'] - $data['subTotal']);
         // dd($details, $data);
+        if ($devolver_data_detalle) {
+            return [$data, $data_detalles];
+        }
         return $data;
     }
 

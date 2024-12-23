@@ -10,6 +10,12 @@ class FComprobanteSunat extends Model
     use HasFactory;
 
     protected $fillable = [
+        'ruta_id',
+        'vendedor_id',
+        'conductor_id',
+        'cliente_id',
+        'movimiento_id',
+        'sede_id',
         'ublVersion',
         'tipoDoc',
         'tipoDoc_name',
@@ -59,4 +65,37 @@ class FComprobanteSunat extends Model
         'obs',
         'empresa_id',
     ];
+
+    public function ruta()
+    {
+        return $this->belongsTo(Ruta::class);
+    }
+    public function vendedor()
+    {
+        return $this->belongsTo(Empleado::class);
+    }
+    public function conductor()
+    {
+        return $this->belongsTo(Empleado::class);
+    }
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
+    }
+    public function movimiento()
+    {
+        return $this->belongsTo(Movimiento::class);
+    }
+    public function sede()
+    {
+        return $this->belongsTo(FSede::class);
+    }
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+    public function detalle()
+    {
+        return $this->hasMany(FComprobanteSunatDetalle::class);
+    }
 }

@@ -127,13 +127,15 @@
                 <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}" style="text-align: center;">
                     @if($conductor->conductor_id)
                         {{ $conductor->conductor_id }} - {{ $conductor->conductor_nombre }}<br><br>
+                        @if($pedidosPorConductor->unique('ruta_id')->count() > 1)
                         {{ $conductor->vehiculo_placa }} {{ $conductor->vehiculo_marca }}<br>
                         {{ $conductor->vehiculo_tonelaje }}t.
+                        @endif
                     @else
                         <span>Sin asignar<br>Conductor.</span>
                     @endif
                 </td>
-                @foreach($pedidosPorConductor->unique('ruta_id') as $pedido)
+                @foreach($pedidosPorConductor->unique('ruta_id')->sortBy('ruta_id') as $pedido)
                     @if (!$loop->first)
                         <tr>
                     @endif
@@ -141,7 +143,7 @@
                         <td style="text-align: left;">{{ $pedido->vendedor_id }} - {{ $pedido->vendedor_nombre }}</td>
                         <td>0.00</td>
                         <td>{{ $grupo['clientesPorRuta'][$pedido->ruta_id] }}</td>
-                        <td>{{ number_format($pedido->importe_total, 2) }}</td>
+                        <td>{{ number_format($pedidosPorConductor->where('ruta_id', $pedido->ruta_id)->sum('importe_total'), 2) }}</td>
                         @if ($loop->first)
                             <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}">-50,000.00</td>
                         @endif

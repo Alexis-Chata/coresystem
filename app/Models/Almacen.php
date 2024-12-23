@@ -27,4 +27,9 @@ class Almacen extends Model
     {
         return $this->belongsTo(User::class, 'encargado_id');
     }
+
+    public function sede()
+    {
+        return $this->belongsTo(FSede::class, 'f_sede_id');
+    }
 }

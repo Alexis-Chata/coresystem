@@ -27,9 +27,18 @@ final class AsignarConductorTable extends PowerGridComponent
     public $endDate = null;
     protected function initProperties(): void
     {
-        $this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
+        //$this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
+        $this->startDate = Carbon::now()->format("Y-m-d");
         $this->endDate = Carbon::now()->format("Y-m-d");
-        $this->fecha_reparto = Carbon::now()->format("Y-m-d");
+        $this->fecha_reparto = Carbon::now();
+
+        if ($this->fecha_reparto->isSaturday()) {
+            $this->fecha_reparto = $this->fecha_reparto->addDays(2); // Agregar 2 días si es sábado
+        } else {
+            $this->fecha_reparto = $this->fecha_reparto->addDay(); // Agregar 1 día en otros casos
+        }
+
+        $this->fecha_reparto = $this->fecha_reparto->format("Y-m-d");
     }
 
     public function updatedStartDate($value)
@@ -64,6 +73,7 @@ final class AsignarConductorTable extends PowerGridComponent
                             $query
                                 ->select("ruta_id")
                                 ->from("pedidos")
+                                ->whereIn("estado", ["asignado", "pendiente"])
                                 ->distinct();
                         })
                         ->select(["id", "name"])
@@ -316,6 +326,7 @@ final class AsignarConductorTable extends PowerGridComponent
                 $this->startDate . " 00:00:00",
                 $this->endDate . " 23:59:59",
             ])
+            ->whereIn("pedidos.estado", ["asignado", "pendiente"])
             ->select(
                 "pedidos.id as numero_pedido",
                 "pedidos.importe_total",
@@ -347,7 +358,8 @@ final class AsignarConductorTable extends PowerGridComponent
         // Ordenar los conductores sin asignar primero
         $pedidosAgrupados = $pedidosAgrupados->sortBy(function ($grupo, $conductorId) {
             return $conductorId ? 1 : 0; // Los sin asignar tienen conductorId null o 0
-        });
+        })->sortKeys();
+        //dd($pedidosAgrupados->first()['pedidos']->unique('ruta_id')->count());
 
         if ($pedidos->isEmpty()) {
             $this->dispatch("pg:notification", [

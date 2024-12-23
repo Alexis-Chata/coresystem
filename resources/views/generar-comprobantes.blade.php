@@ -5,6 +5,13 @@
 <br />
 <livewire:generar-comprobantes-table />
 
+<br />
+<br />
+<br />
+<br />
+<h1>Comprobantes Generados</h1>
+<livewire:movimiento-comprobante-generados-table />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('livewire:initialized', () => {

@@ -24,7 +24,7 @@ class Cliente extends Model
     {
         static::created(function ($cliente) {
             $ultimaSecuencia = Padron::where('ruta_id', $cliente->ruta_id)
-                                    ->max('nro_secuencia') ?? 0;
+                ->max('nro_secuencia') ?? 0;
 
             Padron::create([
                 'cliente_id' => $cliente->id,
@@ -39,7 +39,7 @@ class Cliente extends Model
 
                 if ($padron) {
                     $ultimaSecuencia = Padron::where('ruta_id', $cliente->ruta_id)
-                                            ->max('nro_secuencia') ?? 0;
+                        ->max('nro_secuencia') ?? 0;
 
                     $padron->update([
                         'ruta_id' => $cliente->ruta_id,
@@ -59,8 +59,8 @@ class Cliente extends Model
                 $padron->delete();
 
                 Padron::where('ruta_id', $rutaId)
-                      ->where('nro_secuencia', '>', $secuenciaEliminada)
-                      ->decrement('nro_secuencia');
+                    ->where('nro_secuencia', '>', $secuenciaEliminada)
+                    ->decrement('nro_secuencia');
             }
         });
     }

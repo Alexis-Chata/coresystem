@@ -3,10 +3,33 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\MarcaController;
+use App\Models\Marca;
+use App\Models\Movimiento;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 // Rutas públicas (si las hay)
 // ...
+Route::get('html', function () {
+    $movimiento = Movimiento::find(1);
+    $marca = Marca::all();
+        $movimiento->load(['movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
+        $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
+            return $detalle->producto->marca->id; // Agrupar por nombre de la marca
+        });
+        //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
+
+        return view("pdf.movimiento-carga", compact("movimiento", "detallesAgrupados", "marca"));
+});
+
+Route::get('/test-email', function () {
+    Mail::raw('Este es un correo de prueba.', function ($message) {
+        $message->to('alexis.golomix@gmail.com')
+                ->subject('Prueba de correo');
+    });
+
+    return 'Correo enviado correctamente';
+});
 
 // Grupo de rutas protegidas por autenticación
 Route::middleware([

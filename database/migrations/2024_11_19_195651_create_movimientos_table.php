@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('fecha_movimiento');
             $table->foreignId('conductor_id')->nullable()->constrained('empleados');
             $table->foreignId('vehiculo_id')->nullable()->constrained('vehiculos');
-            $table->enum('estado', ['liquido', 'por liquidar', 'liquidado'])->default('liquido');
+            $table->enum('estado', ['liquido', 'facturas_por_generar', 'por liquidar', 'liquidado'])->default('liquido');
             $table->string('nro_doc_liquidacion')->nullable();
             $table->date('fecha_liquidacion')->nullable();
             $table->string('comentario')->nullable();

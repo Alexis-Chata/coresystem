@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('f_comprobante_sunats', function (Blueprint $table) {
             $table->id();
+            $table->string('ruta_id')->nullable();
+            $table->string('vendedor_id')->nullable();
+            $table->string('conductor_id')->nullable();
+            $table->string('cliente_id')->nullable();
+            $table->string('movimiento_id')->nullable();
+            $table->string('sede_id')->nullable();
             $table->string('ublVersion')->default("2.1");
             $table->string('tipoDoc')->default("03");
             $table->string('tipoDoc_name')->default("BOLETA ELECTRONICA");

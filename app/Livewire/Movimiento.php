@@ -274,7 +274,7 @@ class Movimiento extends Component
         $this->validate($array_validate);
 
         try {
-            Cache::lock('guardar_movimiento', 5)->block(3, function () {
+            Cache::lock('guardar_movimiento', 15)->block(10, function () {
                 DB::transaction(function () {
                     $movimiento = ModelsMovimiento::create($this->all());
                     $movimiento->movimientoDetalles()->createMany($this->detalles);

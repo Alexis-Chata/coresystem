@@ -1,7 +1,7 @@
 <div>
     {{-- In work, do what you enjoy. --}}
     <div class="flex items-center gap-4 mb-4">
-        <div class="relative w-72 mb-3">
+        <div class="relative w-72">
             <input type="date" wire:model.live="fecha_reparto"
                 class="block px-2.5 pb-2.5 pt-4 text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
             <label
