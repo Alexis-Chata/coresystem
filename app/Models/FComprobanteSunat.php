@@ -40,6 +40,7 @@ class FComprobanteSunat extends Model
         'clientTipoDoc',
         'clientNumDoc',
         'clientRazonSocial',
+        'clientDireccion',
         'mtoOperGravadas',
         'mtoOperInafectas',
         'mtoOperExoneradas',

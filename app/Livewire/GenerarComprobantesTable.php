@@ -70,7 +70,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen'])->where('fecha_movimiento', $this->fecha_reparto)->where('tipo_movimiento_id', 7)->whereIn('estado', ['facturas_por_generar']);
+        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen'])->where('fecha_liquidacion', $this->fecha_reparto)->where('tipo_movimiento_id', 7)->whereIn('estado', ['facturas_por_generar']);
     }
 
     public function relationSearch(): array
@@ -211,16 +211,16 @@ final class GenerarComprobantesTable extends PowerGridComponent
                             '01' => FSerie::find($this->serie_factura_seleccionada),
                             '03' => FSerie::find($this->serie_boleta_seleccionada),
                         };
-                        $serie->correlativo = $serie->correlativo + 1;
-                        $serie->save();
                         if (!$coleccion_comprobantes_generados->has($pedido->tipoComprobante->tipo_comprobante)) {
                             $coleccion_comprobantes_generados->put($pedido->tipoComprobante->tipo_comprobante, collect());
                         }
-                        $coleccion_comprobantes_generados->get($pedido->tipoComprobante->tipo_comprobante)->push($serie->serie.'-'.$serie->correlativo);
                         $detallesDivididos = $pedido->pedidoDetalles->chunk(3);
                         //dd($detallesDivididos);
 
                         foreach ($detallesDivididos as $lote) {
+                            $serie->correlativo = $serie->correlativo + 1;
+                            $serie->save();
+                            $coleccion_comprobantes_generados->get($pedido->tipoComprobante->tipo_comprobante)->push($serie->serie.'-'.$serie->correlativo);
                             $formatter = new NumeroALetras();
                             list($subtotales, $detalles) = ($this->setSubTotalesIgv($lote, true));
                             $subtotales = (object)$subtotales;

@@ -52,7 +52,7 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen'])->where('fecha_movimiento', $this->fecha_reparto)->where('tipo_movimiento_id', 7)->whereIn('estado', ['por liquidar']);
+        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen'])->where('fecha_liquidacion', $this->fecha_reparto)->where('tipo_movimiento_id', 7)->whereIn('estado', ['por liquidar']);
     }
 
     public function relationSearch(): array

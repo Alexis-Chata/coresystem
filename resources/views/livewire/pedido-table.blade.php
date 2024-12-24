@@ -204,7 +204,7 @@
                     <tr>
                         <th scope="col">Código - Producto</th>
                         <th scope="col">Cantidad</th>
-                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16"
+                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16" class="inline-block"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
                                     d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
@@ -240,7 +240,7 @@
                                 S/. {{ number_format($detalle['importe'], 2) }}
                                 <button wire:click="eliminarDetalle({{ $index }})"
                                     class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                    <svg width="20 " height="20" viewBox="0 0 17 17"
+                                    <svg width="20 " height="20" viewBox="0 0 17 17" class="inline-block"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path
                                             d="M12.566,8 L15.611,4.956 C16.031,4.535 16.031,3.853 15.611,3.434 L12.566,0.389 C12.146,-0.031 11.464,-0.031 11.043,0.389 L7.999,3.433 L4.955,0.389 C4.534,-0.031 3.852,-0.031 3.432,0.389 L0.388,3.434 C-0.034,3.854 -0.034,4.536 0.387,4.956 L3.431,8 L0.387,11.044 C-0.034,11.465 -0.034,12.147 0.388,12.567 L3.432,15.611 C3.852,16.032 4.534,16.032 4.955,15.611 L7.999,12.567 L11.043,15.611 C11.464,16.032 12.146,16.032 12.566,15.611 L15.611,12.567 C16.031,12.146 16.031,11.464 15.611,11.044 L12.566,8 L12.566,8 Z"

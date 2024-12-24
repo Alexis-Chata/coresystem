@@ -101,11 +101,12 @@
             line-height: 1.5;
         }
 
-        .content {}
-
         /* Evitar cortes incómodos en el contenido */
         .content2 {
             page-break-inside: avoid;
+        }
+        .pagenum:before {
+        content: counter(page);
         }
     </style>
 </head>
@@ -119,7 +120,7 @@
                 <td class="center">
                     *** PLANILLA DE CARGA No.: {{ str_pad($movimiento->id, 10, '0', STR_PAD_LEFT) }} ***
                 </td>
-                <td class="right">PAG.N°: 0001</td>
+                <td class="right">PAG.N°: <span class="pagenum"></span></td>
             </tr>
             <tr>
                 <td>DIVISION GALLETA</td>
@@ -129,7 +130,7 @@
             <tr>
                 <td></td>
                 <td></td>
-                <td class="right">{{ now()->format('g:i A') }}</td>
+                <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
         <p style="padding: 0 0 2px 0; margin:0 0 2px 0;">*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong>
@@ -146,6 +147,7 @@
 
     <div class="footer">
         <span></span>
+        Página <span class="pagenum"></span> de <span class="total-pages"></span>
     </div>
 
     <!-- Contenido dinámico -->

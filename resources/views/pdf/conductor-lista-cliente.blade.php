@@ -25,7 +25,7 @@
         th,
         td {
             border: 1px solid black;
-            padding: 5px 8px;
+            padding: 2px 8px;
             /* text-align: center; */
             white-space: nowrap;
         }
@@ -65,7 +65,7 @@
             background-color: white;
             text-align: left;
             position: relative;
-            padding-top: 20px;
+            padding-top: 15px;
         }
 
         /*Segunda Tabla*/
@@ -153,13 +153,13 @@
         }
 
         @page {
-            margin: 120px 5px 20px;
+            margin: 90px 5px 20px;
             /* Margen superior e inferior para header y footer */
         }
 
         .header {
             position: fixed;
-            top: -115px;
+            top: -85px;
             /* Ajuste para coincidir con @page margin superior */
             left: 0;
             right: 0;
@@ -176,6 +176,9 @@
             font-size: 10px;
             line-height: 1.5;
         }
+        .pagenum:before {
+        content: counter(page);
+    }
     </style>
 </head>
 
@@ -185,7 +188,7 @@
             <tr>
                 <td>ROMANI GOLOMIX</td>
                 <td class="center">*** RELACION DOCUMENTOS POR CHOFER ***</td>
-                <td class="right">PAG.N°: 0001 Página <span class="pagenum"></span> de <span class="total-pages"></span></td>
+                <td class="right">Página <span class="pagenum"></span> de <span class="total-pages"></span></td>
             </tr>
             <tr>
                 <td>DIVISION GALLETA</td>
@@ -195,7 +198,7 @@
             <tr>
                 <td>SPVR68</td>
                 <td></td>
-                <td class="right">{{ now()->format('d/m/Y') }}</td>
+                <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
         <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> {{ $movimiento->conductor_id }} - {{ $movimiento->conductor->name }}</p>
@@ -231,7 +234,7 @@
                         <td>{{ $comprobante->clientDireccion }}</td>
                         <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
                         </td>
-                        <td>{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
+                        <td style="text-align: right;">{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
                         <td>{{ $comprobante->pedido_obs ?? '..............' }}</td>
                     </tr>
                 @endforeach
@@ -291,7 +294,7 @@
                         <td>{{ $ruta_id }} - {{ $rutas->find($ruta_id)->name }}</td></td>
                         <td>{{ $comprobante->unique('cliente_id')->count(); }}</td>
                         <td>{{ $comprobante->count() }}</td>
-                        <td>{{ $comprobante->sum('mtoImpVenta') }}</td>
+                        <td>{{ number_format($comprobante->sum('mtoImpVenta'), 2) }}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -301,7 +304,7 @@
             <td></td>
             <td>{{ $comprobantes_rutas->unique('cliente_id')->count() }}</td>
             <td>{{ $comprobantes_rutas->count() }}</td>
-            <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
+            <td>{{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
         </tfoot>
     </table>
 
@@ -356,18 +359,6 @@
     <p style="text-align: center; padding: 40px 0">
         *** FIN DE REPORTE ***
     </p>
-    <script type="text/php">
-        if (isset($pdf)) {
-            $pdf->page_script('
-                $font = $fontMetrics->get_font("Arial, Helvetica, sans-serif", "normal");
-                $size = 10;
-                $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
-                $y = 820; // Posición vertical del texto
-                $x = 520; // Posición horizontal del texto
-                $pdf->text($x, $y, $pageText, $font, $size);
-            ');
-        }
-    </script>
 </body>
 
 </html>

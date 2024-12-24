@@ -74,7 +74,7 @@ class GenerarMovimientoLiquido extends Component
 
     public function movimientos_generados()
     {
-        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen', 'pedidos'])->where('fecha_movimiento', $this->fecha_reparto)
+        return Movimiento::query()->with(['tipoMovimiento', 'conductor.fSede', 'almacen', 'pedidos'])->where('fecha_liquidacion', $this->fecha_reparto)
             ->whereHas('tipoMovimiento', function ($query) {
                 $query->where('codigo', 201); // Filtrar por el código en la relación 'tipoMovimiento'
             })->get();
