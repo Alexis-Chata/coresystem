@@ -131,6 +131,10 @@ Route::middleware([
         return view('comprobantes');
     })->name('comprobantes.index');
 
+    Route::get('/imprimir-comprobantes', function () {
+        return view('imprimir-comprobantes');
+    })->name('comprobantes.imprimir');
+
     Route::get('storage/{filename}', function ($filename) {
         // Verificar si el archivo existe en el disco 'private'
         if (Storage::disk('local')->exists($filename)) {
