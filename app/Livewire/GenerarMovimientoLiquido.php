@@ -152,7 +152,7 @@ class GenerarMovimientoLiquido extends Component
                     $data_para_movimiento = [
                         "almacen_id" => $almacen_id,
                         "tipo_movimiento_id" => $tipo_movimiento->id,
-                        "fecha_movimiento" => $fecha_reparto,
+                        "fecha_movimiento" => now(),
                         "conductor_id" => $conductor->id,
                         "vehiculo_id" => $conductor->vehiculo_id,
                         "nro_doc_liquidacion" => null,

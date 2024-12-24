@@ -77,17 +77,17 @@
         }
 
         @page {
-            margin: 170px 5px 80px;
+            margin: 130px 5px 80px;
             /* Margen superior e inferior para header y footer */
         }
 
         .header {
             position: fixed;
-            top: -165px;
+            top: -125px;
             /* Ajuste para coincidir con @page margin superior */
             left: 0;
             right: 0;
-            height: 110px;
+            /* height: 110px; */
         }
 
         .footer {
@@ -142,24 +142,6 @@
         <p style="padding: 2px 0 2px 0; margin:2px 0 2px 0;">Fecha Movimiento:
             {{ $movimiento->created_at->format('d/m/Y') }} - Fecha Liquidación:
             {{ format_date($movimiento->fecha_liquidacion) }}</p>
-        <table style="width: 93%">
-            <thead>
-                <tr style="background-color: rgba(211, 211, 211, 0.5);">
-                    <th rowspan="2">CÓDIGO</th>
-                    <th rowspan="2" style="width: 260px">DESCRIPCIÓN ARTÍCULO</th>
-                    <th rowspan="2">PRESENTA.</th>
-                    <th colspan="3">CARGA</th>
-                    <th colspan="2">DESCARGA</th>
-                </tr>
-                <tr style="background-color: rgba(211, 211, 211, 0.5);">
-                    <th>BULTOS</th>
-                    <th>UNID</th>
-                    <th>IMPORTE</th>
-                    <th>BULTOS</th>
-                    <th>UNID</th>
-                </tr>
-            </thead>
-        </table>
     </div>
 
     <div class="footer">
@@ -168,6 +150,22 @@
 
     <!-- Contenido dinámico -->
     <table id="contenido" style="font-family: monospace; width: 90%">
+        <thead>
+            <tr style="background-color: rgba(211, 211, 211, 0.5);">
+                <th rowspan="2">CÓDIGO</th>
+                <th rowspan="2" style="width: 260px">DESCRIPCIÓN ARTÍCULO</th>
+                <th rowspan="2">PRESENTA.</th>
+                <th colspan="3">CARGA</th>
+                <th colspan="2">DESCARGA</th>
+            </tr>
+            <tr style="background-color: rgba(211, 211, 211, 0.5);">
+                <th>BULTOS</th>
+                <th>UNID</th>
+                <th>IMPORTE</th>
+                <th>BULTOS</th>
+                <th>UNID</th>
+            </tr>
+        </thead>
         <tbody>
             @forelse ($detallesAgrupados as $key => $detalles)
                 <tr>
@@ -197,7 +195,6 @@
                 @endforeach
             @empty
             @endforelse
-
         </tbody>
         <tfoot>
             <!-- TOTALES -->

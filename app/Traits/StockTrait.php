@@ -123,8 +123,8 @@ trait StockTrait
                 $almacenProducto->update(["stock_disponible" => $nuevo_stock_disponible, "stock_fisico" => $nuevo_stock_fisico]);
             }
             if ($tipo_movimiento == 'salida') {
-                if ($almacenProducto->stock_disponible < $detalle->cantidad) {
-                    throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Stock disponible: {$almacenProducto->stock_disponible}");
+                if ($almacenProducto->stock_disponible < $detalle->cantidad && $codigo_movimiento != '201') {
+                    throw new \Exception("Stock insuficiente para el producto {$producto->name}. Stock disponible: {$almacenProducto->stock_disponible}. Solicitado {$detalle->cantidad}");
                 }
 
                 $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), false);
@@ -151,7 +151,7 @@ trait StockTrait
             }
             //dd($nuevo_stock_disponible);
             if ($almacenProducto->stock_disponible < $detalle->cantidad) {
-                throw new \Exception("Stock insuficiente para el producto {$producto->nombre}. Stock disponible: {$almacenProducto->stock_disponible}");
+                throw new \Exception("Stock insuficiente para el producto {$producto->name}. Stock disponible: {$almacenProducto->stock_disponible}. Solicitado {$detalle->cantidad}");
             }
 
             $almacenProducto->update([

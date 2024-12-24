@@ -2,7 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Empleado;
+use App\Models\FComprobanteSunat;
 use App\Models\Movimiento;
+use App\Models\Ruta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,7 +71,7 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
             ->add('vehiculo_id')
             ->add('nro_doc_liquidacion')
             ->add('fecha_liquidacion_formatted', fn(Movimiento $model) => Carbon::parse($model->fecha_liquidacion)->format('d/m/Y'))
-            ->add('comentario')
+            ->add('comentario', function ($model) { return nl2br(e($model->comentario));})
             ->add('tipo_movimiento_name')
             ->add('empleado_id')
             ->add('estado')
@@ -127,12 +130,17 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
     }
 
     #[\Livewire\Attributes\On('exportarpdf')]
-    public function exportarMovimientoCargaPDF()
+    public function exportarMovimientoCargaPDF($movimiento_id)
     {
+        $movimiento = Movimiento::with('conductor')->find($movimiento_id);
+        $rutas = Ruta::all();
+        $vendedores = Empleado::all();
+        $comprobantes_rutas = FComprobanteSunat::where('movimiento_id', $movimiento_id)->get()->sortBy('ruta_id');
+        //dd($comprobantes_rutas->groupBy('vendedor_id'));
         // Generar el PDF
         $pdf = Pdf::loadView(
-            "pdf.conductor-lista-cliente"
-        );
+            "pdf.conductor-lista-cliente", compact('comprobantes_rutas', 'rutas', 'vendedores', 'movimiento')
+        )->setPaper('A4');
 
         // Descargar el PDF
         return response()->streamDownload(
@@ -148,7 +156,7 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
                 ->slot('PDF: ' . $row->id)
                 ->id()
                 ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('exportarpdf', ['rowId' => $row->id])
+                ->dispatch('exportarpdf', ['movimiento_id' => $row->id])
         ];
     }
 

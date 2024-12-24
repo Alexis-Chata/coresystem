@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('conductor_id')->nullable();
             $table->string('cliente_id')->nullable();
             $table->string('movimiento_id')->nullable();
+            $table->string('pedido_id')->nullable();
+            $table->string('pedido_obs')->nullable();
             $table->string('sede_id')->nullable();
             $table->string('ublVersion')->default("2.1");
             $table->string('tipoDoc')->default("03");
@@ -41,6 +43,7 @@ return new class extends Migration
             $table->string('clientTipoDoc')->nullable();
             $table->string('clientNumDoc')->nullable();
             $table->string('clientRazonSocial')->nullable();
+            $table->string('clientDireccion')->nullable();
             $table->string('mtoOperGravadas')->nullable();
             $table->string('mtoOperInafectas')->nullable();
             $table->string('mtoOperExoneradas')->nullable();

@@ -7,14 +7,14 @@
     <title>Relación de Documentos</title>
     <style>
         html {
-            margin: 5px;
+            /* margin: 5px; */
             font-size: 10px;
         }
 
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            /* margin: 0;
+            padding: 0; */
         }
 
         table {
@@ -25,7 +25,7 @@
         th,
         td {
             border: 1px solid black;
-            padding: 5px 10px;
+            padding: 5px 8px;
             /* text-align: center; */
             white-space: nowrap;
         }
@@ -153,26 +153,26 @@
         }
 
         @page {
-            margin: 170px 5px 80px;
+            margin: 120px 5px 20px;
             /* Margen superior e inferior para header y footer */
         }
 
         .header {
             position: fixed;
-            top: -165px;
+            top: -115px;
             /* Ajuste para coincidir con @page margin superior */
             left: 0;
             right: 0;
-            height: 110px;
+            /* height: 110px; */
         }
 
         .footer {
             position: fixed;
-            bottom: -80px;
+            bottom: -20px;
             /* Ajuste para coincidir con @page margin inferior */
             left: 0;
             right: 0;
-            height: 60px;
+            /* height: 60px; */
             font-size: 10px;
             line-height: 1.5;
         }
@@ -180,182 +180,96 @@
 </head>
 
 <body>
-    <table style="width: 100%">
-        <tr>
-            <td>ROMANI GOLOMIX</td>
-            <td class="center">*** RELACION DOCUMENTOS POR CHOFER ***</td>
-            <td class="right">PAG.N°: 0001</td>
-        </tr>
-        <tr>
-            <td>DIVISION GALLETA</td>
-            <td class="center">Fecha Emisión del : 03/08/2024</td>
-            <td class="right">02/08/2024</td>
-        </tr>
-        <tr>
-            <td>SPVR68</td>
-            <td></td>
-            <td class="right">16:35:52</td>
-        </tr>
-    </table>
-    <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> 006 - KIMI</p>
-
-    <table style="width: 100%; border-collapse: collapse">
-        <thead>
+    <div class="header">
+        <table style="width: 100%">
             <tr>
-                <th style="width: ">CODIGO</th>
-                <th>NOMBRE y APELLIDOS</th>
-                <th>DIRECCION</th>
-                <th>DOCUMENTO</th>
-                <th>IMPORTE</th>
-                <th>COND.</th>
-                <th>OBSERVACION</th>
+                <td>ROMANI GOLOMIX</td>
+                <td class="center">*** RELACION DOCUMENTOS POR CHOFER ***</td>
+                <td class="right">PAG.N°: 0001 Página <span class="pagenum"></span> de <span class="total-pages"></span></td>
             </tr>
-        </thead>
-    </table>
+            <tr>
+                <td>DIVISION GALLETA</td>
+                <td class="center">Fecha Emisión del : {{ $movimiento->fecha_movimiento }}</td>
+                <td class="right">{{ now()->format('d/m/Y') }}</td>
+            </tr>
+            <tr>
+                <td>SPVR68</td>
+                <td></td>
+                <td class="right">{{ now()->format('d/m/Y') }}</td>
+            </tr>
+        </table>
+        <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> {{ $movimiento->conductor_id }} - {{ $movimiento->conductor->name }}</p>
 
+    </div>
+    <div class="footer">
+        <span></span>
+        Página <span class="pagenum"></span> de <span class="total-pages"></span>
+    </div>
 
     <table style="width: 100%; border-collapse: collapse">
         <thead>
             <tr>
-                <th>CODIGO</th>
-                <th>NOMBRE y APELLIDOS</th>
-                <th>DIRECCION</th>
-                <th>DOCUMENTO</th>
-                <th>IMPORTE</th>
-                <th>COND.</th>
-                <th>OBSERVACION</th>
+                <th style="width: 1.00cm">CODIGO</th>
+                <th style="width: 3.00cm">NOMBRE y APELLIDOS</th>
+                <th style="width: 6.80cm">DIRECCION</th>
+                <th style="width: 1.90cm">DOCUMENTO</th>
+                <th style="width: 1.20cm">IMPORTE</th>
+                <th style="border: 1px solid black;padding: 5px 10px;white-space: nowrap;">OBSERVACION</th>
             </tr>
         </thead>
         <tbody>
-            <tr class="empty-row">
-                <td colspan="7">*** RUTA: 090 : ARMANDO MAYORISTA</td>
-            </tr>
-            <tr>
-                <td>07012297</td>
-                <td>CLIENTE GLADIS</td>
-                <td>MCD.BRISASPST.259 GOLOSINAS</td>
-                <td>NPE 001-0138152</td>
-                <td>156.00</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07013214</td>
-                <td>VANESSA</td>
-                <td>MCDO JOSFEL PSJ 19 PST 46 ABARROTES</td>
-                <td>NPE 001-0138153</td>
-                <td>96.90</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012366</td>
-                <td>CLIENTE ROCIO</td>
-                <td>PRODUCTORES PSJ.GIRALDO PST.11 SANTA ANITA</td>
-                <td>NPE 001-0138154</td>
-                <td>206.50</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012380</td>
-                <td>ALICIA POMA</td>
-                <td>MCD.APROMEC PT.G6</td>
-                <td>NPE 001-0138155</td>
-                <td>609.75</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012383</td>
-                <td>MARIA VILLAR</td>
-                <td>MCD.APROMEC PT.D27</td>
-                <td>NPE 001-0138156</td>
-                <td>186.00</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-
-            <tr class="empty-row">
-                <td colspan="7">*** RUTA: 090 : ARMANDO MAYORISTA</td>
-            </tr>
-            <tr>
-                <td>07012297</td>
-                <td>CLIENTE GLADIS</td>
-                <td>MCD.BRISASPST.259 GOLOSINAS</td>
-                <td>NPE 001-0138152</td>
-                <td>156.00</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07013214</td>
-                <td>VANESSA</td>
-                <td>MCDO JOSFEL PSJ 19 PST 46 ABARROTES</td>
-                <td>NPE 001-0138153</td>
-                <td>96.90</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012366</td>
-                <td>CLIENTE ROCIO</td>
-                <td>PRODUCTORES PSJ.GIRALDO PST.11 SANTA ANITA</td>
-                <td>NPE 001-0138154</td>
-                <td>206.50</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012380</td>
-                <td>ALICIA POMA</td>
-                <td>MCD.APROMEC PT.G6</td>
-                <td>NPE 001-0138155</td>
-                <td>609.75</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
-            <tr>
-                <td>07012383</td>
-                <td>MARIA VILLAR</td>
-                <td>MCD.APROMEC PT.D27</td>
-                <td>NPE 001-0138156</td>
-                <td>186.00</td>
-                <td>CONT</td>
-                <td>..............</td>
-            </tr>
+            @foreach ($comprobantes_rutas->groupBy('ruta_id') as $key => $comprobantes)
+                <tr class="empty-row">
+                    <td colspan="7">*** RUTA: {{ str_pad($key, 3, '0', STR_PAD_LEFT) }} :
+                        {{ $rutas->find($key)->name }}
+                    </td>
+                </tr>
+                @foreach ($comprobantes as $comprobante)
+                    <tr>
+                        <td>{{ str_pad($comprobante->cliente_id, 7, '0', STR_PAD_LEFT) }}</td>
+                        <td>{{ $comprobante->clientRazonSocial }}</td>
+                        <td>{{ $comprobante->clientDireccion }}</td>
+                        <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
+                        </td>
+                        <td>{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
+                        <td>{{ $comprobante->pedido_obs ?? '..............' }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
             <!-- Agrega más filas según sea necesario -->
         </tbody>
     </table>
 
     <!-- Segunda Tabla -->
-    <p>*** RESUMEN ARTICULOS PROMOCIONALES ***</p>
-    <table class="dashed">
-        <thead>
-            <tr>
-                <th>CODIGO</th>
-                <th>DESCRIPCION</th>
-                <th>CANTIDAD</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>058 CAMPOY TOTUS</td>
-                <td>Charlie Ponce</td>
-                <td>0.00</td>
-            </tr>
-            <tr>
-                <td>060 HUACHIPA</td>
-                <td>Hector Rumani</td>
-                <td>0.00</td>
-            </tr>
-            <tr>
-                <td>136 SANTA ROSA HUACHIPA</td>
-                <td>Dixon Flores</td>
-                <td>0.00</td>
-            </tr>
-        </tbody>
-    </table>
+    @if (false)
+        <p>*** RESUMEN ARTICULOS PROMOCIONALES ***</p>
+        <table class="dashed">
+            <thead>
+                <tr>
+                    <th>CODIGO</th>
+                    <th>DESCRIPCION</th>
+                    <th>CANTIDAD</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>058</td>
+                    <td>Boni.globopop</td>
+                    <td>10.00</td>
+                </tr>
+                <tr>
+                    <td>060 </td>
+                    <td>Boni.picaras</td>
+                    <td>30.00</td>
+                </tr>
+                <tr>
+                    <td>136</td>
+                    <td>Boni.Zuko</td>
+                    <td>20.00</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
     <!-- Tercera Tabla -->
     <p>*** RESUMEN PREVENDEDOR - RUTAS ***</p>
@@ -370,34 +284,24 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>058 CAMPOY TOTUS</td>
-                <td>177 CERES - ATE</td>
-                <td>15</td>
-                <td>15</td>
-                <td>781.7</td>
-            </tr>
-            <tr>
-                <td>060 HUACHIPA</td>
-                <td>090 ARMANDO MAYORISTA</td>
-                <td>8</td>
-                <td>8</td>
-                <td>349.66</td>
-            </tr>
-            <tr>
-                <td>136 SANTA ROSA HUACHIPA</td>
-                <td>177 CERES - ATE</td>
-                <td>4</td>
-                <td>4</td>
-                <td>3,992.15</td>
-            </tr>
+            @foreach ($comprobantes_rutas->groupBy('vendedor_id') as $vendedor_id => $comprobantes)
+                @foreach ($comprobantes->groupBy('ruta_id') as $ruta_id => $comprobante)
+                    <tr>
+                        <td>{{ $vendedor_id }} - {{ $vendedores->find($vendedor_id)->name }}</td>
+                        <td>{{ $ruta_id }} - {{ $rutas->find($ruta_id)->name }}</td></td>
+                        <td>{{ $comprobante->unique('cliente_id')->count(); }}</td>
+                        <td>{{ $comprobante->count() }}</td>
+                        <td>{{ $comprobante->sum('mtoImpVenta') }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
         </tbody>
         <tfoot>
             <td>*** TOTAL</td>
             <td></td>
-            <td>27</td>
-            <td>27</td>
-            <td>5,622.15</td>
+            <td>{{ $comprobantes_rutas->unique('cliente_id')->count() }}</td>
+            <td>{{ $comprobantes_rutas->count() }}</td>
+            <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
         </tfoot>
     </table>
 
@@ -408,41 +312,43 @@
         <tbody>
             <tr>
                 <td>TOTAL CONTADO</td>
-                <td>4,773.85</td>
+                <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
                 <td>TOTAL FACTURAS</td>
-                <td>1</td>
-                <td>71.40</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '01')->count() }}</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '01')->sum('mtoImpVenta') }}</td>
             </tr>
             <tr>
                 <td>TOTAL CREDITO</td>
                 <td>0.00</td>
-                <td>TOTAL FACTURAS</td>
-                <td>14</td>
-                <td>710.30</td>
+                <td>TOTAL BOLETAS</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->count() }}</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->sum('mtoImpVenta') }}</td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
-                <td>TOTAL FACTURAS</td>
-                <td>8</td>
-                <td>3,992.15</td>
+                <td>TOTAL NOTA PEDIDO</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '00')->count() }}</td>
+                <td>{{ $comprobantes_rutas->where('tipoDoc', '00')->sum('mtoImpVenta') }}</td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td style="font-weight: bold; font-size: 20px">
                     -------------
                 </td>
-                <td>TOTAL FACTURAS</td>
-                <td>0</td>
-                <td>0.00</td>
+                <td style="font-weight: bold; font-size: 20px">
+                    -------------
+                </td>
+                <td></td>
+                <td></td>
             </tr>
         </tbody>
         <tfoot>
             <td>TOTAL IMPORTE ==></td>
-            <td><span>4,773.85</span></td>
+            <td><span>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</span></td>
             <td>TOTAL DOCUMENTOS ===></td>
-            <td>23</td>
-            <td>&nbsp;</td>
+            <td>{{ $comprobantes_rutas->count() }}</td>
+            <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
         </tfoot>
     </table>
 
@@ -450,6 +356,18 @@
     <p style="text-align: center; padding: 40px 0">
         *** FIN DE REPORTE ***
     </p>
+    <script type="text/php">
+        if (isset($pdf)) {
+            $pdf->page_script('
+                $font = $fontMetrics->get_font("Arial, Helvetica, sans-serif", "normal");
+                $size = 10;
+                $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
+                $y = 820; // Posición vertical del texto
+                $x = 520; // Posición horizontal del texto
+                $pdf->text($x, $y, $pageText, $font, $size);
+            ');
+        }
+    </script>
 </body>
 
 </html>

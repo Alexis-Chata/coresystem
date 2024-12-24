@@ -94,7 +94,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
             })
             ->add('nro_doc_liquidacion')
             ->add('fecha_liquidacion_formatted', fn(Movimiento $model) => Carbon::parse($model->fecha_liquidacion)->format('d/m/Y'))
-            ->add('comentario')
+            ->add('comentario', function ($model) { return nl2br(e($model->comentario));})
             ->add('tipo_movimiento_name', fn(Movimiento $model) => ($model->tipoMovimiento->codigo . " - " . $model->tipoMovimiento->name))
             ->add('empleado_id', fn(Movimiento $model) => ($model->empleado->id . " - " . $model->empleado->name))
             ->add('created_at_formatted', fn($model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
@@ -201,6 +201,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                     $movimiento->save();
                     $sede = $movimiento->almacen->sede;
                     //dd($sede_id);
+                    $coleccion_comprobantes_generados = collect();
                     foreach ($movimiento->pedidos as $pedido) {
                         $pedido->estado = 'facturado';
                         $pedido->save();
@@ -212,6 +213,10 @@ final class GenerarComprobantesTable extends PowerGridComponent
                         };
                         $serie->correlativo = $serie->correlativo + 1;
                         $serie->save();
+                        if (!$coleccion_comprobantes_generados->has($pedido->tipoComprobante->tipo_comprobante)) {
+                            $coleccion_comprobantes_generados->put($pedido->tipoComprobante->tipo_comprobante, collect());
+                        }
+                        $coleccion_comprobantes_generados->get($pedido->tipoComprobante->tipo_comprobante)->push($serie->serie.'-'.$serie->correlativo);
                         $detallesDivididos = $pedido->pedidoDetalles->chunk(3);
                         //dd($detallesDivididos);
 
@@ -225,6 +230,8 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'conductor_id' => $pedido->conductor_id,
                                 'cliente_id' => $pedido->cliente_id,
                                 'movimiento_id' => $pedido->movimiento_id,
+                                'pedido_id' => $pedido->id,
+                                'pedido_obs' => $pedido->comentario,
                                 'sede_id' => $sede->id,
                                 'ublVersion' => '2.1',
                                 'tipoDoc' => $pedido->tipoComprobante->tipo_comprobante,
@@ -248,6 +255,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'clientTipoDoc' => $cliente->tipoDocumento->codigo,
                                 'clientNumDoc' => $cliente->numero_documento,
                                 'clientRazonSocial' => $cliente->razon_social,
+                                'clientDireccion' => $cliente->direccion,
                                 'mtoOperGravadas' => $subtotales->mtoOperGravadas,
                                 'mtoOperInafectas' => $subtotales->mtoOperInafectas,
                                 'mtoOperExoneradas' => $subtotales->mtoOperExoneradas,
@@ -284,6 +292,13 @@ final class GenerarComprobantesTable extends PowerGridComponent
                             $invoice->detalle()->createMany($detalles->toArray());
                         }
                     }
+                    $comentario = "";
+                    foreach($coleccion_comprobantes_generados as $comprobantes){
+                        $comentario .= $comprobantes->first()."<->".$comprobantes->last()."\n";
+                    }
+
+                    $movimiento->comentario = $comentario;
+                    $movimiento->save();
                 }
                 DB::commit();
             });

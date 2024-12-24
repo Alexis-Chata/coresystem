@@ -15,6 +15,8 @@ class FComprobanteSunat extends Model
         'conductor_id',
         'cliente_id',
         'movimiento_id',
+        'pedido_id',
+        'pedido_obs',
         'sede_id',
         'ublVersion',
         'tipoDoc',
