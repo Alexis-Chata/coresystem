@@ -110,7 +110,9 @@
 </div>
 <livewire:pedido-reporte-diario />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<livewire:asignar-conductor-table/>
+@can('asignar pedido')
+<livewire:asignar-conductor-table />
+@endcan
 <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('limpiarCheckboxHeader', () => {
@@ -119,7 +121,7 @@
                 headerCheckbox.checked = false;
             }
         });
-        
+
         Livewire.on('pg:notification', (data) => {
             const notification = data[0];
 

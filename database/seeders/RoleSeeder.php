@@ -17,7 +17,7 @@ class RoleSeeder extends Seeder
         'proveedor' => ['view', 'create', 'edit', 'delete'],
         'ruta' => ['view', 'create', 'edit', 'delete'],
         'padron' => ['view', 'create', 'edit', 'delete'],
-        'pedido' => ['view', 'create', 'edit', 'delete'],
+        'pedido' => ['view', 'create', 'edit', 'delete', 'asignar'],
         'empleado' => ['view', 'create', 'edit', 'delete'],
         'usuarios' => ['view', 'create', 'edit', 'delete'],
         'movimiento' => ['view', 'create', 'edit', 'delete'],
