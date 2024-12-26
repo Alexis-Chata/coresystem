@@ -97,6 +97,7 @@ class PedidoReporteDiario extends Component
             ->map(function ($detalle) {
                 return [
                     "producto_id" => $detalle->producto_id,
+                    "nombre" => $detalle->producto_name,
                     "cantidad" => $detalle->cantidad,
                     "importe" => $detalle->importe,
                     "tipAfeIgv" =>
@@ -229,6 +230,7 @@ class PedidoReporteDiario extends Component
                 ->map(function ($detalle) {
                     return [
                         "producto_id" => $detalle->producto_id,
+                        "nombre" => $detalle->producto_name,
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
@@ -341,6 +343,7 @@ class PedidoReporteDiario extends Component
                 ->map(function ($detalle) {
                     return [
                         "producto_id" => $detalle->producto_id,
+                        "nombre" => $detalle->producto_name,
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
@@ -433,6 +436,7 @@ class PedidoReporteDiario extends Component
                 ->map(function ($detalle) {
                     return [
                         "producto_id" => $detalle->producto_id,
+                        "nombre" => $detalle->producto_name,
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
