@@ -32,6 +32,10 @@ return new class extends Migration
             $table->string('porcentajeIsc')->nullable();
             $table->string('isc')->nullable();
             $table->foreignId('f_comprobante_sunat_id')->constrained('f_comprobante_sunats');
+            $table->string('ref_producto_lista_precio')->nullable();
+            $table->string('ref_producto_precio_cajon')->nullable();
+            $table->string('ref_producto_cantidad_cajon')->nullable();
+            $table->string('ref_producto_cant_vendida')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

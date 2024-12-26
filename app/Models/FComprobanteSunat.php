@@ -101,7 +101,8 @@ class FComprobanteSunat extends Model
     {
         return $this->hasMany(FComprobanteSunatDetalle::class);
     }
-    public function tipo_documento(){
-        return $this->belongsTo(FTipoDocumento::class, "clientTipoDoc");
+    public function tipo_doc()
+    {
+        return $this->belongsTo(FTipoDocumento::class, "clientTipoDoc", "codigo");
     }
 }

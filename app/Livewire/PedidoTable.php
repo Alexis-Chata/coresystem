@@ -246,7 +246,6 @@ class PedidoTable extends Component
         if (!$producto) {
             return;
         }
-
         // Verificar si el producto ya existe en el detalle
         $existe = collect($this->pedido_detalles)->first(function (
             $detalle
@@ -268,7 +267,7 @@ class PedidoTable extends Component
             // Calcular el importe usando el método existente
             $this->calcularImporte(count($this->pedido_detalles) - 1);
         }
-
+        //dd($this->pedido_detalles);
         // Limpiar búsqueda
         $this->search = "";
         $this->productos = [];
@@ -361,9 +360,10 @@ class PedidoTable extends Component
                     "producto_id" => $detalle["producto_id"],
                     "producto_name" => $detalle["nombre"],
                     "cantidad" => $detalle["cantidad"],
-                    "producto_precio" => $precioCaja,
+                    "producto_precio" => $detalle["ref_producto_precio_cajon"],
+                    "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
                     "importe" => $detalle["importe"],
-                    "lista_precio" => $this->lista_precio,
+                    "lista_precio" => $detalle["ref_producto_lista_precio"],
                 ]);
             }
 
@@ -399,7 +399,7 @@ class PedidoTable extends Component
             $this->dispatch("reset-cliente-select");
 
             $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
-        } catch (Exception|LockTimeoutException $e) {
+        } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
             logger("Error al guardar pedido:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
@@ -477,6 +477,10 @@ class PedidoTable extends Component
 
             // Actualizar el importe en el detalle
             $this->pedido_detalles[$index]["importe"] = $importe;
+            $this->pedido_detalles[$index]["ref_producto_lista_precio"] = $this->lista_precio;
+            $this->pedido_detalles[$index]["ref_producto_precio_cajon"] = $precioCaja;
+            $this->pedido_detalles[$index]["ref_producto_cantidad_cajon"] = $cantidadProducto;
+            $this->pedido_detalles[$index]["ref_producto_cant_vendida"] = $cantidad;
 
             // Log para verificar el cálculo
             logger("Cálculo de importe:", [
