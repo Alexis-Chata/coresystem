@@ -214,7 +214,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                         if (!$coleccion_comprobantes_generados->has($pedido->tipoComprobante->tipo_comprobante)) {
                             $coleccion_comprobantes_generados->put($pedido->tipoComprobante->tipo_comprobante, collect());
                         }
-                        $detallesDivididos = $pedido->pedidoDetalles->chunk(3);
+                        $detallesDivididos = $pedido->pedidoDetalles->chunk(16);
                         //dd($detallesDivididos);
 
                         foreach ($detallesDivididos as $lote) {
