@@ -199,7 +199,7 @@
         <div class="fixed inset-0 bg-black opacity-50"></div>
 
         <!-- Modal -->
-        <div class="modal_pad relative bg-white dark:bg-gray-800 w-full max-w-6xl rounded-lg shadow-xl">
+        <div class="modal_pad relative bg-white dark:bg-gray-800 w-full max-w-6xl rounded-lg shadow-xl sm:px-6">
             <!-- Modal Header -->
             <div class="flex items-center justify-between py-4 border-b dark:border-gray-700">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">

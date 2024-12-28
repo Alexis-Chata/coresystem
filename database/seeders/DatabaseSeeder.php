@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             FTipoComprobanteSeeder::class,
             ListaPrecioSeeder::class,
             RutaSeeder::class,
-            ClienteSeeder::class,
+            //ClienteSeeder::class,
             MarcaSeeder::class,
             CategoriaSeeder::class,
             FTipoAfectacionSeeder::class,
@@ -43,14 +43,134 @@ class DatabaseSeeder extends Seeder
         $sede = FSede::first();
         if ($sede) {
             // Verifica si el usuario ya existe
-            $testUser = User::where('email', 'test@example.com')->first();
+            $testUser = User::where('email', 'alexizz.19.ac@gmail.com')->first();
 
             if (!$testUser) {
                 User::factory()->create([
                     'name' => 'Test User',
-                    'email' => 'test@example.com',
+                    'email' => 'alexizz.19.ac@gmail.com',
                     'f_sede_id' => $sede->id,
                 ])->assignRole('admin')->user_empleado()->create(['empleado_id' => 10, 'tipo' => 'main']);
+            }
+
+            $vendedores = [
+                [
+                    'name' => "Angel lopez",
+                    'email' => "anday4376@gmail.com",
+                    'empleado_id' => 17,
+                ],
+                [
+                    'name' => "Hugo Campos",
+                    'email' => "hugomayocampos@gmail.com",
+                    'empleado_id' => 23,
+                ],
+                [
+                    'name' => "Paul Lizana",
+                    'email' => "hancook.gold@gmail.com",
+                    'empleado_id' => 18,
+                ],
+                [
+                    'name' => "Juan Manuel Macavilca Cangalaya",
+                    'email' => "alone0220_m@hotmail.com",
+                    'empleado_id' => 26,
+                ],
+                [
+                    'name' => "Wuilliams",
+                    'email' => "zambranowulliams@gmail.com",
+                    'empleado_id' => 24,
+                ],
+                [
+                    'name' => "Christian Hugo Jara",
+                    'email' => "cj.zoar@gmail.com",
+                    'empleado_id' => 19,
+                ],
+                [
+                    'name' => "Angela rivas",
+                    'email' => "angelarm0509@gmail.com",
+                    'empleado_id' => 21,
+                ],
+                [
+                    'name' => "Cuchurrumin 3000",
+                    'email' => "xelmejor.20@gmail.com",
+                    'empleado_id' => 14,
+                ],
+                [
+                    'name' => "Luis",
+                    'email' => "sanchezhuanccollucho@gmail.com",
+                    'empleado_id' => 27,
+                ],
+                [
+                    'name' => "Dixon",
+                    'email' => "dixon.adqm@gmail.com",
+                    'empleado_id' => 16,
+                ],
+                [
+                    'name' => "Rolando",
+                    'email' => "vendedor19.golomix@gmail.com",
+                    'empleado_id' => 28,
+                ],
+                [
+                    'name' => "Alexander Gomez Pillaca",
+                    'email' => "agomezpill@gmail.com",
+                    'empleado_id' => 22,
+                ],
+                [
+                    'name' => "Charlie Jara Huaringa",
+                    'email' => "charliejara10@gmail.com",
+                    'empleado_id' => 11,
+                ],
+                [
+                    'name' => "Leao nacimento",
+                    'email' => "leao.do90@gmail.com",
+                    'empleado_id' => 20,
+                ],
+                [
+                    'name' => "hugo rosales",
+                    'email' => "junior_23_3@hotmail.com",
+                    'empleado_id' => 15,
+                ],
+                [
+                    'name' => "N.lo",
+                    'email' => "icabotnlo@gmail.com",
+                    'empleado_id' => 29,
+                ],
+                [
+                    'name' => "Paul Castelo",
+                    'email' => "paulcastelo123456@gmail.com",
+                    'empleado_id' => 13,
+                ],
+                [
+                    'name' => "Jhon Benites",
+                    'email' => "07benitesjhon@gmail.com",
+                    'empleado_id' => 32,
+                ],
+                [
+                    'name' => "Roselvi Segura Herrera",
+                    'email' => "roselvisegura84@gmail.com",
+                    'empleado_id' => 12,
+                ],
+                [
+                    'name' => "Gladys Quispe",
+                    'email' => "gladysquispeochoa2@gmail.com",
+                    'empleado_id' => 31,
+                ],
+                [
+                    'name' => "Celeny",
+                    'email' => "celenydavilavasquez@gmail.com",
+                    'empleado_id' => 1,
+                ],
+                [
+                    'name' => "Jhonatan elyt",
+                    'email' => "zunigadiosesjhonatanelyt@gmail.com",
+                    'empleado_id' => 25,
+                ],
+            ];
+            foreach ($vendedores as $vendedor) {
+                User::factory()->create([
+                    'name' => $vendedor['name'],
+                    'email' => $vendedor['email'],
+                    'f_sede_id' => $sede->id,
+                ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => $vendedor['empleado_id'], 'tipo' => 'main']);
             }
 
             // User::factory()->create([
@@ -65,6 +185,7 @@ class DatabaseSeeder extends Seeder
             //     'f_sede_id' => $sede->id,
             //     'deleted_at' => now(),
             // ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 12, 'tipo' => 'main']);
+
         } else {
             throw new \Exception('No hay sedes en la base de datos. Asegúrate de ejecutar FSedeSeeder primero.');
         }
