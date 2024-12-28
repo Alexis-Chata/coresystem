@@ -1039,30 +1039,30 @@ class ProductoSeeder extends Seeder
             ('999','SELLO ROJO 212G 3UN+1U.DUC.FAM','1','estandar','1','7','1','10','18','NIU');
         ");
 
-        $productos = [
-            [
-                'name' => 'producto 1',
-                'empresa_id' => $empresa->id,
-                'marca_id' => $marca->id,
-                'categoria_id' => $categoria->id,
-                'f_tipo_afectacion_id' => $tipoAfectacion->id,
-                'porcentaje_igv' => '18',
-                'cantidad' => 1,
-            ],
-            [
-                'name' => 'producto 2',
-                'empresa_id' => $empresa->id,
-                'marca_id' => $marca->id,
-                'categoria_id' => $categoria->id,
-                'f_tipo_afectacion_id' => $tipoAfectacion->id,
-                'porcentaje_igv' => '18',
-                'cantidad' => 1,
-            ],
-            // Añade más productos según sea necesario
-        ];
+        // $productos = [
+        //     [
+        //         'name' => 'producto 1',
+        //         'empresa_id' => $empresa->id,
+        //         'marca_id' => $marca->id,
+        //         'categoria_id' => $categoria->id,
+        //         'f_tipo_afectacion_id' => $tipoAfectacion->id,
+        //         'porcentaje_igv' => '18',
+        //         'cantidad' => 1,
+        //     ],
+        //     [
+        //         'name' => 'producto 2',
+        //         'empresa_id' => $empresa->id,
+        //         'marca_id' => $marca->id,
+        //         'categoria_id' => $categoria->id,
+        //         'f_tipo_afectacion_id' => $tipoAfectacion->id,
+        //         'porcentaje_igv' => '18',
+        //         'cantidad' => 1,
+        //     ],
+        //     // Añade más productos según sea necesario
+        // ];
 
-        foreach ($productos as $producto) {
-            Producto::create($producto);
-        }
+        // foreach ($productos as $producto) {
+        //     Producto::create($producto);
+        // }
     }
 }

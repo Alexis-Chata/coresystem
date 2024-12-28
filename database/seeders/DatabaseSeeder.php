@@ -29,15 +29,15 @@ class DatabaseSeeder extends Seeder
             MarcaSeeder::class,
             CategoriaSeeder::class,
             FTipoAfectacionSeeder::class,
-            ProductoSeeder::class,
-            ProductoListaPrecioSeeder::class,
+            //ProductoSeeder::class,
+            //ProductoListaPrecioSeeder::class,
             //PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,
             SerieSeeder::class,
             AlmacenSeeder::class,
             TipoMovimientoSeeder::class,
-            AlmacenProductoSeeder::class,
+            //AlmacenProductoSeeder::class,
         ]);
 
         $sede = FSede::first();
@@ -50,21 +50,21 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Test User',
                     'email' => 'test@example.com',
                     'f_sede_id' => $sede->id,
-                ])->assignRole('admin')->user_empleado()->create(['empleado_id' => 1, 'tipo' => 'main']);
+                ])->assignRole('admin')->user_empleado()->create(['empleado_id' => 10, 'tipo' => 'main']);
             }
 
-            User::factory()->create([
-                'name' => 'Vendedor 1',
-                'email' => 'vendedor@example.com',
-                'f_sede_id' => $sede->id,
-            ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 2, 'tipo' => 'main']);
+            // User::factory()->create([
+            //     'name' => 'Vendedor 1',
+            //     'email' => 'vendedor@example.com',
+            //     'f_sede_id' => $sede->id,
+            // ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 11, 'tipo' => 'main']);
 
-            User::factory()->create([
-                'name' => 'Vendedor 2',
-                'email' => 'vendedor2@example.com',
-                'f_sede_id' => $sede->id,
-                'deleted_at' => now(),
-            ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 3, 'tipo' => 'main']);
+            // User::factory()->create([
+            //     'name' => 'Vendedor 2',
+            //     'email' => 'vendedor2@example.com',
+            //     'f_sede_id' => $sede->id,
+            //     'deleted_at' => now(),
+            // ])->assignRole('vendedor')->user_empleado()->create(['empleado_id' => 12, 'tipo' => 'main']);
         } else {
             throw new \Exception('No hay sedes en la base de datos. Asegúrate de ejecutar FSedeSeeder primero.');
         }

@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-6 space-y-6">
+<div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
     <!-- Título del Dashboard -->
     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
         Panel de Control
     </h2>
 
     <!-- Tarjetas de Resumen -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
         @php
             $empleado = auth()->user()->empleados()->first();
             $empresa_id = $empleado?->fSede->empresa_id ?? auth()->user()->fSede->empresa_id;
@@ -16,7 +16,7 @@
         @endphp
 
         <!-- Clientes -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-2.5 px-4.5">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
                     <svg class="w-8 h-8 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@
 
         @can('view producto')
         <!-- Productos -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-2.5 px-4.5">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-green-100 dark:bg-green-900">
                     <svg class="w-8 h-8 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +64,7 @@
 
         @can('view empleado')
         <!-- Empleados -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-2.5 px-4.5">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
                     <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@
         @endcan
 
         <!-- Rutas -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-2.5 px-4.5">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
                     <svg class="w-8 h-8 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

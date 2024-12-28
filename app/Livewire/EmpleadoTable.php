@@ -76,7 +76,7 @@ final class EmpleadoTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('codigo')
-            ->add('name')
+            ->add('name', fn ($model) => strtoupper($model->name))
             ->add('direccion')
             ->add('celular')
             ->add('f_tipo_documento_id', function ($empleado) {
@@ -115,10 +115,6 @@ final class EmpleadoTable extends PowerGridComponent
     {
         return [
             Column::make('Id', 'id'),
-            Column::make('Código', 'codigo')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
             Column::make('Nombre', 'name')
                 ->sortable()
                 ->searchable()

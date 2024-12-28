@@ -33,7 +33,7 @@ class JetstreamServiceProvider extends ServiceProvider
 
         Fortify::registerView(function () {
             $empleados_id_asignados = UserEmpleado::where('tipo', 'main')->get()->pluck('empleado_id');
-            $empleados_id_sin_asignar = Empleado::whereNotIn('id', $empleados_id_asignados)->get();
+            $empleados_id_sin_asignar = Empleado::whereNotIn('id', $empleados_id_asignados)->whereNot('tipo_empleado', 'conductor')->get();
             //dd($empleados_id_asignados, $empleados_id_sin_asignar);
             return view('auth.register', compact('empleados_id_sin_asignar'));
         });

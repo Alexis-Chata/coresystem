@@ -19,7 +19,7 @@
 
     <!-- Cabecera del Reporte -->
     <header class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
             Reporte Diario de Pedidos
         </h1>
         <input

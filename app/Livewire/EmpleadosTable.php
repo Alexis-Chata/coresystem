@@ -64,9 +64,6 @@ final class EmpleadosTable extends PowerGridComponent
     {
         return [
             Column::make('Id', 'id'),
-            Column::make('Codigo', 'codigo')
-                ->sortable()
-                ->searchable(),
             Column::make('Name', 'name')
                 ->sortable()
                 ->searchable(),
