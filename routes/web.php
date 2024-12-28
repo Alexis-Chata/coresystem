@@ -5,6 +5,7 @@ use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\MarcaController;
 use App\Models\Marca;
 use App\Models\Movimiento;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,6 +30,10 @@ Route::get('/test-email', function () {
     });
 
     return 'Correo enviado correctamente';
+});
+
+Route::post('git_pull', function(){
+    return Http::get('http://128.140.10.123:3000/api/box/deploy/4c6ee4554ce1435bf1d457abb315637efcf43314be732d0d');
 });
 
 // Grupo de rutas protegidas por autenticación

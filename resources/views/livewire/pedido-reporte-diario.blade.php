@@ -30,7 +30,7 @@
     </header>
 
     <!-- Contenido del Reporte -->
-    <section>
+    <section class="mb-5.5">
         @forelse($pedidosPorVendedor as $vendedorId => $pedidosVendedor)
             <details class="mb-2 my-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
                 <summary class="bg-blue-50 dark:bg-blue-800 p-4 flex justify-between items-center cursor-pointer group-open:bg-blue-100 dark:group-open:bg-blue-700 transition-colors">

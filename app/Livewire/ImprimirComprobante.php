@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\FComprobanteSunat;
+use App\Models\FSerie;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Luecano\NumeroALetras\NumeroALetras;
@@ -11,21 +12,47 @@ use Mike42\Escpos\Printer;
 
 class ImprimirComprobante extends Component
 {
-    #[Rule('required')]
-    public $impresora;
+    public $series;
+    public $impresoras = [];
 
-    public function imprimir()
+    public function mount()
     {
-        $this->validate();
+        $this->series = FSerie::with(['fSede', 'fTipoComprobante'])->whereIn('f_tipo_comprobante_id', [1, 2, 3])->where('f_sede_id', auth_user()->f_sede_id)->get()->keyBy('id')->toArray();
+        $this->impresoras = ['POS-80C-1', 'POS-80C-2', 'EPSON-TM-U220-Receipt'];
+    }
+
+    public function imprimir($id)
+    {
+        // Verificar que el ID exista
+        if (!isset($this->series[$id])) {
+            $this->addError("series.$id", 'No se encontró la serie seleccionada.');
+            return;
+        }
+
+        $serie = $this->series[$id];
+
+        // Validar datos requeridos
+        if (empty($serie['correlativo_desde']) || empty($serie['correlativo_hasta']) || empty($serie['impresora'])) {
+            $this->addError("series.$id", 'Todos los campos deben estar completos.');
+            return;
+        }
+
+        if ($serie['correlativo_desde'] > $serie['correlativo_hasta']) {
+            $this->addError("series.$id.correlativo_hasta", 'El correlativo hasta debe ser mayor o igual que el correlativo desde.');
+            return;
+        }
+
+        $serie = (object) $serie;
+
         try {
             $nombre_impresora_compartida = "POS-80C-1";
-            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->get();
+            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$serie->correlativo_desde, $serie->correlativo_hasta])->get();
 
             $font = Printer::FONT_A;
-            if($this->impresora == 'EPSON-TM-U220-Receipt'){
+            if ($serie->impresora == 'EPSON-TM-U220-Receipt') {
                 $font = Printer::FONT_B;
             }
-            $connector = new WindowsPrintConnector($this->impresora);
+            $connector = new WindowsPrintConnector($serie->impresora);
             $printer = new Printer($connector);
             foreach ($comprobantes as $comprobante) {
 
@@ -117,9 +144,10 @@ class ImprimirComprobante extends Component
             la conexión con la impresora. Recuerda incluir esto al final de todos los archivos
             */
             $printer->close();
+            session()->forget('error');
         } catch (\Exception $e) {
             // Manejo de errores
-            //dd("error");
+            $printer->close();
             session()->flash('error', 'Error al imprimir: ' . $e->getMessage());
         }
     }

@@ -29,15 +29,15 @@ class DatabaseSeeder extends Seeder
             MarcaSeeder::class,
             CategoriaSeeder::class,
             FTipoAfectacionSeeder::class,
-            //ProductoSeeder::class,
-            //ProductoListaPrecioSeeder::class,
+            ProductoSeeder::class,
+            ProductoListaPrecioSeeder::class,
             //PedidoSeeder::class,
             ProveedorSeeder::class,
             PadronSeeder::class,
             SerieSeeder::class,
             AlmacenSeeder::class,
             TipoMovimientoSeeder::class,
-            //AlmacenProductoSeeder::class,
+            AlmacenProductoSeeder::class,
         ]);
 
         $sede = FSede::first();

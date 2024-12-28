@@ -1,4 +1,6 @@
 *
+!database/
+!database/**
 !private/
 !public/
 !.gitignore

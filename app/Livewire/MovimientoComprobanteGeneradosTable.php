@@ -155,7 +155,7 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
             Button::add('exportarpdf')
                 ->slot('PDF: ' . $row->id)
                 ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                ->class('bg-red-500 duration-200 ease-in-out hover:bg-red-700 px-4 py-2 rounded-lg text-white transition-colors')
                 ->dispatch('exportarpdf', ['movimiento_id' => $row->id])
         ];
     }
