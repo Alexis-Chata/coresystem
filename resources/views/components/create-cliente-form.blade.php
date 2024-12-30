@@ -71,7 +71,7 @@
             <div class="mb-4">
                 <x-searchable-select
                     :options="App\Models\Ruta::when(
-                        auth()->user()->empleados()->first()?->tipo_empleado === 'vendedor',
+                        auth()->user()->hasRole('vendedor'),
                         fn($query) => $query->where('vendedor_id', auth()->user()->empleados()->first()->id)
                     )->get()->map(function($ruta) {
                         return ['id' => $ruta->id, 'name' => $ruta->name];

@@ -193,42 +193,47 @@ class PedidoTable extends Component
     }
 
     public function updatedSearch()
-    {
-        if (!$this->lista_precio) {
-            return;
-        }
-
-        if (strlen($this->search) > 0) {
-            $this->productos = Producto::where(function ($query) {
-                $query
-                    ->where("name", "like", "%" . $this->search . "%")
-                    ->orWhere("id", "like", "%" . $this->search . "%");
-            })
-                ->with([
-                    "marca",
-                    "listaPrecios" => function ($query) {
-                        $query->where("lista_precio_id", $this->lista_precio);
-                    },
-                ])
-                ->take(5)
-                ->get();
-
-            // Debug para verificar los precios
-            logger("Productos encontrados:", [
-                "lista_precio" => $this->lista_precio,
-                "productos" => $this->productos->map(function ($producto) {
-                    return [
-                        "id" => $producto->id,
-                        "name" => $producto->name,
-                        "precio" => $producto->listaPrecios->first()?->pivot
-                            ?->precio,
-                    ];
-                }),
-            ]);
-        } else {
-            $this->productos = [];
-        }
+{
+    if (!$this->lista_precio) {
+        return;
     }
+
+    if (strlen($this->search) > 0) {
+        $this->productos = Producto::where(function ($query) {
+            $keywords = explode(' ', $this->search); // Dividir la búsqueda en palabras clave
+            foreach ($keywords as $keyword) {
+                $keyword = trim($keyword);
+                if (!empty($keyword)) {
+                    $query->where("name", "like", "%" . $keyword . "%"); // Usar where para cada palabra clave
+                }
+            }
+            $query->orWhere("id", "like", "%" . $this->search . "%"); // Mantener la búsqueda por ID
+        })
+            ->with([
+                "marca",
+                "listaPrecios" => function ($query) {
+                    $query->where("lista_precio_id", $this->lista_precio);
+                },
+            ])
+            ->take(5)
+            ->get();
+
+        // Debug para verificar los precios
+        logger("Productos encontrados:", [
+            "lista_precio" => $this->lista_precio,
+            "productos" => $this->productos->map(function ($producto) {
+                return [
+                    "id" => $producto->id,
+                    "name" => $producto->name,
+                    "precio" => $producto->listaPrecios->first()?->pivot
+                        ?->precio,
+                ];
+            }),
+        ]);
+    } else {
+        $this->productos = [];
+    }
+}
 
     public function agregarProducto($producto_id)
     {
