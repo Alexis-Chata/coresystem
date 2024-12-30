@@ -55,94 +55,9 @@ class DatabaseSeeder extends Seeder
 
             $vendedores = [
                 [
-                    'name' => "Angel lopez",
-                    'email' => "anday4376@gmail.com",
-                    'empleado_id' => 17,
-                ],
-                [
-                    'name' => "Hugo Campos",
-                    'email' => "hugomayocampos@gmail.com",
-                    'empleado_id' => 23,
-                ],
-                [
-                    'name' => "Paul Lizana",
-                    'email' => "hancook.gold@gmail.com",
-                    'empleado_id' => 18,
-                ],
-                [
-                    'name' => "Juan Manuel Macavilca Cangalaya",
-                    'email' => "alone0220_m@hotmail.com",
-                    'empleado_id' => 26,
-                ],
-                [
-                    'name' => "Wuilliams",
-                    'email' => "zambranowulliams@gmail.com",
-                    'empleado_id' => 24,
-                ],
-                [
-                    'name' => "Christian Hugo Jara",
-                    'email' => "cj.zoar@gmail.com",
-                    'empleado_id' => 19,
-                ],
-                [
-                    'name' => "Angela rivas",
-                    'email' => "angelarm0509@gmail.com",
-                    'empleado_id' => 21,
-                ],
-                [
-                    'name' => "Cuchurrumin 3000",
-                    'email' => "xelmejor.20@gmail.com",
-                    'empleado_id' => 14,
-                ],
-                [
-                    'name' => "Luis",
-                    'email' => "sanchezhuanccollucho@gmail.com",
-                    'empleado_id' => 27,
-                ],
-                [
-                    'name' => "Dixon",
-                    'email' => "dixon.adqm@gmail.com",
-                    'empleado_id' => 16,
-                ],
-                [
-                    'name' => "Rolando",
-                    'email' => "vendedor19.golomix@gmail.com",
-                    'empleado_id' => 28,
-                ],
-                [
-                    'name' => "Alexander Gomez Pillaca",
-                    'email' => "agomezpill@gmail.com",
-                    'empleado_id' => 22,
-                ],
-                [
                     'name' => "Charlie Jara Huaringa",
                     'email' => "charliejara10@gmail.com",
                     'empleado_id' => 11,
-                ],
-                [
-                    'name' => "Leao nacimento",
-                    'email' => "leao.do90@gmail.com",
-                    'empleado_id' => 20,
-                ],
-                [
-                    'name' => "hugo rosales",
-                    'email' => "junior_23_3@hotmail.com",
-                    'empleado_id' => 15,
-                ],
-                [
-                    'name' => "N.lo",
-                    'email' => "icabotnlo@gmail.com",
-                    'empleado_id' => 29,
-                ],
-                [
-                    'name' => "Paul Castelo",
-                    'email' => "paulcastelo123456@gmail.com",
-                    'empleado_id' => 13,
-                ],
-                [
-                    'name' => "Jhon Benites",
-                    'email' => "07benitesjhon@gmail.com",
-                    'empleado_id' => 32,
                 ],
                 [
                     'name' => "Roselvi Segura Herrera",
@@ -150,19 +65,99 @@ class DatabaseSeeder extends Seeder
                     'empleado_id' => 12,
                 ],
                 [
-                    'name' => "Gladys Quispe",
-                    'email' => "gladysquispeochoa2@gmail.com",
-                    'empleado_id' => 31,
+                    'name' => "Paul Castelo",
+                    'email' => "paulcastelo123456@gmail.com",
+                    'empleado_id' => 13,
                 ],
                 [
-                    'name' => "Celeny",
-                    'email' => "celenydavilavasquez@gmail.com",
-                    'empleado_id' => 1,
+                    'name' => "Cuchurrumin 3000",
+                    'email' => "xelmejor.20@gmail.com",
+                    'empleado_id' => 14,
+                ],
+                [
+                    'name' => "hugo rosales",
+                    'email' => "junior_23_3@hotmail.com",
+                    'empleado_id' => 15,
+                ],
+                [
+                    'name' => "Dixon",
+                    'email' => "dixon.adqm@gmail.com",
+                    'empleado_id' => 16,
+                ],
+                [
+                    'name' => "Angel lopez",
+                    'email' => "anday4376@gmail.com",
+                    'empleado_id' => 17,
+                ],
+                [
+                    'name' => "Paul Lizana",
+                    'email' => "hancook.gold@gmail.com",
+                    'empleado_id' => 18,
+                ],
+                [
+                    'name' => "Christian Hugo Jara",
+                    'email' => "cj.zoar@gmail.com",
+                    'empleado_id' => 19,
+                ],
+                [
+                    'name' => "Leao nacimento",
+                    'email' => "leao.do90@gmail.com",
+                    'empleado_id' => 20,
+                ],
+                [
+                    'name' => "Angela rivas",
+                    'email' => "angelarm0509@gmail.com",
+                    'empleado_id' => 21,
+                ],
+                [
+                    'name' => "Alexander Gomez Pillaca",
+                    'email' => "agomezpill@gmail.com",
+                    'empleado_id' => 22,
+                ],
+                [
+                    'name' => "Hugo Campos",
+                    'email' => "hugomayocampos@gmail.com",
+                    'empleado_id' => 23,
+                ],
+                [
+                    'name' => "Wuilliams",
+                    'email' => "zambranowulliams@gmail.com",
+                    'empleado_id' => 24,
                 ],
                 [
                     'name' => "Jhonatan elyt",
                     'email' => "zunigadiosesjhonatanelyt@gmail.com",
                     'empleado_id' => 25,
+                ],
+                [
+                    'name' => "Juan Manuel Macavilca Cangalaya",
+                    'email' => "alone0220_m@hotmail.com",
+                    'empleado_id' => 26,
+                ],
+                [
+                    'name' => "Luis",
+                    'email' => "sanchezhuanccollucho@gmail.com",
+                    'empleado_id' => 27,
+                ],
+                [
+                    'name' => "Rolando",
+                    'email' => "vendedor19.golomix@gmail.com",
+                    'empleado_id' => 28,
+                ],
+                [
+                    'name' => "N.lo",
+                    'email' => "icabotnlo@gmail.com",
+                    'empleado_id' => 29,
+                ],
+                [
+                    'name' => "Gladys Quispe",
+                    'email' => "gladysquispeochoa2@gmail.com",
+                    'empleado_id' => 31,
+                ],
+                [
+                    'name' => "Jhon Benites",
+                    'email' => "07benitesjhon@gmail.com",
+                    'empleado_id' => 32,
                 ],
             ];
             foreach ($vendedores as $vendedor) {
