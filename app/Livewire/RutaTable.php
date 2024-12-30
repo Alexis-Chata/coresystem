@@ -154,7 +154,7 @@ final class RutaTable extends PowerGridComponent
 
         $empleado = auth()->user()->empleados()->first();
         // Solo mostrar la columna de vendedor si NO es un vendedor
-        if (!$empleado || $empleado->tipo_empleado !== 'vendedor' || auth()->user()->hasRole("admin")) {
+        if (!$empleado || auth()->user()->hasRole("admin")) {
             $columns[] = Column::make('Vendedor', 'vendedor_id')
                 ->sortable();
         }
@@ -266,6 +266,10 @@ final class RutaTable extends PowerGridComponent
     public function vendedorSelectOptions()
     {
         $empleado = auth()->user()->empleados()->first();
+
+        if(auth()->user()->hasRole("admin")){
+            return Empleado::where('tipo_empleado', 'vendedor')->pluck('name', 'id');
+        }
 
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             return collect([$empleado->id => $empleado->name]);
