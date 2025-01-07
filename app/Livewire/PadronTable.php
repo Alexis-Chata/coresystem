@@ -279,7 +279,7 @@ final class PadronTable extends PowerGridComponent
         $empleado = $this->empleado;
         $query = Ruta::query();
 
-        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+        if ($empleado && $this->user->hasRole("vendedor")) {
             $query->where('rutas.vendedor_id', $empleado->id);
         }
 
@@ -379,12 +379,12 @@ final class PadronTable extends PowerGridComponent
                     ->from('padrons')
                     ->distinct();
 
-                if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+                if ($empleado && $this->user->hasRole("vendedor")) {
                     $subquery->where('vendedor_id', $empleado->id);
                 }
             });
 
-        if ($empleado && $empleado->tipo_empleado === 'vendedor') {
+        if ($empleado && $this->user->hasRole("vendedor")) {
             $query->where('vendedor_id', $empleado->id);
         }
 

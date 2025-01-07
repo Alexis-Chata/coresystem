@@ -4,9 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Ruta;
-use App\Models\Empleado;
-use App\Models\Empresa;
-use App\Models\ListaPrecio;
 use Illuminate\Support\Facades\DB;
 
 class RutaSeeder extends Seeder
@@ -16,30 +13,26 @@ class RutaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ubica tu archivo CSV
-        $csvFile = storage_path('app/database/rutas.csv');
+        DB::setDefaultConnection('sqlite-temp');
+        // Realizar consultas (ejemplo)
+        $registros = DB::table('rutas_temporales')->whereNot('dia_visita', '-')->get();
+        DB::setDefaultConnection('mysql');
 
-        // Abre el archivo en modo lectura
-        if (($handle = fopen($csvFile, 'r')) !== false) {
-            // Leer la primera línea para obtener los encabezados
-            $headers = fgetcsv($handle);
+        foreach ($registros as $registro) {
+            $modelo = new Ruta();
+            $modelo->fill([
+                'name' => $registro->tdes,
+                'dia_visita' => $registro->dia_visita,
+                'vendedor_id' => $registro->vendedor_id,
+                'empresa_id' => $registro->empresa_id,
+                'lista_precio_id' => $registro->lista_precio_id,
+            ]);
+            $modelo->save();
 
-            // Iterar sobre las filas del archivo
-            while (($data = fgetcsv($handle)) !== false) {
-                // Combina los encabezados con los valores
-                $row = array_combine($headers, $data);
-                $ruta = new Ruta();
-                $ruta->fill([
-                    'name'=>$row['name'],
-                    'dia_visita'=>$row['dia_visita'],
-                    'vendedor_id'=>$row['vendedor_id'],
-                    'empresa_id'=>$row['empresa_id'],
-                    'lista_precio_id'=>$row['lista_precio_id'],
-                ]);
-                $ruta->save();
-            }
-            // Cierra el archivo
-            fclose($handle);
+            DB::setDefaultConnection('sqlite-temp');
+            // Realizar consultas (ejemplo)
+            DB::table('rutas_temporales')->where('id', $registro->id)->update(['nuevo_id' => $modelo->id]);
+            DB::setDefaultConnection('mysql');
         }
     }
 }

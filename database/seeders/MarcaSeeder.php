@@ -19,39 +19,43 @@ class MarcaSeeder extends Seeder
             throw new \Exception('No hay empresas en la base de datos. Asegúrate de ejecutar EmpresaSeeder primero.');
         }
 
-        DB::insert("insert  into `marcas`(`id`,`codigo`,`name`,`empresa_id`) values
-        (1,NULL,'MOLITALIA',1),
-        (2,NULL,'CONFIPERU',1),
-        (3,NULL,'KRAFT FOOTS',1),
-        (4,NULL,'2 CERRITOS',1),
-        (5,NULL,'VICTORIA',1),
-        (6,NULL,'PEPSI',1),
-        (7,NULL,'WINTERS',1),
-        (8,NULL,'GLAX',1),
-        (9,NULL,'COLOMBINA',1),
-        (10,NULL,'ARCOR',1),
-        (11,NULL,'CAMPO NORTE',1),
-        (12,NULL,'YOMAR SAC',1),
-        (13,NULL,'SALVATTORE',1),
-        (14,NULL,'DELICORP SAC',1),
-        (15,NULL,'KOKI',1),
-        (16,NULL,'FINI',1),
-        (17,NULL,'SAN JORGE',1);
-        ");
+        DB::setDefaultConnection('sqlite-temp');
+        // Realizar consultas (ejemplo)
+        $registros = DB::table('marcas_temporales')->get();
+        DB::setDefaultConnection('mysql');
 
-        $marcas = [
-            ['codigo' => 'M001', 'name' => 'Marca A'],
-            ['codigo' => 'M002', 'name' => 'Marca B'],
-            ['codigo' => 'M003', 'name' => 'Marca C'],
-            // Añade más marcas según sea necesario
-        ];
+        $marcas = ['MOLITALIA', 'CONFIPERU', 'KRAFT FOOTS', '2 CERRITOS', 'VICTORIA', 'PEPSI', 'WINTERS', 'GLAX', 'COLOMBINA', 'ARCOR', 'CAMPO NORTE', 'YOMAR SAC', 'SALVATTORE', 'DELICORP SAC', 'KOKI', 'FINI', 'SAN JORGE'];
+        foreach ($registros as $registro) {
+            if (in_array($registro->tdes, $marcas)) {
+                $modelo = new Marca();
+                $modelo->fill([
+                    'name' => $registro->tdes,
+                    'empresa_id' => 1,
+                ]);
+                $modelo->save();
+                $modelo->nro_orden = $modelo->id;
+                $modelo->save();
 
-        foreach ($marcas as $marca) {
-            Marca::create([
-                'codigo' => $marca['codigo'],
-                'name' => $marca['name'],
-                'empresa_id' => $empresa->id,
-            ]);
+                DB::setDefaultConnection('sqlite-temp');
+                // Realizar consultas (ejemplo)
+                DB::table('marcas_temporales')->where('id', $registro->id)->update(['nuevo_id' => $modelo->id]);
+                DB::setDefaultConnection('mysql');
+            }
         }
+
+        // $marcas = [
+        //     ['codigo' => 'M001', 'name' => 'Marca A'],
+        //     ['codigo' => 'M002', 'name' => 'Marca B'],
+        //     ['codigo' => 'M003', 'name' => 'Marca C'],
+        //     // Añade más marcas según sea necesario
+        // ];
+
+        // foreach ($marcas as $marca) {
+        //     Marca::create([
+        //         'codigo' => $marca['codigo'],
+        //         'name' => $marca['name'],
+        //         'empresa_id' => $empresa->id,
+        //     ]);
+        // }
     }
 }

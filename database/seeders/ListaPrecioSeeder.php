@@ -19,14 +19,14 @@ class ListaPrecioSeeder extends Seeder
         }
 
         ListaPrecio::create([
-            'name' => 'Lista de Precios Estándar',
+            'name' => 'LP 001',
             'descripcion' => 'Lista de precios por defecto para todos los clientes',
             'empresa_id' => $empresa->id,
         ]);
 
         ListaPrecio::create([
-            'name' => 'Lista de Precios VIP',
-            'descripcion' => 'Lista de precios para clientes preferenciales',
+            'name' => 'LP 002',
+            'descripcion' => 'Lista de precios para clientes Mayoristas',
             'empresa_id' => $empresa->id,
         ]);
     }

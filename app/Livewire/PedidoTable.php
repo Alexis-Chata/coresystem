@@ -292,6 +292,7 @@ class PedidoTable extends Component
             "valorVenta" => $totalesTemp["valorVenta"],
             "totalImpuestos" => $totalesTemp["totalImpuestos"],
             "subTotal" => $totalesTemp["subTotal"],
+            "mtoImpVenta" => $totalesTemp["mtoImpVenta"],
         ];
     }
 
@@ -452,6 +453,9 @@ class PedidoTable extends Component
 
             // Calcular precio por paquete
             $precioPorPaquete = $precioCaja / $cantidadProducto; // 108.00 / 36 = 3.00
+            if($producto->f_tipo_afectacion_id == '21'){
+                $precioPorPaquete = 0;
+            }
 
             // Interpretar la cantidad ingresada
             $cantidad = $detalle["cantidad"]; // Cantidad ingresada en cajas y paquetes

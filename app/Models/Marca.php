@@ -13,6 +13,7 @@ class Marca extends Model
         'codigo',
         'name',
         'empresa_id',
+        'nro_orden',
     ];
 
     public function empresa()

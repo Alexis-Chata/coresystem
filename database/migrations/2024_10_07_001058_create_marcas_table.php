@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->nullable();
             $table->string('name')->nullable();
+            $table->string('nro_orden')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

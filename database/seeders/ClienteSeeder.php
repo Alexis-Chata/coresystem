@@ -7,7 +7,9 @@ use App\Models\Cliente;
 use App\Models\FTipoDocumento;
 use App\Models\Empresa;
 use App\Models\ListaPrecio;
+use App\Models\Padron;
 use App\Models\Ruta;
+use Illuminate\Support\Facades\DB;
 
 class ClienteSeeder extends Seeder
 {
@@ -31,121 +33,60 @@ class ClienteSeeder extends Seeder
         if (!$listaPrecio) {
             throw new \Exception('No hay listas de precios en la base de datos. Asegúrate de ejecutar ListaPrecioSeeder primero.');
         }
-
+        $inicio = microtime(true);
         $rutas = Ruta::all();
-        foreach ($rutas as $ruta) {
-            Cliente::factory()->count(25)->create([
-                'f_tipo_documento_id' => $tipoDocumento->id,
-                'empresa_id' => $empresa->id,
-                'ruta_id' => $ruta->id,
+        DB::setDefaultConnection('sqlite-temp');
+        // Realizar consultas (ejemplo)
+        $rutas_temporales = DB::table('rutas_temporales')->whereNot('dia_visita', '-')->get();
+        $cruts = $rutas_temporales->pluck('crut')->map(function ($crut) {
+            return str_pad($crut, 3, '0', STR_PAD_LEFT); // Aplica el padding
+        })->toArray();
+        //print_r($cruts);
+        $padrones_temporales = DB::table('padrones_temporales')->whereIn('crut', $cruts)->get();
+        DB::setDefaultConnection('mysql');
+        $tipo_doc = FTipoDocumento::all();
+
+        foreach ($padrones_temporales as $padron) {
+            DB::setDefaultConnection('sqlite-temp');
+            $cliente_temp = DB::table('clientes_temporales')->where('ccli', $padron->ccli)->get();
+            $ruta_temp = DB::table('rutas_temporales')->where('crut', intval($padron->crut))->get();
+            $ruta = $rutas->find($ruta_temp->first()->nuevo_id);
+            //print_r($ruta->lista_precio_id);
+
+            DB::setDefaultConnection('mysql');
+            $f_tipo_documento_id = $tipo_doc->where('tipo_documento', 'DNI')->first()->id;
+            $numero_documento = 99999999;
+            $celular = null;
+            if (!empty($cliente_temp->first()->le)) {
+                $numero_documento = $cliente_temp->first()->le;
+            }
+            if (!empty($cliente_temp->first()->cruc)) {
+                $f_tipo_documento_id = $tipo_doc->where('tipo_documento', 'RUC')->first()->id;
+                $numero_documento = $cliente_temp->first()->cruc;
+            }
+            if (!empty($cliente_temp->first()->ntel) and strlen($cliente_temp->first()->ntel) == 9) {
+                $celular = $cliente_temp->first()->ntel;
+            }
+            if (!empty($cliente_temp->first()->nfax) and strlen($cliente_temp->first()->nfax) == 9) {
+                $celular = $cliente_temp->first()->nfax;
+            }
+            $count = Padron::where('ruta_id', $ruta->id)->count();
+            $cliente = Cliente::create([
+                'razon_social' => $cliente_temp->first()->tcli,
+                'direccion' => $cliente_temp->first()->tdir,
+                'f_tipo_documento_id' => $f_tipo_documento_id,
+                'numero_documento' => $numero_documento,
+                'celular' => $celular,
+                'empresa_id' => 1,
                 'lista_precio_id' => $ruta->lista_precio_id,
+                'ruta_id' => $ruta->id,
             ]);
+            //break;
         }
-
-        $clientes = [
-            [
-                'razon_social' => 'Comercial San Miguel S.A.C.',
-                'direccion' => 'Av. La Marina 2345, San Miguel, Lima',
-                'numero_documento' => '20547896321',
-                'celular' => '951234567',
-            ],
-            [
-                'razon_social' => 'Distribuidora Los Andes E.I.R.L.',
-                'direccion' => 'Jr. Huallaga 456, Cercado de Lima',
-                'numero_documento' => '20563412789',
-                'celular' => '962345678',
-            ],
-            [
-                'razon_social' => 'Inversiones Miraflores S.A.C.',
-                'direccion' => 'Av. Larco 785, Miraflores, Lima',
-                'numero_documento' => '20587463215',
-                'celular' => '973456789',
-            ],
-            [
-                'razon_social' => 'Corporación Surco S.R.L.',
-                'direccion' => 'Av. Benavides 1234, Santiago de Surco, Lima',
-                'numero_documento' => '20596321478',
-                'celular' => '984567890',
-            ],
-            [
-                'razon_social' => 'Importaciones Del Norte S.A.C.',
-                'direccion' => 'Av. José Pardo 567, Chimbote, Ancash',
-                'numero_documento' => '20512378964',
-                'celular' => '995678901',
-            ],
-            [
-                'razon_social' => 'Distribuidora Cusco Imperial E.I.R.L.',
-                'direccion' => 'Av. El Sol 789, Cusco',
-                'numero_documento' => '20523697841',
-                'celular' => '916789012',
-            ],
-            [
-                'razon_social' => 'Comercializadora Arequipa S.A.C.',
-                'direccion' => 'Av. Ejercito 1523, Arequipa',
-                'numero_documento' => '20534789621',
-                'celular' => '927890123',
-            ],
-            [
-                'razon_social' => 'Negocios Trujillo S.R.L.',
-                'direccion' => 'Jr. Pizarro 856, Trujillo, La Libertad',
-                'numero_documento' => '20545632147',
-                'celular' => '938901234',
-            ],
-            [
-                'razon_social' => 'Inversiones Piura S.A.C.',
-                'direccion' => 'Av. Grau 432, Piura',
-                'numero_documento' => '20556987412',
-                'celular' => '949012345',
-            ],
-            [
-                'razon_social' => 'Distribuidora Tacna E.I.R.L.',
-                'direccion' => 'Av. Bolognesi 678, Tacna',
-                'numero_documento' => '20567894563',
-                'celular' => '960123456',
-            ],
-            [
-                'razon_social' => 'Comercial Ica S.A.C.',
-                'direccion' => 'Av. San Martín 234, Ica',
-                'numero_documento' => '20578963214',
-                'celular' => '971234567',
-            ],
-            [
-                'razon_social' => 'Corporación Huancayo S.R.L.',
-                'direccion' => 'Jr. Arequipa 567, Huancayo, Junín',
-                'numero_documento' => '20589632147',
-                'celular' => '982345678',
-            ],
-            [
-                'razon_social' => 'Negocios Chiclayo E.I.R.L.',
-                'direccion' => 'Av. Balta 890, Chiclayo, Lambayeque',
-                'numero_documento' => '20590123456',
-                'celular' => '993456789',
-            ],
-            [
-                'razon_social' => 'Importadora Callao S.A.C.',
-                'direccion' => 'Av. Sáenz Peña 345, Callao',
-                'numero_documento' => '20601234567',
-                'celular' => '914567890',
-            ],
-            [
-                'razon_social' => 'Distribuidora Huánuco S.R.L.',
-                'direccion' => 'Jr. Huallayco 678, Huánuco',
-                'numero_documento' => '20612345678',
-                'celular' => '925678901',
-            ],
-        ];
-
-        foreach ($clientes as $cliente) {
-            Cliente::create([
-                'razon_social' => $cliente['razon_social'],
-                'direccion' => $cliente['direccion'],
-                'f_tipo_documento_id' => $tipoDocumento->id,
-                'numero_documento' => $cliente['numero_documento'],
-                'celular' => $cliente['celular'],
-                'empresa_id' => $empresa->id,
-                'lista_precio_id' => $listaPrecio->id,
-                'ruta_id' => Ruta::inRandomOrder()->first()->id,
-            ]);
-        }
+        DB::setDefaultConnection('mysql');
+        $fin = microtime(true);
+        $tiempo = $fin - $inicio;
+        echo "    El tiempo de ejecución fue: {$tiempo} segundos.";
+        echo "\n";
     }
 }

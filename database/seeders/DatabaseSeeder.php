@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Almacen;
 use App\Models\User;
 use App\Models\FSede;
 use Illuminate\Database\Seeder;
@@ -15,7 +14,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
+        // Configurar SQLite para usar el archivo temporal
+        config(['database.connections.sqlite-temp' => [
+            'driver' => 'sqlite',
+            'database' => storage_path('app/temp_db.sqlite'),
+            'prefix' => '',
+        ]]);
         $this->call([
+            //CsvSeeder::class,
             RoleSeeder::class,
             EmpresaSeeder::class,
             FTipoDocumentoSeeder::class,
@@ -25,7 +31,7 @@ class DatabaseSeeder extends Seeder
             FTipoComprobanteSeeder::class,
             ListaPrecioSeeder::class,
             RutaSeeder::class,
-            //ClienteSeeder::class,
+            ClienteSeeder::class,
             MarcaSeeder::class,
             CategoriaSeeder::class,
             FTipoAfectacionSeeder::class,
@@ -39,7 +45,6 @@ class DatabaseSeeder extends Seeder
             TipoMovimientoSeeder::class,
             AlmacenProductoSeeder::class,
         ]);
-
         $sede = FSede::first();
         if ($sede) {
             // Verifica si el usuario ya existe

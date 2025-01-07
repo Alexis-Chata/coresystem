@@ -56,7 +56,9 @@ public function createMarca()
         'newMarca.empresa_id' => 'required|exists:empresas,id',
     ]);
 
-    Marca::create($this->newMarca);
+    $marca = Marca::create($this->newMarca);
+    $marca->nro_orden = $marca->id;
+    $marca->save();
 
     $this->reset('newMarca');
     $this->dispatch('pg:eventRefresh-default');
