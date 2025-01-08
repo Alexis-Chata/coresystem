@@ -42,7 +42,7 @@ class ClienteSeeder extends Seeder
             return str_pad($crut, 3, '0', STR_PAD_LEFT); // Aplica el padding
         })->toArray();
         //print_r($cruts);
-        $padrones_temporales = DB::table('padrones_temporales')->whereIn('crut', $cruts)->get();
+        $padrones_temporales = DB::table('padrones_temporales')->whereIn('crut', $cruts)->orderBy('nsecprev', 'asc')->orderBy('ccli', 'asc')->get();
         DB::setDefaultConnection('mysql');
         $tipo_doc = FTipoDocumento::all();
 

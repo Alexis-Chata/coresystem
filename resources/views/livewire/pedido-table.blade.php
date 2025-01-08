@@ -47,12 +47,16 @@
                     @disabled(str_starts_with($documento, 'RUC'))>
                     <option value="">Selecciona un Tipo de Comprobante</option>
                     @foreach ($tipoComprobantes as $tipo)
-                        <option value="{{ $tipo->id }}">{{ $tipo->name }}</option>
+                        @if (str_starts_with($documento, 'RUC') && $tipo->id == 2)
+                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}</option>
+                        @elseif (!str_starts_with($documento, 'RUC') && $tipo->id != 2)
+                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}</option>
+                        @endif
                     @endforeach
                 </select>
                 <label
                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
-                    Tipo de Comprobante
+                    Tipo de Comprobante {{ $f_tipo_comprobante_id }}
                 </label>
                 <svg class="-translate-y-1/2 absolute dark:text-gray-500 h-5 pointer-events-none right-3 text-gray-400 top-1/2 w-5"
                     fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -230,7 +234,7 @@
                                         wire:change="ajustarCantidad({{ $index }})"
                                         class="w-20 px-2 py-1 text-sm border rounded" />
                                 @else
-                                    <input type="number" min="0.01"
+                                    <input type="number" min="0.01" step="0.01"
                                         wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
                                         wire:change="ajustarCantidad({{ $index }})"
                                         class="w-20 px-2 py-1 text-sm border rounded" />

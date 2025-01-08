@@ -34,14 +34,14 @@ trait CalculosTrait
             $data_detalle['factorIcbper'] = $producto->porcentaje_icbper ?? 0;
             $diferencia = ($data_detalle['mtoPrecioUnitario'] - $data_detalle['factorIcbper']);
             $porcentaje = ($data_detalle['porcentajeIgv'] + $data_detalle['porcentajeIsc']);
-            $data_detalle['mtoValorUnitario'] = number_format(($diferencia) / (1 + ($porcentaje / 100)), 4, '.', '');
+            $data_detalle['mtoValorUnitario'] = number_format(($diferencia) / (1 + ($porcentaje / 100)), 2, '.', '');
             $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorUnitario'] * $data_detalle['cantidad'];
 
             $data_detalle['mtoBaseIgv'] = $data_detalle['mtoValorVenta'] ?? 0;
             $data_detalle['mtoBaseIsc'] = ($data_detalle['porcentajeIsc'] > 0) ? $data_detalle['mtoValorVenta'] : 0;
             $data_detalle['igv'] = $data_detalle['importe'] - $data_detalle['mtoBaseIgv'];
-            $data_detalle['isc'] = number_format($data_detalle['mtoBaseIgv'] * ($data_detalle['porcentajeIsc'] / 100), 4, '.', ''); //
-            $data_detalle['icbper'] = number_format($data_detalle['factorIcbper'] * $data_detalle['cantidad'], 4, '.', '');
+            $data_detalle['isc'] = number_format($data_detalle['mtoBaseIgv'] * ($data_detalle['porcentajeIsc'] / 100), 2, '.', ''); //
+            $data_detalle['icbper'] = number_format($data_detalle['factorIcbper'] * $data_detalle['cantidad'], 2, '.', '');
             $data_detalle['totalImpuestos'] = $data_detalle['igv'] + $data_detalle['icbper'] + $data_detalle['isc'];
             $data_detalle['tipSisIsc'] = $data_detalle['tipSisIsc'] ?? "01";
             $data_detalles[$key] = $data_detalle;

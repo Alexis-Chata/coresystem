@@ -39,6 +39,7 @@ class ProductoSeeder extends Seeder
         DB::setDefaultConnection('sqlite-temp');
         // Realizar consultas (ejemplo)
         $registros = DB::table('productos_temporales')->get();
+        $marcas_temporales = DB::table('marcas_temporales')->get();
         DB::setDefaultConnection('mysql');
 
         $bonificacion = ['810','552','914','915','008','859','496','165','927','040','476','976','059','803','848','811','515','563','758','101','539','998','997','994','404','828','814','770','819','969','913','983','477','648','957','936','623','010','547','982','907','060','855','723','726','577','544','543','838','053','645','780','749','965','860','616','870','599','026','034','821','716','973','851','831','228','416','506','413','009','353','360','351','359','184',
@@ -47,6 +48,10 @@ class ProductoSeeder extends Seeder
                 if (in_array(str_pad($registro->cequiv, 3, '0', STR_PAD_LEFT), $bonificacion)) {
                     $registro->f_tipo_afectacion_id = 21;
                 }
+                $marca_temp = $marcas_temporales->first(function ($item) use ($registro) {
+                    return $item->ccod == $registro->cc05;
+                });
+
                 $modelo = new Producto();
                 $modelo->fill([
                     'name' => $registro->tcor,
@@ -54,8 +59,8 @@ class ProductoSeeder extends Seeder
                     'sub_cantidad' => $registro->sub_cantidad ?? 0,
                     'peso' => $registro->peso ?? 0,
                     'tipo' => $registro->tipo ?? 'estandar',
-                    'empresa_id' => $registro->empresa_id ?? 1,
-                    'marca_id' => $registro->marca_id ?? 1,
+                    'empresa_id' => $registro->cc4 ?? 1,
+                    'marca_id' => $marca_temp->nuevo_id ?? 1,
                     'categoria_id' => $registro->categoria_id ?? 1,
                     'f_tipo_afectacion_id' => $registro->f_tipo_afectacion_id ?? 10,
                     'porcentaje_igv' => $registro->porcentaje_igv ?? 18,

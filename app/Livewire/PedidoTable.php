@@ -156,6 +156,7 @@ class PedidoTable extends Component
         $this->ruta_id = "";
         $this->lista_precio = "";
         $this->documento = "";
+        $this->f_tipo_comprobante_id = "";
     }
 
     private function updateClienteData($cliente)
@@ -193,47 +194,47 @@ class PedidoTable extends Component
     }
 
     public function updatedSearch()
-{
-    if (!$this->lista_precio) {
-        return;
-    }
+    {
+        if (!$this->lista_precio) {
+            return;
+        }
 
-    if (strlen($this->search) > 0) {
-        $this->productos = Producto::where(function ($query) {
-            $keywords = explode(' ', $this->search); // Dividir la búsqueda en palabras clave
-            foreach ($keywords as $keyword) {
-                $keyword = trim($keyword);
-                if (!empty($keyword)) {
-                    $query->where("name", "like", "%" . $keyword . "%"); // Usar where para cada palabra clave
+        if (strlen($this->search) > 0) {
+            $this->productos = Producto::where(function ($query) {
+                $keywords = explode(' ', $this->search); // Dividir la búsqueda en palabras clave
+                foreach ($keywords as $keyword) {
+                    $keyword = trim($keyword);
+                    if (!empty($keyword)) {
+                        $query->where("name", "like", "%" . $keyword . "%"); // Usar where para cada palabra clave
+                    }
                 }
-            }
-            $query->orWhere("id", "like", "%" . $this->search . "%"); // Mantener la búsqueda por ID
-        })
-            ->with([
-                "marca",
-                "listaPrecios" => function ($query) {
-                    $query->where("lista_precio_id", $this->lista_precio);
-                },
-            ])
-            ->take(5)
-            ->get();
+                $query->orWhere("id", "like", "%" . $this->search . "%"); // Mantener la búsqueda por ID
+            })
+                ->with([
+                    "marca",
+                    "listaPrecios" => function ($query) {
+                        $query->where("lista_precio_id", $this->lista_precio);
+                    },
+                ])
+                ->take(5)
+                ->get();
 
-        // Debug para verificar los precios
-        logger("Productos encontrados:", [
-            "lista_precio" => $this->lista_precio,
-            "productos" => $this->productos->map(function ($producto) {
-                return [
-                    "id" => $producto->id,
-                    "name" => $producto->name,
-                    "precio" => $producto->listaPrecios->first()?->pivot
-                        ?->precio,
-                ];
-            }),
-        ]);
-    } else {
-        $this->productos = [];
+            // Debug para verificar los precios
+            logger("Productos encontrados:", [
+                "lista_precio" => $this->lista_precio,
+                "productos" => $this->productos->map(function ($producto) {
+                    return [
+                        "id" => $producto->id,
+                        "name" => $producto->name,
+                        "precio" => $producto->listaPrecios->first()?->pivot
+                            ?->precio,
+                    ];
+                }),
+            ]);
+        } else {
+            $this->productos = [];
+        }
     }
-}
 
     public function agregarProducto($producto_id)
     {
@@ -453,7 +454,7 @@ class PedidoTable extends Component
 
             // Calcular precio por paquete
             $precioPorPaquete = $precioCaja / $cantidadProducto; // 108.00 / 36 = 3.00
-            if($producto->f_tipo_afectacion_id == '21'){
+            if ($producto->f_tipo_afectacion_id == '21') {
                 $precioPorPaquete = 0;
             }
 
