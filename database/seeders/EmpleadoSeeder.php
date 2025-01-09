@@ -50,7 +50,9 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678913';
         $empleado->tipo_empleado = 'conductor';
+        $empleado->numero_brevete = '1234567';
         $empleado->f_sede_id = $sede->id;
+        $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
         $empleado = new Empleado();
@@ -72,7 +74,9 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678915';
         $empleado->tipo_empleado = 'conductor';
+        $empleado->numero_brevete = '1234567';
         $empleado->f_sede_id = $sede->id;
+        $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
         $empleado = new Empleado();
@@ -84,7 +88,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '3456789';
         $empleado->f_sede_id = $sede->id;
-        $empleado->vehiculo_id = $vehiculos->shift()->id;
+        $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
         $empleado = new Empleado();
@@ -106,7 +110,9 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678913';
         $empleado->tipo_empleado = 'conductor';
+        $empleado->numero_brevete = '1234567';
         $empleado->f_sede_id = $sede->id;
+        $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
         $empleado = new Empleado();
@@ -128,7 +134,9 @@ class EmpleadoSeeder extends Seeder
         $empleado->f_tipo_documento_id = $tipoDocumento->id;
         $empleado->numero_documento = '45678915';
         $empleado->tipo_empleado = 'conductor';
+        $empleado->numero_brevete = '1234567';
         $empleado->f_sede_id = $sede->id;
+        $empleado->vehiculo_id = $vehiculos->shift()->id;  // Asigna un vehículo
         $empleado->save();
 
         DB::insert("insert  into `empleados`

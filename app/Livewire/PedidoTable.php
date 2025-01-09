@@ -483,7 +483,7 @@ class PedidoTable extends Component
             $cantidadPaquetes = $cajas * $cantidadProducto + $paquetes; // Total de paquetes
 
             // Calcular importe total
-            $importe = $cantidadPaquetes * $precioPorPaquete; // Total de paquetes * precio por paquete
+            $importe = number_format_punto2( $cantidadPaquetes * $precioPorPaquete ); // Total de paquetes * precio por paquete
 
             // Actualizar el importe en el detalle
             $this->pedido_detalles[$index]["importe"] = $importe;

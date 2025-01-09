@@ -123,6 +123,10 @@ Route::middleware([
         return view('movimiento');
     })->middleware('can:view movimiento')->name('movimiento.generar-movimientoliq');
 
+    Route::get('/asignar-pedidos', function () {
+        return view('asignar-pedidos');
+    })->name('pedido.asignar');
+
     Route::get('/generar-comprobantes', function () {
         return view('generar-comprobantes');
     })->name('comprobantes.create');
@@ -134,6 +138,10 @@ Route::middleware([
     Route::get('/imprimir-comprobantes', function () {
         return view('imprimir-comprobantes');
     })->name('comprobantes.imprimir');
+
+    Route::get('/envio-comprobantes', function () {
+        return view('envio-comprobantes');
+    })->name('comprobantes.envio');
 
     Route::get('storage/{filename}', function ($filename) {
         // Verificar si el archivo existe en el disco 'private'

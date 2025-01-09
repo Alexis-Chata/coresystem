@@ -157,7 +157,7 @@
                     @can('view pedido')
                         <li>
                             <a href="{{ route('pedido.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4">
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4" :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('pedido.index') }}' }">
                                 <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -332,6 +332,36 @@
                         </li>
                     @endcan
 
+                    <!-- Asignar Pedidos -->
+                    @can('asignar pedido')
+                        <li>
+                            <a href="{{ route('pedido.asignar') }}"
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('pedido.asignar')) bg-graydark dark:bg-meta-4 @endif">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    width="24" height="24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                </svg>
+                                Asignar Pedidos
+                            </a>
+                        </li>
+                    @endcan
+
+                    <!-- Generar movimiento o Generar Carga -->
+                    @can('generar-movimientoliq movimiento')
+                        <li>
+                            <a href="{{ route('movimiento.generar-movimientoliq') }}"
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('movimiento.generar-movimientoliq')) bg-graydark dark:bg-meta-4 @endif">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    width="24" height="24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                </svg>
+                                Generar Movimiento Liquido-Conductor
+                            </a>
+                        </li>
+                    @endcan
+
                     <!-- Generar Comprobantes -->
                     @can('create comprobante')
                         <li>
@@ -346,6 +376,7 @@
                             </a>
                         </li>
                     @endcan
+
                     <!-- Imprimir Comprobantes -->
                     @can('imprimir comprobante')
                         <li>
@@ -360,6 +391,22 @@
                             </a>
                         </li>
                     @endcan
+
+                    <!-- Envio Comprobantes -->
+                    @can('envio comprobante')
+                        <li>
+                            <a href="{{ route('comprobantes.envio') }}"
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('comprobantes.envio')) bg-graydark dark:bg-meta-4 @endif">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    width="24" height="24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                </svg>
+                                Envio Comprobantes
+                            </a>
+                        </li>
+                    @endcan
+
                     <!-- Empresa -->
                     @can('view empresa')
                         <li>

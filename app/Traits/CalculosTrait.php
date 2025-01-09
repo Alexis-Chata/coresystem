@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Producto;
+use Illuminate\Support\Facades\Log;
 use Luecano\NumeroALetras\NumeroALetras;
 
 trait CalculosTrait

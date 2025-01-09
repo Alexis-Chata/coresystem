@@ -43,37 +43,42 @@ class ClienteSeeder extends Seeder
         })->toArray();
         //print_r($cruts);
         $padrones_temporales = DB::table('padrones_temporales')->whereIn('crut', $cruts)->orderBy('nsecprev', 'asc')->orderBy('ccli', 'asc')->get();
+        $clientes_temporales = DB::table('clientes_temporales')->get();
         DB::setDefaultConnection('mysql');
         $tipo_doc = FTipoDocumento::all();
 
         foreach ($padrones_temporales as $padron) {
-            DB::setDefaultConnection('sqlite-temp');
-            $cliente_temp = DB::table('clientes_temporales')->where('ccli', $padron->ccli)->get();
-            $ruta_temp = DB::table('rutas_temporales')->where('crut', intval($padron->crut))->get();
-            $ruta = $rutas->find($ruta_temp->first()->nuevo_id);
+
+            $cliente_temp = $clientes_temporales->first(function ($item) use ($padron) {
+                return $item->ccli == $padron->ccli;
+            });
+
+            $ruta_temp = $rutas_temporales->first(function ($item) use ($padron) {
+                return $item->crut == $padron->crut;
+            });
+            $ruta = $rutas->find($ruta_temp->nuevo_id);
             //print_r($ruta->lista_precio_id);
 
-            DB::setDefaultConnection('mysql');
             $f_tipo_documento_id = $tipo_doc->where('tipo_documento', 'DNI')->first()->id;
             $numero_documento = 99999999;
             $celular = null;
-            if (!empty($cliente_temp->first()->le)) {
-                $numero_documento = $cliente_temp->first()->le;
+            if (!empty($cliente_temp->le)) {
+                $numero_documento = $cliente_temp->le;
             }
-            if (!empty($cliente_temp->first()->cruc)) {
+            if (!empty($cliente_temp->cruc)) {
                 $f_tipo_documento_id = $tipo_doc->where('tipo_documento', 'RUC')->first()->id;
-                $numero_documento = $cliente_temp->first()->cruc;
+                $numero_documento = $cliente_temp->cruc;
             }
-            if (!empty($cliente_temp->first()->ntel) and strlen($cliente_temp->first()->ntel) == 9) {
-                $celular = $cliente_temp->first()->ntel;
+            if (!empty($cliente_temp->ntel) and strlen($cliente_temp->ntel) == 9) {
+                $celular = $cliente_temp->ntel;
             }
-            if (!empty($cliente_temp->first()->nfax) and strlen($cliente_temp->first()->nfax) == 9) {
-                $celular = $cliente_temp->first()->nfax;
+            if (!empty($cliente_temp->nfax) and strlen($cliente_temp->nfax) == 9) {
+                $celular = $cliente_temp->nfax;
             }
-            $count = Padron::where('ruta_id', $ruta->id)->count();
+
             $cliente = Cliente::create([
-                'razon_social' => $cliente_temp->first()->tcli,
-                'direccion' => $cliente_temp->first()->tdir,
+                'razon_social' => $cliente_temp->tcli,
+                'direccion' => $cliente_temp->tdir,
                 'f_tipo_documento_id' => $f_tipo_documento_id,
                 'numero_documento' => $numero_documento,
                 'celular' => $celular,
