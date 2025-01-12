@@ -6,7 +6,7 @@ use Luecano\NumeroALetras\NumeroALetras;
 
 trait SunatTrait
 {
-
+    // sin usar, solo referencial
     public function setTotales(&$data)
     {
         $details = collect($data['details']);
@@ -30,15 +30,15 @@ trait SunatTrait
         $data['redondeo'] = $data['mtoImpVenta'] - $data['subTotal'];
     }
 
-    public function setLegends(&$data)
-    {
-        $formatter = new NumeroALetras();
+    // public function setLegends(&$data)
+    // {
+    //     $formatter = new NumeroALetras();
 
-        $data['legends'] = [
-            [
-                'code' => '1000',
-                'value' => $formatter->toInvoice($data['mtoImpVenta'], 2, 'SOLES')
-            ]
-        ];
-    }
+    //     $data['legends'] = [
+    //         [
+    //             'code' => '1000',
+    //             'value' => $formatter->toInvoice($data['mtoImpVenta'], 2, 'SOLES')
+    //         ]
+    //     ];
+    // }
 }

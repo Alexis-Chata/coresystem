@@ -176,9 +176,10 @@
             font-size: 10px;
             line-height: 1.5;
         }
+
         .pagenum:before {
-        content: counter(page);
-    }
+            content: counter(page);
+        }
     </style>
 </head>
 
@@ -201,7 +202,8 @@
                 <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
-        <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> {{ $movimiento->conductor_id }} - {{ $movimiento->conductor->name }}</p>
+        <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> {{ $movimiento->conductor_id }} -
+            {{ $movimiento->conductor->name }}</p>
 
     </div>
     <div class="footer">
@@ -235,7 +237,7 @@
                         <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
                         </td>
                         <td style="text-align: right;">{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
-                        <td>{{ $comprobante->pedido_obs ?? '..............' }}</td>
+                        <td>{!! empty($comprobante->pedido_obs) ? '..............' : nl2br(wordwrap($comprobante->pedido_obs,26,"\n")) !!}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -291,8 +293,9 @@
                 @foreach ($comprobantes->groupBy('ruta_id') as $ruta_id => $comprobante)
                     <tr>
                         <td>{{ $vendedor_id }} - {{ $vendedores->find($vendedor_id)->name }}</td>
-                        <td>{{ $ruta_id }} - {{ $rutas->find($ruta_id)->name }}</td></td>
-                        <td>{{ $comprobante->unique('cliente_id')->count(); }}</td>
+                        <td>{{ $ruta_id }} - {{ $rutas->find($ruta_id)->name }}</td>
+                        </td>
+                        <td>{{ $comprobante->unique('cliente_id')->count() }}</td>
                         <td>{{ $comprobante->count() }}</td>
                         <td>{{ number_format($comprobante->sum('mtoImpVenta'), 2) }}</td>
                     </tr>

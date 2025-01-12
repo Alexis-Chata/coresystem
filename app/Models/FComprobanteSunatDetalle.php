@@ -21,6 +21,7 @@ class FComprobanteSunatDetalle extends Model
         "tipAfeIgv",
         "mtoValorVenta",
         "mtoValorUnitario",
+        "mtoValorGratuito",
         "mtoPrecioUnitario",
         "factorIcbper",
         "icbper",

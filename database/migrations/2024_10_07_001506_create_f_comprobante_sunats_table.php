@@ -47,6 +47,7 @@ return new class extends Migration
             $table->string('mtoOperGravadas')->nullable();
             $table->string('mtoOperInafectas')->nullable();
             $table->string('mtoOperExoneradas')->nullable();
+            $table->string('mtoOperGratuitas')->nullable();
             $table->string('mtoIGV')->nullable();
             $table->string('mtoBaseIsc')->nullable(); // Sumatoria MtoBaseISC detalles
             $table->string('mtoISC')->nullable();

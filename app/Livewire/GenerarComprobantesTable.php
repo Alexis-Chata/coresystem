@@ -259,6 +259,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'mtoOperGravadas' => $subtotales->mtoOperGravadas,
                                 'mtoOperInafectas' => $subtotales->mtoOperInafectas,
                                 'mtoOperExoneradas' => $subtotales->mtoOperExoneradas,
+                                'mtoOperGratuitas' => $subtotales->mtoOperGratuitas,
                                 'mtoIGV' => $subtotales->mtoIGV,
                                 'mtoBaseIsc' => 0,
                                 'mtoISC' => 0,

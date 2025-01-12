@@ -44,6 +44,7 @@ class FComprobanteSunat extends Model
         'mtoOperGravadas',
         'mtoOperInafectas',
         'mtoOperExoneradas',
+        'mtoOperGratuitas',
         'mtoIGV',
         'mtoBaseIsc',
         'mtoISC',

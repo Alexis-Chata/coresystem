@@ -101,8 +101,11 @@ class PedidoReporteDiario extends Component
                     "cantidad" => $detalle->cantidad,
                     "importe" => $detalle->importe,
                     "tipAfeIgv" =>
-                        $detalle->producto->f_tipo_afectacion_id ?? 10,
+                    $detalle->producto->f_tipo_afectacion_id ?? 10,
                     "tipSisIsc" => "01",
+                    "producto_precio" => $detalle->producto_precio,
+                    "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                    "lista_precio" => $detalle->lista_precio,
                 ];
             })
             ->toArray();
@@ -179,8 +182,8 @@ class PedidoReporteDiario extends Component
                 // Si existe, aumentar cantidad
                 $nuevaCantidad =
                     $producto->cantidad == 1
-                        ? $detalleExistente->cantidad + 1
-                        : $detalleExistente->cantidad + 0.01;
+                    ? $detalleExistente->cantidad + 1
+                    : $detalleExistente->cantidad + 0.01;
 
                 $nuevoImporte = $this->calcularImporteDetalle(
                     $nuevaCantidad,
@@ -203,8 +206,8 @@ class PedidoReporteDiario extends Component
                 $cantidad = $producto->cantidad == 1 ? 1 : 0.01;
                 $importe =
                     $producto->cantidad == 1
-                        ? $precio
-                        : $precio / $producto->cantidad;
+                    ? $precio
+                    : $precio / $producto->cantidad;
 
                 $nuevoDetalle = $this->pedidoEnEdicion
                     ->pedidoDetalles()
@@ -234,8 +237,11 @@ class PedidoReporteDiario extends Component
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
-                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        $detalle->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
+                        "producto_precio" => $detalle->producto_precio,
+                        "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                        "lista_precio" => $detalle->lista_precio,
                     ];
                 })
                 ->toArray();
@@ -347,8 +353,11 @@ class PedidoReporteDiario extends Component
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
-                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        $detalle->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
+                        "producto_precio" => $detalle->producto_precio,
+                        "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                        "lista_precio" => $detalle->lista_precio,
                     ];
                 })
                 ->toArray();
@@ -381,7 +390,7 @@ class PedidoReporteDiario extends Component
             ]);
             $this->dispatch("notify", [
                 "message" =>
-                    "Error al eliminar el producto: " . $e->getMessage(),
+                "Error al eliminar el producto: " . $e->getMessage(),
                 "type" => "error",
             ]);
         }
@@ -398,7 +407,7 @@ class PedidoReporteDiario extends Component
                 ];
             })
             ->toArray();
-
+        //dd($detalles);
         // Usar el mismo método del trait para calcular los totales
         $totalesTemp = $this->setSubTotalesIgv($detalles);
         $this->totales = [
@@ -440,8 +449,11 @@ class PedidoReporteDiario extends Component
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
                         "tipAfeIgv" =>
-                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        $detalle->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
+                        "producto_precio" => $detalle->producto_precio,
+                        "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                        "lista_precio" => $detalle->lista_precio,
                     ];
                 })
                 ->toArray();
@@ -477,7 +489,7 @@ class PedidoReporteDiario extends Component
             DB::rollBack();
             $this->dispatch("notify", [
                 "message" =>
-                    "Error al guardar los cambios: " . $e->getMessage(),
+                "Error al guardar los cambios: " . $e->getMessage(),
                 "type" => "error",
             ]);
         }
@@ -531,8 +543,11 @@ class PedidoReporteDiario extends Component
                             ? $cambio["importe"]
                             : $det->importe,
                         "tipAfeIgv" =>
-                            $det->producto->f_tipo_afectacion_id ?? 10,
+                        $det->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
+                        "producto_precio" => $det->producto_precio,
+                        "producto_cantidad_caja" => $det->producto_cantidad_caja,
+                        "lista_precio" => $det->lista_precio,
                     ];
                 })
                 ->toArray();
@@ -541,13 +556,13 @@ class PedidoReporteDiario extends Component
 
             $this->dispatch("notify", [
                 "message" =>
-                    "Cantidad actualizada. No olvide guardar los cambios.",
+                "Cantidad actualizada. No olvide guardar los cambios.",
                 "type" => "info",
             ]);
         } catch (\Exception $e) {
             $this->dispatch("notify", [
                 "message" =>
-                    "Error al actualizar cantidad: " . $e->getMessage(),
+                "Error al actualizar cantidad: " . $e->getMessage(),
                 "type" => "error",
             ]);
         }
@@ -632,7 +647,7 @@ class PedidoReporteDiario extends Component
 
             // Recargar los datos
             $this->mount();
-        } catch (Exception|LockTimeoutException $e) {
+        } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
             $this->dispatch("notify", [
                 "message" => "Error al eliminar el pedido: " . $e->getMessage(),

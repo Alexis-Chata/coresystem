@@ -27,7 +27,7 @@ class SunatService
         $see->setCertificate(Storage::get($company->cert_path));
         $see->setService($company->production ? SunatEndpoints::FE_PRODUCCION : SunatEndpoints::FE_BETA);
         $see->setClaveSOL($company->ruc, $company->sol_user, $company->sol_pass);
-
+        //dd($company->cert_path, $company->production, $company->ruc, $company->sol_user, $company->sol_pass);
         return $see;
     }
 
@@ -35,41 +35,46 @@ class SunatService
     {
 
         return (new Invoice())
-            ->setUblVersion($data['ublVersion'] ?? '2.1')
-            ->setTipoOperacion($data['tipoOperacion'] ?? null) // Venta - Catalog. 51
-            ->setTipoDoc($data['tipoDoc'] ?? null) // Factura - Catalog. 01
-            ->setSerie($data['serie'] ?? null)
-            ->setCorrelativo($data['correlativo'] ?? null)
-            ->setFechaEmision(new DateTime($data['fechaEmision'] ?? null)) // Zona horaria: Lima
+            ->setUblVersion($data->ublVersion ?? '2.1')
+            ->setTipoOperacion($data->tipoOperacion ?? null) // Venta - Catalog. 51
+            ->setTipoDoc($data->tipoDoc ?? null) // Factura - Catalog. 01
+            ->setSerie($data->serie ?? null)
+            ->setCorrelativo($data->correlativo ?? null)
+            ->setFechaEmision(new DateTime($data->fechaEmision ?? null)) // Zona horaria: Lima
             ->setFormaPago(new FormaPagoContado()) // FormaPago: Contado
-            ->setTipoMoneda($data['tipoMoneda'] ?? "PEN") // Sol - Catalog. 02
-            ->setCompany($this->getCompany($data['company']))
-            ->setClient($this->getClient($data['client']))
+            ->setTipoMoneda($data->tipoMoneda ?? "PEN") // Sol - Catalog. 02
+            ->setCompany($this->getCompany($data))
+            ->setClient($this->getClient($data))
 
             //Mto Operaciones
-            ->setMtoOperGravadas($data['mtoOperGravadas'] ?? null)
-            ->setMtoOperExoneradas($data['mtoOperExoneradas'] ?? null)
-            ->setMtoOperInafectas($data['mtoOperInafectas'] ?? null)
-            ->setMtoOperExportacion($data['mtoOperExportacion'] ?? null)
-            ->setMtoOperGratuitas($data['mtoOperGratuitas'] ?? null)
+            ->setMtoOperGravadas($data->mtoOperGravadas ?? null)
+            ->setMtoOperExoneradas($data->mtoOperExoneradas ?? null)
+            ->setMtoOperInafectas($data->mtoOperInafectas ?? null)
+            ->setMtoOperExportacion($data->mtoOperExportacion ?? null)
+            ->setMtoOperGratuitas($data->mtoOperGratuitas ?? null)
 
             //Impuestos
-            ->setMtoIGV($data['mtoIGV'])
-            ->setMtoIGVGratuitas($data['mtoIGVGratuitas'])
-            ->setIcbper($data['icbper'])
-            ->setTotalImpuestos($data['totalImpuestos'])
+            ->setMtoIGV($data->mtoIGV)
+            ->setMtoIGVGratuitas($data->mtoIGVGratuitas)
+            ->setIcbper($data->icbper)
+            ->setTotalImpuestos($data->totalImpuestos)
 
             //Totales
-            ->setValorVenta($data['valorVenta'])
-            ->setSubTotal($data['subTotal'])
-            ->setRedondeo($data['redondeo'])
-            ->setMtoImpVenta($data['mtoImpVenta'])
+            ->setValorVenta($data->valorVenta)
+            ->setSubTotal($data->subTotal)
+            ->setRedondeo($data->redondeo)
+            ->setMtoImpVenta($data->mtoImpVenta)
 
             //Productos
-            ->setDetails($this->getDetails($data['details']))
+            ->setDetails($this->getDetails($data->detalle))
 
             //Leyendas
-            ->setLegends($this->getLegends($data['legends']));
+            ->setLegends($this->getLegends([
+                [
+                    'code' => $data->legendsCode, // '1000'
+                    'value' => $data->legendsValue
+                ]
+            ]));
     }
 
     public function getNote($data)
@@ -117,30 +122,31 @@ class SunatService
     public function getCompany($company)
     {
         return (new Company())
-            ->setRuc($company['ruc'] ?? null)
-            ->setRazonSocial($company['razonSocial'] ?? null)
-            ->setNombreComercial($company['nombreComercial'] ?? null)
-            ->setAddress($this->getAddress($company['address']) ?? null);
+            ->setRuc($company->companyRuc ?? null)
+            ->setRazonSocial($company->companyRazonSocial ?? null)
+            ->setNombreComercial($company->companyNombreComercial ?? null)
+            ->setAddress($this->getAddress($company) ?? null);
     }
 
     public function getClient($client)
     {
         return (new Client())
-            ->setTipoDoc($client['tipoDoc'] ?? null) // DNI - Catalog. 06
-            ->setNumDoc($client['numDoc'] ?? null)
-            ->setRznSocial($client['rznSocial'] ?? null);
+            ->setTipoDoc($client->clientTipoDoc ?? null) // DNI - Catalog. 06
+            ->setNumDoc($client->clientNumDoc ?? null)
+            ->setRznSocial($client->clientRazonSocial ?? null)
+            ->setAddress($this->getAddress($client) ?? null);
     }
 
     public function getAddress($address)
     {
         return (new Address())
-            ->setUbigueo($address['ubigueo'] ?? null)
-            ->setDepartamento($address['departamento'] ?? null)
-            ->setProvincia($address['provincia'] ?? null)
-            ->setDistrito($address['distrito'] ?? null)
-            ->setUrbanizacion($address['urbanizacion'] ?? null)
-            ->setDireccion($address['direccion'] ?? null)
-            ->setCodLocal($address['codLocal'] ?? "0000"); // Codigo de establecimiento asignado por SUNAT, 0000 por defecto.
+            ->setUbigueo($address->companyAddressUbigueo ?? null)
+            ->setDepartamento($address->companyAddressDepartamento ?? null)
+            ->setProvincia($address->companyAddressProvincia ?? null)
+            ->setDistrito($address->companyAddressDistrito ?? null)
+            ->setUrbanizacion($address->companyAddressUrbanizacion ?? null)
+            ->setDireccion($address->companyAddressDireccion ?? $address->clientDireccion ?? null)
+            ->setCodLocal($address->companyAddressCodLocal ?? "0000"); // Codigo de establecimiento asignado por SUNAT, 0000 por defecto.
 
     }
 
@@ -150,21 +156,21 @@ class SunatService
 
         foreach ($details as $detail) {
             $green_details[] = (new SaleDetail())
-                ->setCodProducto($detail['codProducto'] ?? null)
-                ->setUnidad($detail['unidad'] ?? null) // Unidad - Catalog. 03
-                ->setCantidad($detail['cantidad'] ?? null)
-                ->setMtoValorUnitario($detail['mtoValorUnitario'] ?? null)
-                ->setMtoValorGratuito($detail['mtoValorGratuito'] ?? null)
-                ->setDescripcion($detail['descripcion'] ?? null)
-                ->setMtoBaseIgv($detail['mtoBaseIgv'] ?? null)
-                ->setPorcentajeIgv($detail['porcentajeIgv'] ?? null) // 18%
-                ->setIgv($detail['igv'] ?? null)
-                ->setFactorIcbper($detail['factorIcbper'] ?? null) // 0.3%
-                ->setIcbper($detail['icbper'] ?? null)
-                ->setTipAfeIgv($detail['tipAfeIgv'] ?? null) // Gravado Op. Onerosa - Catalog. 07
-                ->setTotalImpuestos($detail['totalImpuestos'] ?? null) // Suma de impuestos en el detalle
-                ->setMtoValorVenta($detail['mtoValorVenta'] ?? null)
-                ->setMtoPrecioUnitario($detail['mtoPrecioUnitario'] ?? null);
+                ->setCodProducto($detail->codProducto ?? null)
+                ->setUnidad($detail->unidad ?? null) // Unidad - Catalog. 03
+                ->setCantidad($detail->cantidad ?? null)
+                ->setMtoValorUnitario($detail->mtoValorUnitario ?? null)
+                ->setMtoValorGratuito($detail->mtoValorGratuito ?? null)
+                ->setDescripcion($detail->descripcion ?? null)
+                ->setMtoBaseIgv($detail->mtoBaseIgv ?? null)
+                ->setPorcentajeIgv($detail->porcentajeIgv ?? null) // 18%
+                ->setIgv($detail->igv ?? null)
+                ->setFactorIcbper($detail->factorIcbper ?? null) // 0.3%
+                ->setIcbper($detail->icbper ?? null)
+                ->setTipAfeIgv($detail->tipAfeIgv ?? null) // Gravado Op. Onerosa - Catalog. 07
+                ->setTotalImpuestos($detail->totalImpuestos ?? null) // Suma de impuestos en el detalle
+                ->setMtoValorVenta($detail->mtoValorVenta ?? null)
+                ->setMtoPrecioUnitario($detail->mtoPrecioUnitario ?? null);
         }
         return $green_details;
     }

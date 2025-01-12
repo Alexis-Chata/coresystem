@@ -15,15 +15,16 @@ trait CalculosTrait
         //dd($data_detalles);
         foreach ($data_detalles as $key => $data_detalle) {
             $producto = Producto::find($data_detalle['producto_id']);
-            if ($devolver_data_detalle) {
-                $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
-                $data_detalle['ref_producto_precio_cajon'] = number_format_punto2($data_detalle['ref_producto_precio_cajon'] ?? $data_detalle['producto_precio']);
-                $data_detalle['ref_producto_cantidad_cajon'] = $data_detalle['ref_producto_cantidad_cajon'] ?? $data_detalle['producto_cantidad_caja'];
-                $data_detalle['ref_producto_cant_vendida'] = number_format_punto2($data_detalle['ref_producto_cant_vendida'] ?? $data_detalle['cantidad']);
-                list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
-                $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
-            }
+            $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
+            $data_detalle['ref_producto_precio_cajon'] = number_format_punto2($data_detalle['ref_producto_precio_cajon'] ?? $data_detalle['producto_precio']);
+            $data_detalle['ref_producto_cantidad_cajon'] = $data_detalle['ref_producto_cantidad_cajon'] ?? $data_detalle['producto_cantidad_caja'];
+            $data_detalle['ref_producto_cant_vendida'] = number_format_punto2($data_detalle['ref_producto_cant_vendida'] ?? $data_detalle['cantidad']);
+            list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
+            $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
 
+            if ($producto->f_tipo_afectacion_id == 21) {
+                $data_detalle['mtoValorGratuito'] = $data_detalle['ref_producto_precio_cajon'] / $data_detalle['ref_producto_cantidad_cajon'];
+            }
             $data_detalle['codProducto'] = $data_detalle['producto_id'];
             $data_detalle['unidad'] = "NIU";
             $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];
@@ -75,15 +76,15 @@ trait CalculosTrait
         return $data;
     }
 
-    public function setLegends(&$data)
-    {
-        $formatter = new NumeroALetras();
+    // public function setLegends(&$data)
+    // {
+    //     $formatter = new NumeroALetras();
 
-        $data['legends'] = [
-            [
-                'code' => '1000',
-                'value' => $formatter->toInvoice($data['mtoImpVenta'], 2, 'SOLES')
-            ]
-        ];
-    }
+    //     $data['legends'] = [
+    //         [
+    //             'code' => '1000',
+    //             'value' => $formatter->toInvoice($data['mtoImpVenta'], 2, 'SOLES')
+    //         ]
+    //     ];
+    // }
 }

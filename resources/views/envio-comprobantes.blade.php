@@ -23,15 +23,8 @@
             [type=week],
             select,
             textarea {
-                --tw-shadow: 0 0 #0000;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                background-color: #fff;
-                border-color: #6b7280;
                 border-width: 1px;
                 font-size: 1rem;
-                line-height: 1.5rem;
                 padding: .5rem .75rem
             }
         }

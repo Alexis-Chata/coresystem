@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('tipAfeIgv')->nullable();
             $table->string('mtoValorVenta')->nullable();
             $table->string('mtoValorUnitario')->nullable();
+            $table->string('mtoValorGratuito')->nullable();
             $table->string('mtoPrecioUnitario')->nullable();
             $table->string('factorIcbper')->nullable();
             $table->string('icbper')->nullable();
