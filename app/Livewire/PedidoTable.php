@@ -336,6 +336,9 @@ class PedidoTable extends Component
             $this->importe_total = collect($this->pedido_detalles)->sum(
                 "importe"
             );
+            if ($this->importe_total <= 0) {
+                throw new \Exception("Importe Total no valido<br />");
+            }
 
             $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
             $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);

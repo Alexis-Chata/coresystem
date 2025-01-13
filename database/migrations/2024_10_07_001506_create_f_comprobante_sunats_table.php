@@ -64,12 +64,12 @@ return new class extends Migration
             $table->string('codMotivo')->nullable();
             $table->string('desMotivo')->nullable();
             $table->string('nombrexml')->nullable();
-            $table->string('xmlbase64')->nullable();
+            $table->longText('xmlbase64')->nullable();
             $table->string('hash')->nullable();
-            $table->string('cdrbase64')->nullable();
+            $table->longText('cdrbase64')->nullable();
             $table->string('codigo_sunat')->nullable();
-            $table->string('mensaje_sunat')->nullable();
-            $table->string('obs')->nullable();
+            $table->longText('mensaje_sunat')->nullable();
+            $table->longText('obs')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

@@ -180,10 +180,10 @@ trait StockTrait
         return $nuevo_stock;
     }
 
-    public function validarPrecio($producto, $detalle)
-    {
-        if ($producto->f_tipo_afectacion_id != 21 && $detalle->importe <= 0) {
-            throw new \Exception("El precio del producto {$producto->id} no valido.");
-        }
-    }
+    // public function validarPrecio($producto, $detalle)
+    // {
+    //     if ($producto->f_tipo_afectacion_id != 21 && $detalle->importe <= 0) {
+    //         throw new \Exception("El precio del producto {$producto->id} no valido.");
+    //     }
+    // }
 }

@@ -92,6 +92,9 @@ final class PadronTable extends PowerGridComponent
             ->add('ruta_id', function ($padron) use ($var_rutaSelectOptions) {
                 return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $var_rutaSelectOptions);
             })
+            ->add('vendedor_id', function (Padron $model) {
+                return $model->ruta->vendedor_id.' - '.$model->ruta->vendedor->name;
+            })
             ->add('nro_secuencia')
             ->add('created_at_formatted', fn(Padron $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
             ->add('estado', function (Padron $model) {
@@ -134,6 +137,12 @@ final class PadronTable extends PowerGridComponent
         //$columns[] = Column::make('Fecha de eliminación', 'deleted_at_formatted')
         //->sortable();
         //}
+
+        // Agregar la columna solo si el usuario es admin
+        if ($this->user->hasRole("admin")) {
+        $columns[] = Column::make('Vendedor', 'vendedor_id')
+        ->sortable();
+        }
 
         $columns[] = Column::action('Acción');
 

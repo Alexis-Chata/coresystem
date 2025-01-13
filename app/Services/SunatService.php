@@ -34,6 +34,7 @@ class SunatService
     public function getInvoice($data)
     {
 
+        //dd($data->mtoOperGravadas, $data->mtoOperExoneradas, $data->mtoOperInafectas, $data->mtoOperExportacion, $data->mtoOperGratuitas);
         return (new Invoice())
             ->setUblVersion($data->ublVersion ?? '2.1')
             ->setTipoOperacion($data->tipoOperacion ?? null) // Venta - Catalog. 51
@@ -233,13 +234,13 @@ class SunatService
                 'hash' => $hash, // Valor Resumen
             ],
             'user' => [
-                'header'     => 'Telf: <b>(01) 123375</b>', // Texto que se ubica debajo de la dirección de empresa
+                //'header'     => 'Telf: <b>(01) 123375</b>', // Texto que se ubica debajo de la dirección de empresa
                 'extras'     => [
                     // Leyendas adicionales
-                    ['name' => 'CONDICION DE PAGO', 'value' => 'Efectivo'],
-                    ['name' => 'VENDEDOR', 'value' => 'GITHUB SELLER'],
+                    ['name' => 'CONDICION DE PAGO', 'value' => 'Contado'],
+                    //['name' => 'VENDEDOR', 'value' => 'GITHUB SELLER'],
                 ],
-                'footer' => '<p>Nro Resolucion: <b>0180050000932/SUNAT</b></p>'
+                //'footer' => '<p>Nro Resolucion: <b>0180050000932/SUNAT</b></p>'
             ]
         ];
 
@@ -272,18 +273,19 @@ class SunatService
                 'hash' => $hash, // Valor Resumen
             ],
             'user' => [
-                'header'     => 'Telf: <b>(01) 123375</b>', // Texto que se ubica debajo de la dirección de empresa
+                //'header'     => 'Telf: <b>(01) 123375</b>', // Texto que se ubica debajo de la dirección de empresa
                 'extras'     => [
                     // Leyendas adicionales
-                    ['name' => 'CONDICION DE PAGO', 'value' => 'Efectivo'],
-                    ['name' => 'VENDEDOR', 'value' => 'GITHUB SELLER'],
+                    ['name' => 'CONDICION DE PAGO', 'value' => 'Contado'],
+                    //['name' => 'VENDEDOR', 'value' => 'SELLER'],
                 ],
-                'footer' => '<p>Nro Resolucion: <b>0180050000932/SUNAT</b></p>'
+                //'footer' => '<p>Nro Resolucion: <b>0180050000932/SUNAT</b></p>'
             ]
         ];
 
         $pdf = $report->render($invoice, $params);
 
-        Storage::put('invoices/' . $invoice->getName() . '.pdf', $pdf);
+        $path = 'invoices/' . $invoice->getName() . '.pdf';
+        Storage::put($path, $pdf);
     }
 }

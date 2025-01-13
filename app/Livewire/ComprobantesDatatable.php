@@ -33,17 +33,27 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function xml($id)
     {
-        dd($id);
+        $comprobante = FComprobanteSunat::find($id);
+        $envioSunat = new EnvioSunatService;
+        $envioSunat->xml($comprobante);
     }
 
     public function cdr($id)
     {
-        dd($id);
+        $comprobante = FComprobanteSunat::find($id);
+        $envioSunat = new EnvioSunatService;
+        $envioSunat->send($comprobante);
     }
 
     public function sunatResponse($id)
     {
-        dd($id);
+        $comprobante = FComprobanteSunat::find($id);
+        if($comprobante->codigo_sunat === '0') {
+            return dd('Aceptado');
+        }
+
+        $envioSunat = new EnvioSunatService;
+        $envioSunat->send($comprobante);
     }
 
     public function anular($id)

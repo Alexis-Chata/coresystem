@@ -12,7 +12,7 @@ trait CalculosTrait
     public function setSubTotalesIgv($detalles, bool $devolver_data_detalle = false)
     {
         $data_detalles = $detalles;
-        //dd($data_detalles);
+        // dd($data_detalles);
         foreach ($data_detalles as $key => $data_detalle) {
             $producto = Producto::find($data_detalle['producto_id']);
             $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
@@ -22,14 +22,11 @@ trait CalculosTrait
             list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
             $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
 
-            if ($producto->f_tipo_afectacion_id == 21) {
-                $data_detalle['mtoValorGratuito'] = $data_detalle['ref_producto_precio_cajon'] / $data_detalle['ref_producto_cantidad_cajon'];
-            }
             $data_detalle['codProducto'] = $data_detalle['producto_id'];
             $data_detalle['unidad'] = "NIU";
             $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];
             $data_detalle['cantidad'] = number_format_punto2($data_detalle['cantidad']);
-            $data_detalle['tipAfeIgv'] = $producto->f_tipo_afectacion_id;
+            $data_detalle['tipAfeIgv'] = $data_detalle['tipAfeIgv'] ?? $producto->f_tipo_afectacion_id;
             $data_detalle['mtoPrecioUnitario'] = $data_detalle['importe'] / $data_detalle['cantidad'];
             $data_detalle['porcentajeIgv'] = $producto->porcentaje_igv ?? 0;
             $data_detalle['porcentajeIsc'] = $producto->porcentaje_isc ?? 0;
@@ -39,9 +36,16 @@ trait CalculosTrait
             $data_detalle['mtoValorUnitario'] = number_format(($diferencia) / (1 + ($porcentaje / 100)), 2, '.', '');
             $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorUnitario'] * $data_detalle['cantidad'];
 
+            if ($data_detalle['tipAfeIgv'] == 21) {
+                $data_detalle['mtoValorGratuito'] = $data_detalle['ref_producto_precio_cajon'] / $data_detalle['ref_producto_cantidad_cajon'];
+                $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorGratuito'] * $data_detalle['cantidad'];
+            }
             $data_detalle['mtoBaseIgv'] = $data_detalle['mtoValorVenta'] ?? 0;
             $data_detalle['mtoBaseIsc'] = ($data_detalle['porcentajeIsc'] > 0) ? $data_detalle['mtoValorVenta'] : 0;
             $data_detalle['igv'] = $data_detalle['importe'] - $data_detalle['mtoBaseIgv'];
+            if ($data_detalle['tipAfeIgv'] == 21) {
+                $data_detalle['igv'] = 0;
+            }
             $data_detalle['isc'] = number_format($data_detalle['mtoBaseIgv'] * ($data_detalle['porcentajeIsc'] / 100), 2, '.', ''); //
             $data_detalle['icbper'] = number_format($data_detalle['factorIcbper'] * $data_detalle['cantidad'], 2, '.', '');
             $data_detalle['totalImpuestos'] = $data_detalle['igv'] + $data_detalle['icbper'] + $data_detalle['isc'];
