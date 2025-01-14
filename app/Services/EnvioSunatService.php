@@ -28,14 +28,15 @@ class EnvioSunatService
 
         $response['sunatResponse'] = $sunat->sunatResponse($result);
         if ($response['sunatResponse']['success']) {
-            Storage::put('invoices/' . $invoice->getName() . '-CDR.zip', base64_decode($response['sunatResponse']["cdrZip"]));
+            $path_cdrzip= 'invoices/' . $invoice->getName() . '-CDR.zip';
+            Storage::put($path_cdrzip, base64_decode($response['sunatResponse']["cdrZip"]));
             $zip = new ZipArchive;
-            if ($zip->open(storage_path('app/private/invoices/' . $invoice->getName() . '-CDR.zip')) === true) {
+            if ($zip->open(storage_path('app/private/' . $path_cdrzip)) === true) {
                 $zip->extractTo(storage_path('app/private/invoices/'));
                 $zip->close();
             }
-
-            $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'cdrbase64' => $response['sunatResponse']['cdrZip'], 'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'], 'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'], 'obs' => $response['sunatResponse']['cdrResponse']['notes']]);
+            $path_cdrxml= 'invoices/R-' . $invoice->getName() . '.xml';
+            $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'cdrxml' => $path_cdrxml, 'cdrbase64' => $response['sunatResponse']['cdrZip'], 'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'], 'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'], 'obs' => $response['sunatResponse']['cdrResponse']['notes']]);
         } else {
             $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'codigo_sunat' => $response['sunatResponse']['error']['code'], 'mensaje_sunat' => $response['sunatResponse']['error']['message']]);
         }

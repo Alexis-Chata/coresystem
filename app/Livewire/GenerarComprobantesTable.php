@@ -279,6 +279,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'xmlbase64' => null,
                                 'hash' => null,
                                 'cdrbase64' => null,
+                                'cdrxml' => null,
                                 'codigo_sunat' => null,
                                 'mensaje_sunat' => null,
                                 'obs' => null,

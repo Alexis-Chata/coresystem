@@ -66,6 +66,7 @@ return new class extends Migration
             $table->string('nombrexml')->nullable();
             $table->longText('xmlbase64')->nullable();
             $table->string('hash')->nullable();
+            $table->string('cdrxml')->nullable();
             $table->longText('cdrbase64')->nullable();
             $table->string('codigo_sunat')->nullable();
             $table->longText('mensaje_sunat')->nullable();

@@ -135,7 +135,7 @@ class SunatService
             ->setTipoDoc($client->clientTipoDoc ?? null) // DNI - Catalog. 06
             ->setNumDoc($client->clientNumDoc ?? null)
             ->setRznSocial($client->clientRazonSocial ?? null)
-            ->setAddress($this->getAddress($client) ?? null);
+            ->setAddress((new Address())->setDireccion($client->clientDireccion) ?? null);
     }
 
     public function getAddress($address)
@@ -146,7 +146,7 @@ class SunatService
             ->setProvincia($address->companyAddressProvincia ?? null)
             ->setDistrito($address->companyAddressDistrito ?? null)
             ->setUrbanizacion($address->companyAddressUrbanizacion ?? null)
-            ->setDireccion($address->companyAddressDireccion ?? $address->clientDireccion ?? null)
+            ->setDireccion($address->companyAddressDireccion ?? null)
             ->setCodLocal($address->companyAddressCodLocal ?? "0000"); // Codigo de establecimiento asignado por SUNAT, 0000 por defecto.
 
     }

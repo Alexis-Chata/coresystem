@@ -63,6 +63,7 @@ class FComprobanteSunat extends Model
         'nombrexml',
         'xmlbase64',
         'hash',
+        'cdrxml',
         'cdrbase64',
         'codigo_sunat',
         'mensaje_sunat',

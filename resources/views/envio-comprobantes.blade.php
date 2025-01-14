@@ -33,32 +33,12 @@
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('padron-deleted', message => {
                 Swal.fire({
-                    title: '¡Éxito!',
-                    text: message,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            });
-
-            Livewire.on('padron-restored', message => {
-                Swal.fire({
-                    title: '¡Éxito!',
-                    text: message,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            });
-
-            Livewire.on('padron-force-deleted', message => {
-                Swal.fire({
-                    title: '¡Éxito!',
-                    text: message,
-                    icon: 'success',
+                    title: 'Detalle del Compobante',
+                    html: message,
+                    icon: 'info',
                     confirmButtonText: 'OK'
                 });
             });
         });
-
-
     </script>
 @endsection
