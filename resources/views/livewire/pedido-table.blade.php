@@ -25,7 +25,7 @@
                 @if ($user->hasRole('admin'))
                     <x-floating-searchable-select :options="$vendedores" :wire-model="'vendedor_id'" :placeholder="'Vendedor'" />
                 @else
-                    <input type="text"
+                    <input type="text" autocomplete="off"
                         class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                         value="{{ $empleado->name }}" disabled />
                     <label

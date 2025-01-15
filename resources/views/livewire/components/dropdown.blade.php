@@ -1,6 +1,11 @@
 <div x-data="{ open: false }" class="relative inline-block text-left">
     <button @click="open = !open"
         class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-2 py-1 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2">
+        @if ($codigo_sunat === '0')
+                    <x-svg_check />
+                @else
+                    <x-svg_advert />
+                @endif
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd"
                 d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -21,14 +26,23 @@
             </a>
             <a href="#" wire:click.prevent="cdr({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Cdr</span>
-                <img class="ml-2 h-6 inline-block" src="{{ Vite::asset('resources/images/cdr.png') }}">
+                @if ($codigo_sunat === '0')
+                    <img class="ml-2 h-6 inline-block" src="{{ Vite::asset('resources/images/cdr.png') }}">
+                    @else
+                    <img class="ml-2 h-6 inline-block" src="{{ Vite::asset('resources/images/get_cdr.svg') }}">
+                @endif
             </a>
             <a href="#" wire:click.prevent="sunatResponse({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Sunat</span>
-                <img class="ml-2 h-6 inline-block" src="{{ Vite::asset('resources/images/check_cpe.svg') }}">
+                @if ($codigo_sunat === '0')
+                    <x-svg_check />
+                @else
+                    <x-svg_advert />
+                @endif
             </a>
             <a href="#" wire:click.prevent="anular({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Anular</span>
+                <x-svg_circle_equis />
             </a>
         </div>
     </div>

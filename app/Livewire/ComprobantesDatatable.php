@@ -20,6 +20,21 @@ class ComprobantesDatatable extends DataTableComponent
         $this->setPrimaryKey('id');
     }
 
+    public array $bulkActions = [
+        'enviarSeleccionados' => 'Enviar Comprobantes',
+    ];
+
+    public function enviarSeleccionados()
+    {
+        foreach ($this->getSelected() as $index => $id) {
+            $this->cdr($id);
+        }
+        $this->clearSelected();
+
+        session()->flash('mensaje', '¡Comprobantes enviados correctamente!');
+    }
+
+
     public function query()
     {
         return FComprobanteSunat::query()->select('id'); // Asegúrate de incluir 'id'
@@ -104,7 +119,7 @@ class ComprobantesDatatable extends DataTableComponent
                 <div class='whitespace-normal'>
                     {$comprobante->mensaje_sunat}
                 </div>";
-            if($comprobante->obs !== "[]") {
+            if ($comprobante->obs !== "[]") {
                 $mensaje .= "<div class='whitespace-normal bg-yellow-100'>
                     <div class='w-full'>
                         <p class='font-semibold'>Observaciones:</p>
@@ -136,6 +151,7 @@ class ComprobantesDatatable extends DataTableComponent
                 ->label(
                     fn($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
+                        'codigo_sunat' => $row->codigo_sunat,
                     ])
                 ),
             Column::make("Id", "id")
