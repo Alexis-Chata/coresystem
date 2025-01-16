@@ -1,11 +1,11 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app--iCN0k4D.css",
+    "file": "assets/app-BqToLFBe.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-BjQliY-9.css",
+    "file": "assets/tailadmin-Bj2wxyFj.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true
   },
@@ -204,22 +204,6 @@
   "resources/images/cdr.png": {
     "file": "assets/cdr-DbCQCXMb.png",
     "src": "resources/images/cdr.png"
-  },
-  "resources/images/check_cpe.svg": {
-    "file": "assets/check_cpe-BFo9uj5F.svg",
-    "src": "resources/images/check_cpe.svg"
-  },
-  "resources/images/get_cdr.svg": {
-    "file": "assets/get_cdr-CJEBnnqR.svg",
-    "src": "resources/images/get_cdr.svg"
-  },
-  "resources/images/pdf_cpe.svg": {
-    "file": "assets/pdf_cpe-ZOX3sxjS.svg",
-    "src": "resources/images/pdf_cpe.svg"
-  },
-  "resources/images/xml_cpe.svg": {
-    "file": "assets/xml_cpe-uGUc3fuP.svg",
-    "src": "resources/images/xml_cpe.svg"
   },
   "resources/js/app.js": {
     "file": "assets/app-z-Rg4TxU.js",

@@ -26,7 +26,7 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function enviarSeleccionados()
     {
-        foreach ($this->getSelected() as $index => $id) {
+        foreach ($this->getSelected() as $id) {
             $this->cdr($id);
         }
         $this->clearSelected();
@@ -62,6 +62,10 @@ class ComprobantesDatatable extends DataTableComponent
         $comprobante = FComprobanteSunat::find($id);
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
+        }
+        if ($comprobante->tipoDoc === "00"){
+            $this->dispatch('sweetalert2-notapedido', $comprobante->serie."-".$comprobante->correlativo);
+            return;
         }
         $envioSunat = new EnvioSunatService;
         $envioSunat->send($comprobante);
@@ -132,7 +136,7 @@ class ComprobantesDatatable extends DataTableComponent
                 </div>";
             }
             $mensaje .= "</div>";
-            return $this->dispatch('padron-deleted', $mensaje);
+            return $this->dispatch('sweetalert2-sunatResponse', $mensaje);
         }
 
         $envioSunat = new EnvioSunatService;

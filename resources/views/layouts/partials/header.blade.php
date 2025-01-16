@@ -88,7 +88,7 @@
                                 </label>
                                 <!-- Dark Mode Toggler -->
                             </li>
-
+                            @if(false)
                             <!-- Notification Menu Area -->
                             <li class="relative hidden" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
                                 <a class="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
@@ -292,6 +292,7 @@
                                 <!-- Dropdown End -->
                             </li>
                             <!-- Chat Notification Area -->
+                            @endif
                         </ul>
 
                         <!-- User Area -->

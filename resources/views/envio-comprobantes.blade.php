@@ -7,7 +7,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        #data-table{
+        #data-table {
+
             [multiple],
             [type=date],
             [type=datetime-local],
@@ -31,10 +32,37 @@
     </style>
     <script>
         document.addEventListener('livewire:initialized', () => {
-            Livewire.on('padron-deleted', message => {
+            Livewire.on('sweetalert2-sunatResponse', message => {
                 Swal.fire({
                     title: 'Detalle del Compobante',
                     html: message,
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+            });
+
+            Livewire.on('sweetalert2-notapedido', message => {
+                Swal.fire({
+                    title: 'Detalle del Compobante',
+                    html: `
+                    <div class="w-full text-xl space-y-4">
+                        <div class="flex justify-between">
+                            Nota de Pedido
+                            <span class="outline-none inline-flex justify-center items-center group rounded-md text-white bg-primary dark:bg-primary-700 gap-x-1 text-base font-semibold px-2.5 py-0.5">
+                                ${message}
+                            </span>
+                        </div>
+                        <div class="whitespace-normal bg-yellow-100">
+                            <div class="w-full">
+                                <p class="font-semibold">Observaciones:</p>
+                                <p class="font-semibold py-2">Las notas de pedido no se envian a SUNAT</p>
+                                <ul>
+                                    <li></li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>`,
                     icon: 'info',
                     confirmButtonText: 'OK'
                 });

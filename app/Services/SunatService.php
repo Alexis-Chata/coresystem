@@ -81,43 +81,48 @@ class SunatService
     public function getNote($data)
     {
         return (new Note())
-            ->setUblVersion($data['ublVersion'] ?? '2.1')
-            ->setTipoDoc($data['tipoDoc'] ?? null) // Factura - Catalog. 01
-            ->setSerie($data['serie'] ?? null)
-            ->setCorrelativo($data['correlativo'] ?? null)
-            ->setFechaEmision(new DateTime($data['fechaEmision'] ?? null)) // Zona horaria: Lima
-            ->setTipDocAfectado($data['tipDocAfectado' ?? null]) // DNI - Catalog. 06
-            ->setNumDocfectado($data['numDocfectado' ?? null])
-            ->setCodMotivo($data['codMotivo' ?? null]) // Catalog. 04
-            ->setDesMotivo($data['desMotivo' ?? null])
-            ->setTipoMoneda($data['tipoMoneda'] ?? null) // Sol - Catalog. 02
-            ->setCompany($this->getCompany($data['company']))
-            ->setClient($this->getClient($data['client']))
+            ->setUblVersion($data->ublVersion ?? '2.1')
+            ->setTipoDoc($data->tipoDoc ?? null) // Factura - Catalog. 01
+            ->setSerie($data->serie ?? null)
+            ->setCorrelativo($data->correlativo ?? null)
+            ->setFechaEmision(new DateTime($data->fechaEmision ?? null)) // Zona horaria: Lima
+            ->setTipDocAfectado($data->tipDocAfectado ?? null) // DNI - Catalog. 06
+            ->setNumDocfectado($data->numDocfectado ?? null)
+            ->setCodMotivo($data->codMotivo ?? null) // Catalog. 04
+            ->setDesMotivo($data->desMotivo ?? null)
+            ->setTipoMoneda($data->tipoMoneda ?? null) // Sol - Catalog. 02
+            ->setCompany($this->getCompany($data))
+            ->setClient($this->getClient($data))
 
             //Mto Operaciones
-            ->setMtoOperGravadas($data['mtoOperGravadas'] ?? null)
-            ->setMtoOperExoneradas($data['mtoOperExoneradas'] ?? null)
-            ->setMtoOperInafectas($data['mtoOperInafectas'] ?? null)
-            ->setMtoOperExportacion($data['mtoOperExportacion'] ?? null)
-            ->setMtoOperGratuitas($data['mtoOperGratuitas'] ?? null)
+            ->setMtoOperGravadas($data->mtoOperGravadas ?? null)
+            ->setMtoOperExoneradas($data->mtoOperExoneradas ?? null)
+            ->setMtoOperInafectas($data->mtoOperInafectas ?? null)
+            ->setMtoOperExportacion($data->mtoOperExportacion ?? null)
+            ->setMtoOperGratuitas($data->mtoOperGratuitas ?? null)
 
             //Impuestos
-            ->setMtoIGV($data['mtoIGV'])
-            ->setMtoIGVGratuitas($data['mtoIGVGratuitas'])
-            ->setIcbper($data['icbper'])
-            ->setTotalImpuestos($data['totalImpuestos'])
+            ->setMtoIGV($data->mtoIGV)
+            ->setMtoIGVGratuitas($data->mtoIGVGratuitas)
+            ->setIcbper($data->icbper)
+            ->setTotalImpuestos($data->totalImpuestos)
 
             //Totales
-            ->setValorVenta($data['valorVenta'])
-            ->setSubTotal($data['subTotal'])
-            ->setRedondeo($data['redondeo'])
-            ->setMtoImpVenta($data['mtoImpVenta'])
+            ->setValorVenta($data->valorVenta)
+            ->setSubTotal($data->subTotal)
+            ->setRedondeo($data->redondeo)
+            ->setMtoImpVenta($data->mtoImpVenta)
 
             //Productos
-            ->setDetails($this->getDetails($data['details']))
+            ->setDetails($this->getDetails($data->details))
 
             //Leyendas
-            ->setLegends($this->getLegends($data['legends']));
+            ->setLegends($this->getLegends([
+                [
+                    'code' => $data->legendsCode, // '1000'
+                    'value' => $data->legendsValue
+                ]
+            ]));
     }
 
     public function getCompany($company)

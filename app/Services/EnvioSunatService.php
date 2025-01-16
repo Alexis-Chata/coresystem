@@ -19,6 +19,9 @@ class EnvioSunatService
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
         $invoice = $sunat->getInvoice($comprobante);
+        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
+            $invoice = $sunat->getNote($comprobante);
+        }
         $result = $see->send($invoice);
 
         $response['xml'] = $see->getFactory()->getLastXml();
@@ -28,14 +31,14 @@ class EnvioSunatService
 
         $response['sunatResponse'] = $sunat->sunatResponse($result);
         if ($response['sunatResponse']['success']) {
-            $path_cdrzip= 'invoices/' . $invoice->getName() . '-CDR.zip';
+            $path_cdrzip = 'invoices/' . $invoice->getName() . '-CDR.zip';
             Storage::put($path_cdrzip, base64_decode($response['sunatResponse']["cdrZip"]));
             $zip = new ZipArchive;
             if ($zip->open(storage_path('app/private/' . $path_cdrzip)) === true) {
                 $zip->extractTo(storage_path('app/private/invoices/'));
                 $zip->close();
             }
-            $path_cdrxml= 'invoices/R-' . $invoice->getName() . '.xml';
+            $path_cdrxml = 'invoices/R-' . $invoice->getName() . '.xml';
             $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'cdrxml' => $path_cdrxml, 'cdrbase64' => $response['sunatResponse']['cdrZip'], 'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'], 'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'], 'obs' => $response['sunatResponse']['cdrResponse']['notes']]);
         } else {
             $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'codigo_sunat' => $response['sunatResponse']['error']['code'], 'mensaje_sunat' => $response['sunatResponse']['error']['message']]);
@@ -51,6 +54,9 @@ class EnvioSunatService
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
         $invoice = $sunat->getInvoice($comprobante);
+        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
+            $invoice = $sunat->getNote($comprobante);
+        }
 
         $response['xml'] = $see->getXmlSigned($invoice);
         $response['hash'] = (new XmlUtils())->getHashSign($response['xml']);
@@ -69,6 +75,9 @@ class EnvioSunatService
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
         $invoice = $sunat->getInvoice($comprobante);
+        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
+            $invoice = $sunat->getNote($comprobante);
+        }
 
         $response['xml'] = $see->getXmlSigned($invoice);
         $response['hash'] = (new XmlUtils())->getHashSign($response['xml']);

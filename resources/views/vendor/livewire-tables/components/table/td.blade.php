@@ -13,7 +13,7 @@
     @endif
         {{
             $attributes->merge($customAttributes)
-                ->class(['px-6 py-4 whitespace-nowrap text-sm font-medium dark:text-white' => $isTailwind && ($customAttributes['default'] ?? true)])
+                ->class(['px-4 py-3 whitespace-nowrap text-sm font-medium dark:text-white' => $isTailwind && ($customAttributes['default'] ?? true)])
                 ->class(['hidden' =>  $isTailwind && $column && $column->shouldCollapseAlways()])
                 ->class(['hidden md:table-cell' => $isTailwind && $column && $column->shouldCollapseOnMobile()])
                 ->class(['hidden lg:table-cell' => $isTailwind && $column && $column->shouldCollapseOnTablet()])
