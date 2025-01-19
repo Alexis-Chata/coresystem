@@ -5,8 +5,13 @@ namespace App\Livewire;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\FComprobanteSunat;
+use App\Models\FSerie;
 use App\Services\EnvioSunatService;
+use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\Views\Columns\DateColumn;
 
@@ -34,12 +39,6 @@ class ComprobantesDatatable extends DataTableComponent
         session()->flash('mensaje', '¡Comprobantes enviados correctamente!');
     }
 
-
-    public function query()
-    {
-        return FComprobanteSunat::query()->select('id'); // Asegúrate de incluir 'id'
-    }
-
     public function pdf($id)
     {
         $comprobante = FComprobanteSunat::find($id);
@@ -63,8 +62,8 @@ class ComprobantesDatatable extends DataTableComponent
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
         }
-        if ($comprobante->tipoDoc === "00"){
-            $this->dispatch('sweetalert2-notapedido', $comprobante->serie."-".$comprobante->correlativo);
+        if ($comprobante->tipoDoc === "00") {
+            $this->dispatch('sweetalert2-notapedido', $comprobante->serie . "-" . $comprobante->correlativo);
             return;
         }
         $envioSunat = new EnvioSunatService;
@@ -139,13 +138,54 @@ class ComprobantesDatatable extends DataTableComponent
             return $this->dispatch('sweetalert2-sunatResponse', $mensaje);
         }
 
-        $envioSunat = new EnvioSunatService;
-        $envioSunat->send($comprobante);
+        $this->cdr($comprobante->id);
     }
 
     public function anular($id)
     {
-        dd($id);
+        try {
+            Cache::lock('generar_movimiento', 15)->block(10, function () use ($id) {
+                $tipoDoc = "07";
+                $comprobante = FComprobanteSunat::with('detalle')->find($id);
+                $serie = FSerie::where('f_sede_id', $comprobante->sede_id)->where('serie', 'like', substr($comprobante->serie, 0, 1) . "%")
+                    ->whereHas('fTipoComprobante', function ($query) use ($tipoDoc) {
+                        $query->where('tipo_comprobante', $tipoDoc);
+                    })
+                    ->get()->first();
+                $serie->correlativo = $serie->correlativo + 1;
+                $serie->save();
+
+                $notaSunat = $comprobante->replicate();
+                $notaSunat->fill([
+                    "ublVersion" => "2.1",
+                    "tipoDoc" => $tipoDoc,
+                    "serie" => $serie->serie,
+                    "correlativo" => $serie->correlativo,
+                    "fechaEmision" => now(),
+                    "tipDocAfectado" => $comprobante->tipoDoc,
+                    "numDocfectado" => $comprobante->serie . "-" . $comprobante->correlativo,
+                    "codMotivo" => "01",
+                    "desMotivo" => "ANULACION DE LA OPERACION",
+                    "nombrexml" => null,
+                    "xmlbase64" => null,
+                    "hash" => null,
+                    "cdrxml" => null,
+                    "cdrbase64" => null,
+                    "codigo_sunat" => null,
+                    "mensaje_sunat" => null,
+                    "obs" => null,
+                ]);
+                $notaSunat->save();
+                $notaSunat->detalle()->createMany($comprobante->detalle->toArray());
+                //dd($serie, substr($comprobante->serie, 0, 1), $notaSunat, $comprobante->detalle->toArray());
+            });
+        } catch (Exception | LockTimeoutException $e) {
+            DB::rollback();
+            logger("Error al guardar movimiento:", ["error" => $e->getMessage()]);
+            //throw $e; // Relanza la excepción si necesitas propagarla
+            $this->dispatch("error-guardando-comprobante-nota", "Error al guardar comprobante nota" . "<br>" . $e->getMessage());
+            $this->addError("error_guardar", $e->getMessage());
+        }
     }
 
     public function columns(): array
@@ -156,6 +196,7 @@ class ComprobantesDatatable extends DataTableComponent
                     fn($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
                         'codigo_sunat' => $row->codigo_sunat,
+                        'tipo_doc' => $row->tipoDoc,
                     ])
                 ),
             Column::make("Id", "id")
@@ -164,7 +205,7 @@ class ComprobantesDatatable extends DataTableComponent
                 ->sortable()
                 ->inputFormat('Y-m-d H:i:s')
                 ->outputFormat('d-m-Y')
-                ->emptyValue('Not Found'),
+                ->emptyValue('No Disponible'),
             Column::make("TipoDoc name", "tipoDoc_name")
                 ->sortable()
                 ->searchable(),
@@ -209,8 +250,8 @@ class ComprobantesDatatable extends DataTableComponent
             //     ->sortable(),
             // Column::make("UblVersion", "ublVersion")
             //     ->sortable(),
-            // Column::make("TipoDoc", "tipoDoc")
-            //     ->sortable(),
+            Column::make("TipoDoc", "tipoDoc")
+                ->hideIf(true),
             // Column::make("TipoOperacion", "tipoOperacion")
             //     ->sortable(),
             // Column::make("FormaPagoTipo", "formaPagoTipo")

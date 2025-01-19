@@ -18,10 +18,15 @@ class EnvioSunatService
 
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
-        $invoice = $sunat->getInvoice($comprobante);
+
         if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
             $invoice = $sunat->getNote($comprobante);
+        }elseif ($comprobante->tipoDoc === "01" || $comprobante->tipoDoc === "03") {
+            $invoice = $sunat->getInvoice($comprobante);
+        }else{
+            return;
         }
+
         $result = $see->send($invoice);
 
         $response['xml'] = $see->getFactory()->getLastXml();

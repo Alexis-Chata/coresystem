@@ -1,10 +1,14 @@
 <div x-data="{ open: false }" class="relative inline-block text-left">
     <button @click="open = !open"
-        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-2 py-1 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2">
-        @if ($codigo_sunat === '0')
-            <x-svg_check />
+        class="inline-flex justify-center items-center w-full rounded-md border border-gray-300 shadow-sm px-2 py-1 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2">
+        @if ($tipo_doc === '00')
+            <x-svg_information />
         @else
-            <x-svg_advert />
+            @if ($codigo_sunat === '0')
+                <x-svg_check />
+            @else
+                <x-svg_advert />
+            @endif
         @endif
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd"
@@ -27,17 +31,21 @@
             <a href="#" wire:click.prevent="cdr({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Cdr</span>
                 @if ($codigo_sunat === '0')
-                    <img class="ml-2 h-6 inline-block" src="{{ Vite::asset('resources/images/cdr.png') }}">
+                    <x-svg_cdr_cpe />
                 @else
                     <x-svg_get_cdr />
                 @endif
             </a>
             <a href="#" wire:click.prevent="sunatResponse({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Sunat</span>
-                @if ($codigo_sunat === '0')
-                    <x-svg_check />
+                @if ($tipo_doc === '00')
+                    <x-svg_information />
                 @else
-                    <x-svg_advert />
+                    @if ($codigo_sunat === '0')
+                        <x-svg_check />
+                    @else
+                        <x-svg_advert />
+                    @endif
                 @endif
             </a>
             <a href="#" wire:click.prevent="anular({{ $id }})"

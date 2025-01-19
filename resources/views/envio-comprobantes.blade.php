@@ -67,6 +67,15 @@
                     confirmButtonText: 'OK'
                 });
             });
+
+            Livewire.on('error-guardando-comprobante-nota', message => {
+                Swal.fire({
+                    title: 'Oops...',
+                    html: message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
         });
     </script>
 @endsection

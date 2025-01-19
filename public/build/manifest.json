@@ -1,17 +1,13 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BqToLFBe.css",
+    "file": "assets/app-uvgq5k3p.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-Bj2wxyFj.css",
+    "file": "assets/tailadmin-EK2RX4qD.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true
-  },
-  "resources/fonts/Satoshi-Black.eot": {
-    "file": "assets/Satoshi-Black-DRseZ622.eot",
-    "src": "resources/fonts/Satoshi-Black.eot"
   },
   "resources/fonts/Satoshi-Black.ttf": {
     "file": "assets/Satoshi-Black-CizHyRqb.ttf",
@@ -25,10 +21,6 @@
     "file": "assets/Satoshi-Black-DjnQuuRz.woff2",
     "src": "resources/fonts/Satoshi-Black.woff2"
   },
-  "resources/fonts/Satoshi-BlackItalic.eot": {
-    "file": "assets/Satoshi-BlackItalic-CFzy_Ryx.eot",
-    "src": "resources/fonts/Satoshi-BlackItalic.eot"
-  },
   "resources/fonts/Satoshi-BlackItalic.ttf": {
     "file": "assets/Satoshi-BlackItalic-CvIpOoSh.ttf",
     "src": "resources/fonts/Satoshi-BlackItalic.ttf"
@@ -40,10 +32,6 @@
   "resources/fonts/Satoshi-BlackItalic.woff2": {
     "file": "assets/Satoshi-BlackItalic-ChCbTD27.woff2",
     "src": "resources/fonts/Satoshi-BlackItalic.woff2"
-  },
-  "resources/fonts/Satoshi-Bold.eot": {
-    "file": "assets/Satoshi-Bold-TU6oN50k.eot",
-    "src": "resources/fonts/Satoshi-Bold.eot"
   },
   "resources/fonts/Satoshi-Bold.ttf": {
     "file": "assets/Satoshi-Bold-CPly9kH5.ttf",
@@ -57,10 +45,6 @@
     "file": "assets/Satoshi-Bold-Bd5kKQ_U.woff2",
     "src": "resources/fonts/Satoshi-Bold.woff2"
   },
-  "resources/fonts/Satoshi-BoldItalic.eot": {
-    "file": "assets/Satoshi-BoldItalic-BAxHO0dG.eot",
-    "src": "resources/fonts/Satoshi-BoldItalic.eot"
-  },
   "resources/fonts/Satoshi-BoldItalic.ttf": {
     "file": "assets/Satoshi-BoldItalic-tClQcAb-.ttf",
     "src": "resources/fonts/Satoshi-BoldItalic.ttf"
@@ -72,10 +56,6 @@
   "resources/fonts/Satoshi-BoldItalic.woff2": {
     "file": "assets/Satoshi-BoldItalic-CAjvAcxR.woff2",
     "src": "resources/fonts/Satoshi-BoldItalic.woff2"
-  },
-  "resources/fonts/Satoshi-Italic.eot": {
-    "file": "assets/Satoshi-Italic-B404qRsH.eot",
-    "src": "resources/fonts/Satoshi-Italic.eot"
   },
   "resources/fonts/Satoshi-Italic.ttf": {
     "file": "assets/Satoshi-Italic-FMxkCD8o.ttf",
@@ -89,10 +69,6 @@
     "file": "assets/Satoshi-Italic-wVmEEc6M.woff2",
     "src": "resources/fonts/Satoshi-Italic.woff2"
   },
-  "resources/fonts/Satoshi-Light.eot": {
-    "file": "assets/Satoshi-Light-BX3btJ5i.eot",
-    "src": "resources/fonts/Satoshi-Light.eot"
-  },
   "resources/fonts/Satoshi-Light.ttf": {
     "file": "assets/Satoshi-Light-B82kzbU-.ttf",
     "src": "resources/fonts/Satoshi-Light.ttf"
@@ -104,10 +80,6 @@
   "resources/fonts/Satoshi-Light.woff2": {
     "file": "assets/Satoshi-Light-IqwJ_ZjS.woff2",
     "src": "resources/fonts/Satoshi-Light.woff2"
-  },
-  "resources/fonts/Satoshi-LightItalic.eot": {
-    "file": "assets/Satoshi-LightItalic-Dl24d_Ly.eot",
-    "src": "resources/fonts/Satoshi-LightItalic.eot"
   },
   "resources/fonts/Satoshi-LightItalic.ttf": {
     "file": "assets/Satoshi-LightItalic-BAhuxY-A.ttf",
@@ -121,10 +93,6 @@
     "file": "assets/Satoshi-LightItalic-C9iuU4v7.woff2",
     "src": "resources/fonts/Satoshi-LightItalic.woff2"
   },
-  "resources/fonts/Satoshi-Medium.eot": {
-    "file": "assets/Satoshi-Medium-DOPArj8D.eot",
-    "src": "resources/fonts/Satoshi-Medium.eot"
-  },
   "resources/fonts/Satoshi-Medium.ttf": {
     "file": "assets/Satoshi-Medium-DOt9kM-a.ttf",
     "src": "resources/fonts/Satoshi-Medium.ttf"
@@ -136,10 +104,6 @@
   "resources/fonts/Satoshi-Medium.woff2": {
     "file": "assets/Satoshi-Medium-ByP-Zb-9.woff2",
     "src": "resources/fonts/Satoshi-Medium.woff2"
-  },
-  "resources/fonts/Satoshi-MediumItalic.eot": {
-    "file": "assets/Satoshi-MediumItalic-CAcgfJNe.eot",
-    "src": "resources/fonts/Satoshi-MediumItalic.eot"
   },
   "resources/fonts/Satoshi-MediumItalic.ttf": {
     "file": "assets/Satoshi-MediumItalic-BUFVYoD2.ttf",
@@ -153,10 +117,6 @@
     "file": "assets/Satoshi-MediumItalic-BxR-IcRj.woff2",
     "src": "resources/fonts/Satoshi-MediumItalic.woff2"
   },
-  "resources/fonts/Satoshi-Regular.eot": {
-    "file": "assets/Satoshi-Regular--FHBbnVY.eot",
-    "src": "resources/fonts/Satoshi-Regular.eot"
-  },
   "resources/fonts/Satoshi-Regular.ttf": {
     "file": "assets/Satoshi-Regular-DToFXog2.ttf",
     "src": "resources/fonts/Satoshi-Regular.ttf"
@@ -168,42 +128,6 @@
   "resources/fonts/Satoshi-Regular.woff2": {
     "file": "assets/Satoshi-Regular-CPM9dct4.woff2",
     "src": "resources/fonts/Satoshi-Regular.woff2"
-  },
-  "resources/fonts/Satoshi-Variable.eot": {
-    "file": "assets/Satoshi-Variable-CWSGqgzH.eot",
-    "src": "resources/fonts/Satoshi-Variable.eot"
-  },
-  "resources/fonts/Satoshi-Variable.ttf": {
-    "file": "assets/Satoshi-Variable-ChAXbpFa.ttf",
-    "src": "resources/fonts/Satoshi-Variable.ttf"
-  },
-  "resources/fonts/Satoshi-Variable.woff": {
-    "file": "assets/Satoshi-Variable-B5cVmYQo.woff",
-    "src": "resources/fonts/Satoshi-Variable.woff"
-  },
-  "resources/fonts/Satoshi-Variable.woff2": {
-    "file": "assets/Satoshi-Variable-CFg-z2ne.woff2",
-    "src": "resources/fonts/Satoshi-Variable.woff2"
-  },
-  "resources/fonts/Satoshi-VariableItalic.eot": {
-    "file": "assets/Satoshi-VariableItalic-B_6mkDJj.eot",
-    "src": "resources/fonts/Satoshi-VariableItalic.eot"
-  },
-  "resources/fonts/Satoshi-VariableItalic.ttf": {
-    "file": "assets/Satoshi-VariableItalic-Bb7sdEFv.ttf",
-    "src": "resources/fonts/Satoshi-VariableItalic.ttf"
-  },
-  "resources/fonts/Satoshi-VariableItalic.woff": {
-    "file": "assets/Satoshi-VariableItalic-DeirzIcA.woff",
-    "src": "resources/fonts/Satoshi-VariableItalic.woff"
-  },
-  "resources/fonts/Satoshi-VariableItalic.woff2": {
-    "file": "assets/Satoshi-VariableItalic-DjwFspxr.woff2",
-    "src": "resources/fonts/Satoshi-VariableItalic.woff2"
-  },
-  "resources/images/cdr.png": {
-    "file": "assets/cdr-DbCQCXMb.png",
-    "src": "resources/images/cdr.png"
   },
   "resources/js/app.js": {
     "file": "assets/app-z-Rg4TxU.js",
