@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Models\FComprobanteSunat;
+use App\Models\FGuiaSunat;
 use Greenter\Report\XmlUtils;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class EnvioSunatService
 {
-    public function send(FComprobanteSunat $comprobante)
+    public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $this->xml($comprobante);
         $this->pdf($comprobante);
@@ -17,24 +18,39 @@ class EnvioSunatService
         $company = $comprobante->sede->empresa;
 
         $sunat = new SunatService;
-        $see = $sunat->getSee($company);
+        //$see = $sunat->getSee($company);
 
-        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
-            $invoice = $sunat->getNote($comprobante);
-        }elseif ($comprobante->tipoDoc === "01" || $comprobante->tipoDoc === "03") {
-            $invoice = $sunat->getInvoice($comprobante);
-        }else{
+        $invoice = match ($comprobante->tipoDoc) {
+            "01", "03" => $sunat->getInvoice($comprobante),
+            "07", "08" => $sunat->getNote($comprobante),
+            "09" => $sunat->getDespatch($comprobante),
+            default => null,
+        };
+        if ($invoice === null) {
             return;
         }
 
+        $see = match ($comprobante->tipoDoc) {
+            "09" => $sunat->getSeeApi($company),
+            default => $sunat->getSee($company),
+        };
+
         $result = $see->send($invoice);
 
-        $response['xml'] = $see->getFactory()->getLastXml();
+        if ($comprobante->tipoDoc === "09") {
+            $ticket = $result->getTicket();
+            $result = $see->getStatus($ticket);
+            $response['xml'] = $see->getLastXml();
+        }
+        else{
+            $response['xml'] = $see->getFactory()->getLastXml();
+        }
+
         //$response['xml'] = $see->getXmlSigned($invoice);
         $response['hash'] = (new XmlUtils())->getHashSign($response['xml']);
-        $path = 'invoices/' . $invoice->getName() . '.xml';
-
         $response['sunatResponse'] = $sunat->sunatResponse($result);
+
+        $path = 'invoices/' . $invoice->getName() . '.xml';
         if ($response['sunatResponse']['success']) {
             $path_cdrzip = 'invoices/' . $invoice->getName() . '-CDR.zip';
             Storage::put($path_cdrzip, base64_decode($response['sunatResponse']["cdrZip"]));
@@ -52,15 +68,21 @@ class EnvioSunatService
         return $response;
     }
 
-    public function xml(FComprobanteSunat $comprobante)
+    public function xml(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $company = $comprobante->sede->empresa;
 
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
-        $invoice = $sunat->getInvoice($comprobante);
-        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
-            $invoice = $sunat->getNote($comprobante);
+
+        $invoice = match ($comprobante->tipoDoc) {
+            "00", "01", "03" => $sunat->getInvoice($comprobante),
+            "07", "08" => $sunat->getNote($comprobante),
+            "09" => $sunat->getDespatch($comprobante),
+            default => null,
+        };
+        if ($invoice === null) {
+            return;
         }
 
         $response['xml'] = $see->getXmlSigned($invoice);
@@ -72,16 +94,23 @@ class EnvioSunatService
         return $response;
     }
 
-    public function pdf(FComprobanteSunat $comprobante)
+    public function pdf(FComprobanteSunat|FGuiaSunat $comprobante)
     {
+        $this->xml($comprobante);
         //dd($comprobante->sede->empresa);
         $company = $comprobante->sede->empresa;
 
         $sunat = new SunatService;
         $see = $sunat->getSee($company);
-        $invoice = $sunat->getInvoice($comprobante);
-        if ($comprobante->tipoDoc === "07" || $comprobante->tipoDoc === "08") {
-            $invoice = $sunat->getNote($comprobante);
+
+        $invoice = match ($comprobante->tipoDoc) {
+            "00", "01", "03" => $sunat->getInvoice($comprobante),
+            "07", "08" => $sunat->getNote($comprobante),
+            "09" => $sunat->getDespatch($comprobante),
+            default => null,
+        };
+        if ($invoice === null) {
+            return;
         }
 
         $response['xml'] = $see->getXmlSigned($invoice);

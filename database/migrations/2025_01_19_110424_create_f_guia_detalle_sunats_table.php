@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('cantidad')->nullable();
             $table->string('unidad')->nullable();
-            $table->string('serie')->nullable();
             $table->string('descripcion')->nullable();
             $table->string('codigo')->nullable();
             $table->foreignId('f_guia_sunat_id')->constrained('f_guia_sunats');

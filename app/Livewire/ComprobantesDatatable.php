@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\FComprobanteSunat;
+use App\Models\FGuiaSunat;
 use App\Models\FSerie;
 use App\Services\EnvioSunatService;
 use Exception;
@@ -143,8 +144,27 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function anular($id)
     {
+        $comprobante_guia = FComprobanteSunat::find($id);
+
+        $comprobante_guia = $comprobante_guia->id ? $comprobante_guia : FGuiaSunat::find($id);
+        $validando = match ($comprobante_guia->tipoDoc) {
+            "01", "03" => false,
+            default => true,
+        };
+        if ($validando) {
+            return;
+        }
+
+        $nota_anulacion_operacion = FComprobanteSunat::where('numDocfectado', $comprobante_guia->serie . "-" . $comprobante_guia->correlativo)
+            ->where('codMotivo', '01')
+            ->where('desMotivo', 'ANULACION DE LA OPERACION')
+            ->exists();
+        if ($nota_anulacion_operacion) {
+            return;
+        }
+
         try {
-            Cache::lock('generar_movimiento', 15)->block(10, function () use ($id) {
+            Cache::lock('generar_nota', 15)->block(10, function () use ($id) {
                 $tipoDoc = "07";
                 $comprobante = FComprobanteSunat::with('detalle')->find($id);
                 $serie = FSerie::where('f_sede_id', $comprobante->sede_id)->where('serie', 'like', substr($comprobante->serie, 0, 1) . "%")
@@ -159,6 +179,7 @@ class ComprobantesDatatable extends DataTableComponent
                 $notaSunat->fill([
                     "ublVersion" => "2.1",
                     "tipoDoc" => $tipoDoc,
+                    "tipoDoc_name" => $serie->fTipoComprobante->name,
                     "serie" => $serie->serie,
                     "correlativo" => $serie->correlativo,
                     "fechaEmision" => now(),
@@ -174,14 +195,18 @@ class ComprobantesDatatable extends DataTableComponent
                     "codigo_sunat" => null,
                     "mensaje_sunat" => null,
                     "obs" => null,
+                    "estado_reporte" => false,
                 ]);
                 $notaSunat->save();
                 $notaSunat->detalle()->createMany($comprobante->detalle->toArray());
+
+                $comprobante->estado_reporte = false;
+                $comprobante->save();
                 //dd($serie, substr($comprobante->serie, 0, 1), $notaSunat, $comprobante->detalle->toArray());
             });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
-            logger("Error al guardar movimiento:", ["error" => $e->getMessage()]);
+            logger("Error al guardar comprobante nota:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
             $this->dispatch("error-guardando-comprobante-nota", "Error al guardar comprobante nota" . "<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());

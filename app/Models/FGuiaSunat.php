@@ -31,6 +31,7 @@ class FGuiaSunat extends Model
         'clientRazonSocial',
         'clientDireccion',
         'codTraslado',
+        'desTraslado',
         'modTraslado',
         'fecTraslado',
         'pesoTotal',
@@ -49,5 +50,24 @@ class FGuiaSunat extends Model
         'chofer_licencia',
         'chofer_nombres',
         'chofer_apellidos',
+        'nombrexml',
+        'xmlbase64',
+        'hash',
+        'cdrxml',
+        'cdrbase64',
+        'codigo_sunat',
+        'mensaje_sunat',
+        'obs',
+        'sede_id',
     ];
+
+    public function detalle()
+    {
+        return $this->hasMany(FGuiaDetalleSunat::class);
+    }
+
+    public function sede()
+    {
+        return $this->belongsTo(FSede::class, 'sede_id');
+    }
 }

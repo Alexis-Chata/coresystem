@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\FComprobanteSunat;
+use App\Models\FGuiaSunat;
 use App\Models\FSerie;
 use App\Models\Movimiento;
 use App\Models\Vehiculo;
@@ -94,7 +95,9 @@ final class GenerarComprobantesTable extends PowerGridComponent
             })
             ->add('nro_doc_liquidacion')
             ->add('fecha_liquidacion_formatted', fn(Movimiento $model) => Carbon::parse($model->fecha_liquidacion)->format('d/m/Y'))
-            ->add('comentario', function ($model) { return nl2br(e($model->comentario));})
+            ->add('comentario', function ($model) {
+                return nl2br(e($model->comentario));
+            })
             ->add('tipo_movimiento_name', fn(Movimiento $model) => ($model->tipoMovimiento->codigo . " - " . $model->tipoMovimiento->name))
             ->add('empleado_id', fn(Movimiento $model) => ($model->empleado->id . " - " . $model->empleado->name))
             ->add('created_at_formatted', fn($model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
@@ -194,12 +197,14 @@ final class GenerarComprobantesTable extends PowerGridComponent
         try {
             Cache::lock('generar_movimiento', 15)->block(10, function () {
                 DB::beginTransaction();
-                $movimientos = Movimiento::with(['pedidos.pedidoDetalles', 'pedidos.tipoComprobante', 'pedidos.cliente.tipoDocumento'])->whereIn('id', $this->checkboxValues)->get();
+                $movimientos = Movimiento::with(['pedidos.pedidoDetalles', 'pedidos.tipoComprobante', 'pedidos.cliente.tipoDocumento'])->whereIn('id', $this->checkboxValues)->get(); // [] varios movimientos
                 //dd($movimientos);
                 foreach ($movimientos as $movimiento) {
                     $movimiento->estado = 'por liquidar';
                     $movimiento->save();
                     $sede = $movimiento->almacen->sede;
+                    $datos_conductor = $movimiento->conductor;
+                    $datos_vehiculo = $movimiento->vehiculo;
                     //dd($sede_id);
                     $coleccion_comprobantes_generados = collect();
                     foreach ($movimiento->pedidos as $pedido) {
@@ -217,13 +222,14 @@ final class GenerarComprobantesTable extends PowerGridComponent
                         $detallesDivididos = $pedido->pedidoDetalles->chunk(16);
                         //dd($detallesDivididos);
 
-                        foreach ($detallesDivididos as $lote) {
+                        foreach ($detallesDivididos as $lote) { // bucle para generar comprobantes
                             $serie->correlativo = $serie->correlativo + 1;
                             $serie->save();
-                            $coleccion_comprobantes_generados->get($pedido->tipoComprobante->tipo_comprobante)->push($serie->serie.'-'.$serie->correlativo);
+                            $coleccion_comprobantes_generados->get($pedido->tipoComprobante->tipo_comprobante)->push($serie->serie . '-' . $serie->correlativo);
                             $formatter = new NumeroALetras();
                             list($subtotales, $detalles) = ($this->setSubTotalesIgv($lote, true));
                             $subtotales = (object)$subtotales;
+                            $datos_comprobante = [];
                             $datos_comprobante = [
                                 'ruta_id' => $pedido->ruta_id,
                                 'vendedor_id' => $pedido->vendedor_id,
@@ -284,7 +290,6 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'mensaje_sunat' => null,
                                 'obs' => null,
                                 'empresa_id' => $pedido->empresa_id,
-
                                 'pedido_id' => $pedido->id,
                                 'fecha' => now(),
                                 // Otros campos necesarios
@@ -292,11 +297,79 @@ final class GenerarComprobantesTable extends PowerGridComponent
 
                             $invoice = FComprobanteSunat::create($datos_comprobante);
                             $invoice->detalle()->createMany($detalles->toArray());
+
+                            if ($pedido->tipoComprobante->tipo_comprobante == '01' || $pedido->tipoComprobante->tipo_comprobante == '03') {
+                                $serie_guia = FSerie::where("f_sede_id", $sede->id)->where('f_tipo_comprobante_id', 6)->first();
+                                $serie_guia->correlativo = $serie_guia->correlativo + 1;
+                                $serie_guia->save();
+
+                                $fecha = Carbon::parse($invoice->fechaEmision); // Convertir la cadena a un objeto Carbon
+                                $fechaInicioDia = $fecha->startOfDay(); // Establecer la hora al inicio del día (00:00:00)
+                                $fecha = Carbon::parse($fechaInicioDia); // Convertir la cadena a un objeto Carbon
+                                $fecha->setTimezone('America/Lima'); // Establecer la zona horaria (ajústala si es necesario)
+                                $fechaFormateada = $fecha->toIso8601String(); // Obtener la fecha en formato ISO 8601
+
+                                $datos_guia = [];
+                                $datos_guia = [
+                                    'version' => "2022",
+                                    'tipoDoc' => "09",
+                                    'serie' => $serie_guia->serie,
+                                    'correlativo' => $serie_guia->correlativo,
+                                    'fechaEmision' => $invoice->fechaEmision,
+                                    'companyRuc' => $invoice->companyRuc,
+                                    'companyRazonSocial' => $invoice->companyRazonSocial,
+                                    'companyNombreComercial' => $invoice->companyNombreComercial,
+                                    'companyAddressUbigueo' => $invoice->companyAddressUbigueo,
+                                    'companyAddressDepartamento' => $invoice->companyAddressDepartamento,
+                                    'companyAddressProvincia' => $invoice->companyAddressProvincia,
+                                    'companyAddressDistrito' => $invoice->companyAddressDistrito,
+                                    'companyAddressUrbanizacion' => $invoice->companyAddressUrbanizacion,
+                                    'companyAddressDireccion' => $invoice->companyAddressDireccion,
+                                    'companyAddressCodLocal' => $invoice->companyAddressCodLocal,
+                                    'clientTipoDoc' => $invoice->clientTipoDoc,
+                                    'clientNumDoc' => $invoice->clientNumDoc,
+                                    'clientRazonSocial' => $invoice->clientRazonSocial,
+                                    'clientDireccion' => $invoice->clientDireccion,
+                                    'codTraslado' => "14",
+                                    'desTraslado' => "VENTA SUJETA A CONFIRMACION DEL COMPRADOR",
+                                    'modTraslado' => "02",
+                                    'fecTraslado' => $fechaFormateada,
+                                    'pesoTotal' => $invoice->pesoTotal ?? 0,
+                                    'undPesoTotal' => "KGM",
+                                    'llegadaUbigeo' => $invoice->ubigueo ?? "150132", // 150132 - ubigeo san juan de lurigancho
+                                    'llegadaDireccion' => $invoice->clientDireccion,
+                                    'partidaUbigeo' => $invoice->companyAddressUbigueo,
+                                    'partidaDireccion' => $invoice->companyAddressDireccion,
+                                    'transportista_tipoDoc' => null, // fecTraslado 02 - null / 01 - llenar
+                                    'transportista_numDoc' => null, // fecTraslado 02 - null / 01 - llenar
+                                    'transportista_rznSocial' => null, // fecTraslado 02 - null / 01 - llenar
+                                    'transportista_nroMtc' => null, // fecTraslado 02 - null / 01 - llenar
+                                    'vehiculo_placa' => str_replace('-', '', $datos_vehiculo->placa),
+                                    'chofer_tipoDoc' => $datos_conductor->tipoDocumento->codigo,
+                                    'chofer_nroDoc' => $datos_conductor->numero_documento,
+                                    'chofer_licencia' => $datos_conductor->numero_brevete,
+                                    'chofer_nombres' => $datos_conductor->name,
+                                    'chofer_apellidos' => $datos_conductor->chofer_apellidos,
+                                    'sede_id' => $sede->id,
+                                ];
+                                $guia = FGuiaSunat::create($datos_guia);
+                                $datos_guia_detalle = [];
+                                foreach ($detalles as $detalle) {
+                                    $guia_detalle = [
+                                        'cantidad' => $detalle->cantidad,
+                                        'unidad' => $detalle->unidad,
+                                        'descripcion' => $detalle->descripcion,
+                                        'codigo' => $detalle->codProducto,
+                                    ];
+                                    $datos_guia_detalle []= $guia_detalle;
+                                }
+                                $guia->detalle()->createMany($datos_guia_detalle);
+                            }
                         }
                     }
                     $comentario = "";
-                    foreach($coleccion_comprobantes_generados as $comprobantes){
-                        $comentario .= $comprobantes->first()."<->".$comprobantes->last()."\n";
+                    foreach ($coleccion_comprobantes_generados as $comprobantes) {
+                        $comentario .= $comprobantes->first() . "<->" . $comprobantes->last() . "\n";
                     }
 
                     $movimiento->comentario = $comentario;

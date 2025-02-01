@@ -35,7 +35,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Edwin';
         $empleado->direccion = 'Av. Arequipa 123, Lima';
         $empleado->celular = '987654321';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678912';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
@@ -47,7 +47,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Manuel';
         $empleado->direccion = 'Jr. Cusco 456, Lima';
         $empleado->celular = '987654322';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678913';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
@@ -59,7 +59,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Hector';
         $empleado->direccion = 'Av. La Marina 789, Lima';
         $empleado->celular = '987654323';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678914';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '2345678';
@@ -71,7 +71,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Cristian';
         $empleado->direccion = 'Av. Brasil 321, Lima';
         $empleado->celular = '987654324';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678915';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
@@ -83,7 +83,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Gustavo';
         $empleado->direccion = 'Jr. Huancayo 654, Lima';
         $empleado->celular = '987654325';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678916';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '3456789';
@@ -95,7 +95,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Jorge';
         $empleado->direccion = 'Av. Arequipa 123, Lima';
         $empleado->celular = '987654321';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678912';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
@@ -107,7 +107,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Ronaldo';
         $empleado->direccion = 'Jr. Cusco 456, Lima';
         $empleado->celular = '987654322';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678913';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';
@@ -119,7 +119,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Reynoso Chincha';
         $empleado->direccion = 'Av. La Marina 789, Lima';
         $empleado->celular = '987654323';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678914';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '2345678';
@@ -131,7 +131,7 @@ class EmpleadoSeeder extends Seeder
         $empleado->name = 'Reynoso Mala';
         $empleado->direccion = 'Av. Brasil 321, Lima';
         $empleado->celular = '987654324';
-        $empleado->f_tipo_documento_id = $tipoDocumento->id;
+        $empleado->f_tipo_documento_id = 1;
         $empleado->numero_documento = '45678915';
         $empleado->tipo_empleado = 'conductor';
         $empleado->numero_brevete = '1234567';

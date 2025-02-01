@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('clientRazonSocial')->nullable();
             $table->string('clientDireccion')->nullable();
             $table->string('codTraslado')->nullable();
+            $table->string('desTraslado')->nullable();
             $table->string('modTraslado')->nullable();
             $table->string('fecTraslado')->nullable();
             $table->string('pesoTotal')->nullable();
@@ -51,6 +52,15 @@ return new class extends Migration
             $table->string('chofer_licencia')->nullable();
             $table->string('chofer_nombres')->nullable();
             $table->string('chofer_apellidos')->nullable();
+            $table->string('nombrexml')->nullable();
+            $table->longText('xmlbase64')->nullable();
+            $table->string('hash')->nullable();
+            $table->string('cdrxml')->nullable();
+            $table->longText('cdrbase64')->nullable();
+            $table->string('codigo_sunat')->nullable();
+            $table->longText('mensaje_sunat')->nullable();
+            $table->longText('obs')->nullable();
+            $table->string('sede_id')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

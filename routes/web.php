@@ -143,6 +143,10 @@ Route::middleware([
         return view('envio-comprobantes');
     })->name('comprobantes.envio');
 
+    Route::get('/envio-guias', function () {
+        return view('envio-guias');
+    })->name('guias.envio');
+
     Route::get('storage/{filename}', function ($filename) {
         // Verificar si el archivo existe en el disco 'private'
         if (Storage::disk('local')->exists($filename)) {

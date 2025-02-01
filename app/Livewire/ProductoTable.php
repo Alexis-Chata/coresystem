@@ -60,18 +60,20 @@ final class ProductoTable extends PowerGridComponent
     }
 
     public function datasource(): Builder
-{
-    return Producto::query()
-        ->join('empresas', 'productos.empresa_id', '=', 'empresas.id')
-        ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
-        ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
-        ->join('f_tipo_afectacions', 'productos.f_tipo_afectacion_id', '=', 'f_tipo_afectacions.id')
-        ->select('productos.*',
-                 'empresas.razon_social as empresa_nombre',
-                 'marcas.name as marca_nombre',
-                 'categorias.nombre as categoria_nombre',  // Cambiado de 'name' a 'nombre'
-                 'f_tipo_afectacions.name as tipo_afectacion_nombre');
-}
+    {
+        return Producto::query()
+            ->join('empresas', 'productos.empresa_id', '=', 'empresas.id')
+            ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
+            ->join('f_tipo_afectacions', 'productos.f_tipo_afectacion_id', '=', 'f_tipo_afectacions.id')
+            ->select(
+                'productos.*',
+                'empresas.razon_social as empresa_nombre',
+                'marcas.name as marca_nombre',
+                'categorias.nombre as categoria_nombre',  // Cambiado de 'name' a 'nombre'
+                'f_tipo_afectacions.name as tipo_afectacion_nombre'
+            );
+    }
 
     public function relationSearch(): array
     {
@@ -93,6 +95,7 @@ final class ProductoTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('name')
+            ->add('peso')
             ->add('empresa_id', function ($producto) use ($empresaOptions) {
                 return $this->selectComponent('empresa_id', $producto->id, $producto->empresa_id, $empresaOptions);
             })
@@ -106,19 +109,19 @@ final class ProductoTable extends PowerGridComponent
                 return $this->selectComponent('f_tipo_afectacion_id', $producto->id, $producto->f_tipo_afectacion_id, $tipoAfectacionOptions);
             })
             ->add('porcentaje_igv')
-            ->add('created_at_formatted', fn (Producto $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+            ->add('created_at_formatted', fn(Producto $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
 
     private function selectComponent($field, $productoId, $selected, $options)
     {
         return Blade::render(
-            '<select wire:change="onUpdatedEditable('. $productoId .', \''. $field .'\', $event.target.value)">'
-            . '@foreach($options as $value => $label)'
-            . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
-            . '{{ $label }}'
-            . '</option>'
-            . '@endforeach'
-            . '</select>',
+            '<select wire:change="onUpdatedEditable(' . $productoId . ', \'' . $field . '\', $event.target.value)">'
+                . '@foreach($options as $value => $label)'
+                . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
+                . '{{ $label }}'
+                . '</option>'
+                . '@endforeach'
+                . '</select>',
             ['options' => $options, 'selected' => $selected]
         );
     }
@@ -148,6 +151,8 @@ final class ProductoTable extends PowerGridComponent
             Column::make('Sub Cantidad', 'sub_cantidad')
                 ->sortable()
                 ->searchable()
+                ->editOnClick(),
+            Column::make('Peso', 'peso')
                 ->editOnClick(),
             Column::make('Tipo', 'tipo')
                 ->sortable()
@@ -341,7 +346,6 @@ final class ProductoTable extends PowerGridComponent
             $this->dispatch('producto-created', 'Producto creado exitosamente');
             $this->reset('newProducto');
             $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
-
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Error al crear el producto: ' . $e->getMessage());
@@ -378,7 +382,7 @@ final class ProductoTable extends PowerGridComponent
                 ->first()
                 ->cantidad_total ?? '';
 
-            $components = $producto->componentProducts->map(function($component) use ($cantidadTotal) {
+            $components = $producto->componentProducts->map(function ($component) use ($cantidadTotal) {
                 $componentProduct = Producto::find($component->id);
 
                 return [
@@ -423,9 +427,11 @@ final class ProductoTable extends PowerGridComponent
 
             // Validar componentes
             foreach ($components as $component) {
-                if (empty($component['producto_id']) ||
+                if (
+                    empty($component['producto_id']) ||
                     empty($component['cantidad']) ||
-                    $component['cantidad'] > $component['stock']) {
+                    $component['cantidad'] > $component['stock']
+                ) {
                     throw new \Exception('Datos de componentes inválidos');
                 }
             }
@@ -449,7 +455,6 @@ final class ProductoTable extends PowerGridComponent
             // Actualizar la interfaz
             $this->dispatch('components-updated');
             $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
-
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Error al actualizar los componentes: ' . $e->getMessage());

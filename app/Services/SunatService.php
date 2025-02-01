@@ -179,19 +179,20 @@ class SunatService
     public function getEnvio($data)
     {
         $shipment = (new Shipment())
-            ->setCodTraslado($data->codTraslado ?? null) // Catalog. 20
-            ->setModTraslado($data->modTraslado ?? null) // Catalog. 19
+            ->setCodTraslado($data->codTraslado ?? null) // Catalog. 20 ( '01' - Venta | '14' - Venta sujeta a confirmación del comprador )
+            ->setDesTraslado($data->desTraslado ?? null) // Catalog. 20 ( '01' - Venta | '14' - Venta sujeta a confirmación del comprador )
+            ->setModTraslado($data->modTraslado ?? null) // Catalog. 18 ( '01' - Transporte PUBLICO | '02' - Transporte PRIVADO )
             ->setFecTraslado(new DateTime($data->fecTraslado ?? null))
             ->setPesoTotal($data->pesoTotal ?? null)
             ->setUndPesoTotal($data->undPesoTotal ?? null)
             ->setLlegada(new Direction($data->llegadaUbigeo, $data->llegadaDireccion))
             ->setPartida(new Direction($data->partidaUbigeo, $data->partidaDireccion));
 
-        if ($data->modTraslado == '01') { // Transporte Publico (Empresa aparte que debe de tener un codigo de autorizacion por el ministerio de transporte "nroMtc")
+        if ($data->modTraslado == '01') { // Transporte PUBLICO (Empresa aparte que debe de tener un codigo de autorizacion por el ministerio de transporte "nroMtc")
             $shipment->setTransportista($this->getTransportista($data));
         }
 
-        if ($data->modTraslado == '02') { // Transporte Privado (Cuando transportas con tu propia movilidad)
+        if ($data->modTraslado == '02') { // Transporte PRIVADO (Cuando transportas con tu propia movilidad)
             $shipment->setVehiculo($this->getVehiculo($data));
             $shipment->setChoferes($this->getChoferes($data));
         }
@@ -235,8 +236,7 @@ class SunatService
             ->setNroDoc($data->chofer_nroDoc ?? null)
             ->setLicencia($data->chofer_licencia ?? null)
             ->setNombres($data->chofer_nombres ?? null)
-            ->setApellidos($data->chofer_apellidos ?? null);
-
+            ->setApellidos($data->chofer_apellidos ?? "...");
         return $drivers;
     }
 

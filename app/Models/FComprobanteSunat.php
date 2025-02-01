@@ -68,6 +68,7 @@ class FComprobanteSunat extends Model
         'codigo_sunat',
         'mensaje_sunat',
         'obs',
+        'estado_reporte',
         'empresa_id',
     ];
 

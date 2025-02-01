@@ -21,7 +21,7 @@ class RoleSeeder extends Seeder
         'empleado' => ['view', 'create', 'edit', 'delete'],
         'usuarios' => ['view', 'create', 'edit', 'delete'],
         'movimiento' => ['view', 'create', 'edit', 'delete', 'generar-movimientoliq'],
-        'comprobante' => ['view', 'create', 'edit', 'delete', 'imprimir', 'envio'],
+        'comprobante' => ['view', 'create', 'edit', 'delete', 'imprimir', 'envio', 'envio-guias'],
         'empresa' => ['view', 'create', 'edit', 'delete'],
         'sede' => ['view', 'create', 'edit', 'delete'],
         'roles' => ['view', 'assign'],
