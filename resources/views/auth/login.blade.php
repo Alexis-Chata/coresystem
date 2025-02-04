@@ -22,7 +22,7 @@
             </svg>
         </div>
         <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Iniciar sesión</h2>
-        
+
         @if ($errors->any())
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
                 <p class="font-bold">Por favor, corrija los siguientes errores:</p>
@@ -62,13 +62,9 @@
             </div>
         </form>
         <p class="text-center mt-8 text-sm text-gray-600">
-            ¿No tiene una cuenta? 
+            ¿No tiene una cuenta?
             <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-800">Regístrese aquí</a>
         </p>
     </div>
-    <script>
-        email.value="test@example.com";
-        password.value="password";
-    </script>
 </body>
 </html>
