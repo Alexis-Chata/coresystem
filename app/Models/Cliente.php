@@ -18,6 +18,7 @@ class Cliente extends Model
         'empresa_id',
         'lista_precio_id',
         'ruta_id',
+        'ubigeo_inei',
     ];
 
     protected static function booted()

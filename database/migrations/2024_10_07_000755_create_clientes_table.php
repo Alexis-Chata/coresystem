@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('celular')->nullable();
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('ruta_id')->constrained('rutas');
+            $table->string('ubigeo_inei')->default('150132');
             $table->foreignId('lista_precio_id')->constrained('lista_precios');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
