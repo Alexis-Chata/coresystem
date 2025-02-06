@@ -70,8 +70,8 @@ class DatabaseSeeder extends Seeder
                     'empleado_id' => 12,
                 ],
                 [
-                    'name' => "Paul Castelo",
-                    'email' => "paulcastelo123456@gmail.com",
+                    'name' => "Mirella Romero",
+                    'email' => "Mirellaromerobajonero@gmail.com",
                     'empleado_id' => 13,
                 ],
                 [

@@ -18,7 +18,8 @@ final class ProductoPreciosBodegaTable extends PowerGridComponent
     {
         return [
             PowerGrid::header()
-                ->showSearchInput(),
+                ->showSearchInput()
+                ->showSoftDeletes(showMessage: true),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),

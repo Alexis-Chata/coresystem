@@ -123,7 +123,7 @@ final class PadronTable extends PowerGridComponent
         $columns = [
             Column::make('Ruta', 'ruta_id')
                 ->sortable(),
-            Column::make('Nro. Secuencia', 'nro_secuencia')
+            Column::make('Nro. Sec.', 'nro_secuencia')
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),

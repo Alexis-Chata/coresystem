@@ -24,7 +24,7 @@ class MarcaSeeder extends Seeder
         $registros = DB::table('marcas_temporales')->get();
         DB::setDefaultConnection('mysql');
 
-        $marcas = ['MOLITALIA', 'CONFIPERU', 'KRAFT FOOTS', '2 CERRITOS', 'VICTORIA', 'PEPSI', 'WINTERS', 'GLAX', 'COLOMBINA', 'ARCOR', 'CAMPO NORTE', 'YOMAR SAC', 'SALVATTORE', 'DELICORP SAC', 'KOKI', 'FINI', 'SAN JORGE'];
+        $marcas = ['MOLITALIA', 'CONFIPERU', 'KRAFT FOOTS', '2 CERRITOS', 'VICTORIA', 'PEPSI', 'WINTERS', 'GLAX', 'LA GITANA', 'ARCOR', 'CAMPO NORTE', 'YOMAR SAC', 'SALVATTORE', 'DELICORP SAC', 'KOKI', 'FINI', 'SAN JORGE'];
         foreach ($registros as $registro) {
             if (in_array($registro->tdes, $marcas)) {
                 $modelo = new Marca();
