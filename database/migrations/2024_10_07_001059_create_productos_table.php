@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('porcentaje_igv')->nullable();
             $table->string('tipo_unidad')->default("NIU");
             $table->boolean('afecto_icbper')->default(false);
+            $table->boolean('estado_activo')->default(true);
             $table->double('factor_icbper')->default(0);
             $table->boolean('afecto_isc')->default(false);
             $table->double('porcentaje_isc')->default(0);
