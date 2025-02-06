@@ -217,6 +217,8 @@ class PedidoReporteDiario extends Component
                         "producto_precio" => $precio,
                         "cantidad" => $cantidad,
                         "importe" => $importe,
+                        "producto_cantidad_caja" => $producto->cantidad,
+                        "lista_precio" => $this->pedidoEnEdicion->lista_precio,
                     ]);
 
                 // Agregar el nuevo detalle a detallesEdit
