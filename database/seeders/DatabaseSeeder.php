@@ -155,14 +155,9 @@ class DatabaseSeeder extends Seeder
                     'empleado_id' => 29,
                 ],
                 [
-                    'name' => "Gladys Quispe",
-                    'email' => "gladysquispeochoa2@gmail.com",
-                    'empleado_id' => 31,
-                ],
-                [
                     'name' => "Jhon Benites",
                     'email' => "07benitesjhon@gmail.com",
-                    'empleado_id' => 32,
+                    'empleado_id' => 31,
                 ],
             ];
             foreach ($vendedores as $vendedor) {
