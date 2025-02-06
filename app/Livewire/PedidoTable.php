@@ -216,7 +216,7 @@ class PedidoTable extends Component
                         $query->where("lista_precio_id", $this->lista_precio);
                     },
                 ])
-                ->take(10)
+                ->take(15)
                 ->get();
 
             // Debug para verificar los precios

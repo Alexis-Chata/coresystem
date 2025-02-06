@@ -66,6 +66,9 @@ class ProductoSeeder extends Seeder
                     'porcentaje_igv' => $registro->porcentaje_igv ?? 18,
                     'tipo_unidad' => $registro->tipo_unidad ?? 'NIU',
                 ]);
+                if ($registro->flagcre == 1) {
+                    $modelo->deleted_at = now();
+                }
                 $modelo->save();
 
                 // Agregar precios en la tabla intermedia

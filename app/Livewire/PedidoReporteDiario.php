@@ -132,7 +132,7 @@ class PedidoReporteDiario extends Component
                         );
                     },
                 ])
-                ->take(5)
+                ->take(15)
                 ->get();
 
             // Debug para verificar los precios

@@ -15,7 +15,7 @@ class AlmacenProductoSeeder extends Seeder
     {
         $productos = Producto::all();
         foreach ($productos as $producto) {
-            $producto->almacenProductos()->create(['almacen_id' => '1', 'stock_disponible' => 100, 'stock_fisico'=> 100]);
+            $producto->almacenProductos()->create(['almacen_id' => '1', 'stock_disponible' => 1000, 'stock_fisico'=> 1000]);
         }
     }
 }

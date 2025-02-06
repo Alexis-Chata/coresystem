@@ -98,7 +98,7 @@ class Movimiento extends Component
                         $query->whereIn("almacen_id", $this->almacenes->pluck("id"));
                     },
                 ])
-                ->take(5)
+                ->take(15)
                 ->get();
 
             // Debug para verificar los precios
