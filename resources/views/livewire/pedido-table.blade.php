@@ -134,10 +134,10 @@
     <div wire:loading wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         Cargando...
     </div>
-    <div wire:loading wire:target="search">
-        Buscando...
-    </div>
     <div class="mt-8" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+        <div wire:loading wire:target="search">
+            Buscando...
+        </div>
         <!-- Buscador de Productos -->
         <div class="relative">
             <input type="text" wire:model.live.debounce.300ms="search"
