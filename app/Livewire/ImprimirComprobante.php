@@ -46,7 +46,13 @@ class ImprimirComprobante extends Component
 
         try {
             $nombre_impresora_compartida = "POS-80C-1";
-            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$serie->correlativo_desde, $serie->correlativo_hasta])->get();
+            $correlativo_desde = (int)$serie->correlativo_desde;
+            $correlativo_hasta = (int)$serie->correlativo_hasta;
+            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])
+            ->orderBy('conductor_id', 'asc')  // Ordena por conductor_id
+            ->orderByRaw('CAST(correlativo AS UNSIGNED) ASC')   // Luego ordena por correlativo
+            ->get();
+            //dd($comprobantes);
 
             $font = Printer::FONT_A;
             if ($serie->impresora == 'EPSON-TM-U220-Receipt') {

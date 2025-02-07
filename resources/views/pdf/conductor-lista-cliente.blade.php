@@ -8,7 +8,7 @@
     <style>
         html {
             /* margin: 5px; */
-            font-size: 10px;
+            font-size: 9px;
         }
 
         body {
@@ -232,12 +232,12 @@
                 @foreach ($comprobantes as $comprobante)
                     <tr>
                         <td>{{ str_pad($comprobante->cliente_id, 7, '0', STR_PAD_LEFT) }}</td>
-                        <td>{{ $comprobante->clientRazonSocial }}</td>
+                        <td>{!! empty($comprobante->clientRazonSocial) ? '..............' : nl2br(wordwrap($comprobante->clientRazonSocial,30,"\n")) !!}</td>
                         <td>{{ $comprobante->clientDireccion }}</td>
                         <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
                         </td>
                         <td style="text-align: right;">{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
-                        <td>{!! empty($comprobante->pedido_obs) ? '..............' : nl2br(wordwrap($comprobante->pedido_obs,26,"\n")) !!}</td>
+                        <td>{!! empty($comprobante->pedido_obs) ? '..............' : nl2br(wordwrap($comprobante->pedido_obs,25,"\n")) !!}</td>
                     </tr>
                 @endforeach
             @endforeach
