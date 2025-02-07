@@ -24,13 +24,17 @@
         </h1>
         <input
             type="date"
+            wire:loading.attr="disabled"
             wire:model.live="fecha"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         >
+        <div wire:loading wire:target="fecha">
+            Cargando...
+        </div>
     </header>
 
     <!-- Contenido del Reporte -->
-    <section class="mb-5.5">
+    <section class="mb-5.5" wire:loading.class="hidden" wire:target="fecha">
         @forelse($pedidosPorVendedor as $vendedorId => $pedidosVendedor)
             <details class="mb-2 my-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
                 <summary class="bg-blue-50 dark:bg-blue-800 p-4 flex justify-between items-center cursor-pointer group-open:bg-blue-100 dark:group-open:bg-blue-700 transition-colors">
@@ -87,6 +91,7 @@
                                             </span>
                                             @if($pedido->estado === 'pendiente')
                                             <button
+                                                wire:loading.attr="disabled"
                                                 wire:click="editarPedido({{ $pedido->id }})"
                                                 class="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
                                             >
@@ -95,6 +100,9 @@
                                                 </svg>
                                             </button>
                                             @endif
+                                            <div wire:loading wire:target="editarPedido">
+                                                Cargando...
+                                            </div>
                                         </summary>
                                         <div class="bg-purple-50 dark:bg-purple-800">
                                             <div class="overflow-x-auto">
@@ -247,7 +255,10 @@
                         </div>
                     </div>
                     <!-- Buscador de Productos -->
-                            <div class="relative mb-4">
+                    <div wire:loading wire:target="search">
+                        Buscando...
+                    </div>
+                            <div class="relative mb-4" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
                                 <input
                                     type="text"
                                     wire:model.live.debounce.300ms="search"
@@ -290,7 +301,7 @@
                             </div>
 
                     <!-- Tabla de productos -->
-                    <table class="w-full mt-4">
+                    <table class="w-full mt-4" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th scope="col">Código - Producto</th>
@@ -375,10 +386,13 @@
                         </tfoot>
                     </table>
                 @endif
+                <div wire:loading wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                    Cargando...
+                </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex justify-end gap-3 py-4 border-t dark:border-gray-700">
+            <div class="flex justify-end gap-3 py-4 border-t dark:border-gray-700" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
                 @if($pedidoEnEdicion)
                     <button
                         wire:click="eliminarPedido"

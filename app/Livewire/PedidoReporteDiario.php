@@ -429,9 +429,9 @@ class PedidoReporteDiario extends Component
     public $cambiosTemporales = [];
     public function guardarCambios()
     {
+        //dd($this->cambiosTemporales);
         try {
             DB::beginTransaction();
-
             // Aplicar los cambios temporales
             foreach ($this->cambiosTemporales as $detalleId => $cambio) {
                 $detalle = PedidoDetalle::find($detalleId);
@@ -612,7 +612,7 @@ class PedidoReporteDiario extends Component
         $importeCajas = $cajas * $precioCaja;
         $importePaquetes = $paquetes * $precioPorPaquete;
 
-        return $importeCajas + $importePaquetes;
+        return number_format($importeCajas + $importePaquetes, 2, '.', '');
     }
 
     public function eliminarPedido()
