@@ -131,6 +131,12 @@
     </div>
 
     <!-- Nueva sección de búsqueda y detalles -->
+    <div wire:loading wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+        Cargando...
+    </div>
+    <div wire:loading wire:target="search">
+        Buscando...
+    </div>
     <div class="mt-8" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         <!-- Buscador de Productos -->
         <div class="relative">
