@@ -49,8 +49,9 @@ class ImprimirComprobante extends Component
             $correlativo_desde = (int)$serie->correlativo_desde;
             $correlativo_hasta = (int)$serie->correlativo_hasta;
             $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])
-            ->orderBy('conductor_id', 'asc')  // Ordena por conductor_id
-            ->orderByRaw('CAST(correlativo AS UNSIGNED) ASC')   // Luego ordena por correlativo
+            ->orderByRaw('CAST(conductor_id AS UNSIGNED) ASC')  // Ordena por conductor_id como número
+            ->orderByRaw('CAST(ruta_id AS UNSIGNED) ASC')       // Luego por ruta_id como número
+            ->orderByRaw('CAST(correlativo AS UNSIGNED) ASC')   // Finalmente por correlativo como número
             ->get();
             //dd($comprobantes);
 
