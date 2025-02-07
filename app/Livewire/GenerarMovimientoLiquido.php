@@ -147,6 +147,11 @@ class GenerarMovimientoLiquido extends Component
                         ];
                     })->toArray();
 
+                    // Ordenar por marca_id y luego por producto_id
+                    usort($data_para_movimiento_detalle, function ($a, $b) {
+                        return $a['marca_id'] <=> $b['marca_id'] ?: $a['producto_id'] <=> $b['producto_id'];
+                    });
+
                     // consolidar detalle para generar movimiento
 
                     $data_para_movimiento = [
@@ -203,7 +208,7 @@ class GenerarMovimientoLiquido extends Component
 
         // Descargar el PDF
         return response()->streamDownload(
-            fn() => print $pdf->output(),
+            fn () => print $pdf->output(),
             "movimiento_carga_conductor" . ".pdf"
         );
     }
