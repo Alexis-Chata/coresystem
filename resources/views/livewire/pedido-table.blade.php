@@ -131,7 +131,7 @@
     </div>
 
     <!-- Nueva sección de búsqueda y detalles -->
-    <div wire:loading wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+    <div class="mb-2" wire:loading wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         Cargando...
     </div>
     <div class="mt-8" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
