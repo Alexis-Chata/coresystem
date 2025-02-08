@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('movimiento_id')->nullable();
             $table->string('pedido_id')->nullable();
             $table->string('pedido_obs')->nullable();
+            $table->date('pedido_fecha_factuacion')->nullable();
             $table->string('sede_id')->nullable();
             $table->string('ublVersion')->default("2.1");
             $table->string('tipoDoc')->default("03");

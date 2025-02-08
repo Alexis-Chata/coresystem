@@ -147,6 +147,10 @@ Route::middleware([
         return view('envio-guias');
     })->name('guias.envio');
 
+    Route::get('/reporte', function () {
+        return view('reporte-view');
+    })->name('reporte.view');
+
     Route::get('storage/{filename}', function ($filename) {
         // Verificar si el archivo existe en el disco 'private'
         if (Storage::disk('local')->exists($filename)) {

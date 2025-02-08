@@ -245,6 +245,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'movimiento_id' => $pedido->movimiento_id,
                                 'pedido_id' => $pedido->id,
                                 'pedido_obs' => $pedido->comentario,
+                                'pedido_fecha_factuacion' => now(),
                                 'sede_id' => $sede->id,
                                 'ublVersion' => '2.1',
                                 'tipoDoc' => $pedido->tipoComprobante->tipo_comprobante,
