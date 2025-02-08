@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\FComprobanteSunat;
 use App\Models\FSerie;
+use Carbon\Carbon;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Luecano\NumeroALetras\NumeroALetras;
@@ -48,11 +49,7 @@ class ImprimirComprobante extends Component
             $nombre_impresora_compartida = "POS-80C-1";
             $correlativo_desde = (int)$serie->correlativo_desde;
             $correlativo_hasta = (int)$serie->correlativo_hasta;
-            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])
-            ->orderByRaw('CAST(conductor_id AS UNSIGNED) ASC')  // Ordena por conductor_id como número
-            ->orderByRaw('CAST(ruta_id AS UNSIGNED) ASC')       // Luego por ruta_id como número
-            ->orderByRaw('CAST(correlativo AS UNSIGNED) ASC')   // Finalmente por correlativo como número
-            ->get();
+            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])->get();
             //dd($comprobantes);
 
             $font = Printer::FONT_A;
@@ -77,7 +74,7 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
                 $printer->feed();
-                $printer->text("FECHA : " . ($comprobante->fechaEmision));
+                $printer->text("FECHA : " . (Carbon::parse($comprobante->fechaEmision)->format('d-m-Y')));
                 $printer->feed();
                 $printer->text(strtoupper($comprobante->tipoDoc_name . " " . $comprobante->serie . "-" . str_pad($comprobante->correlativo, 8, "0", STR_PAD_LEFT)));
                 $printer->feed();

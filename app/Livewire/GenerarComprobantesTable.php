@@ -197,7 +197,14 @@ final class GenerarComprobantesTable extends PowerGridComponent
         try {
             Cache::lock('generar_movimiento', 15)->block(10, function () {
                 DB::beginTransaction();
-                $movimientos = Movimiento::with(['pedidos.pedidoDetalles', 'pedidos.tipoComprobante', 'pedidos.cliente.tipoDocumento'])->whereIn('id', $this->checkboxValues)->get(); // [] varios movimientos
+                $movimientos = Movimiento::with([
+                    'pedidos' => function ($query) {
+                        $query->orderByRaw('CAST(ruta_id AS UNSIGNED) ASC');
+                    },
+                    'pedidos.pedidoDetalles',
+                    'pedidos.tipoComprobante',
+                    'pedidos.cliente.tipoDocumento'
+                ])->whereIn('id', $this->checkboxValues)->get(); // [] varios movimientos
                 //dd($movimientos);
                 foreach ($movimientos as $movimiento) {
                     $movimiento->estado = 'por liquidar';

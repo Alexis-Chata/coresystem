@@ -130,7 +130,8 @@ final class AsignarConductorTable extends PowerGridComponent
             ->add("cliente_nombre", function ($model) {
                 return $model->cliente_id . " - " . $model->cliente_nombre;
             })
-            ->add("importe_total");
+            ->add("importe_total")
+            ->add("fecha_emision");
     }
 
     public function columns(): array
@@ -139,12 +140,13 @@ final class AsignarConductorTable extends PowerGridComponent
             Column::make("Conductor id", "conductor_id")->sortable()->editOnClick(),
             Column::make("Ruta", "ruta_nombre")->sortable()->searchable(),
             Column::make("Vendedor", "vendedor_nombre")
-                ->sortable()
-                ->searchable(),
+            ->sortable()
+            ->searchable(),
             Column::make("Cliente", "cliente_nombre")->sortable()->searchable(),
             Column::make("Importe total", "importe_total")
-                ->sortable()
-                ->searchable(),
+            ->sortable()
+            ->searchable(),
+            Column::make("Fecha Emision", "fecha_emision")->sortable()->searchable(),
         ];
     }
 
