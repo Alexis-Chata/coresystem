@@ -14,7 +14,7 @@ trait CalculosTrait
         $data_detalles = $detalles;
         // dd($data_detalles);
         foreach ($data_detalles as $key => $data_detalle) {
-            $producto = Producto::find($data_detalle['producto_id']);
+            $producto = Producto::withTrashed()->find($data_detalle['producto_id']);
             $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
             $data_detalle['ref_producto_precio_cajon'] = number_format_punto2($data_detalle['ref_producto_precio_cajon'] ?? $data_detalle['producto_precio']);
             $data_detalle['ref_producto_cantidad_cajon'] = $data_detalle['ref_producto_cantidad_cajon'] ?? $data_detalle['producto_cantidad_caja'];

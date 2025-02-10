@@ -195,7 +195,10 @@ class GenerarMovimientoLiquido extends Component
     public function exportarMovimientoCargaPDF(Movimiento $movimiento)
     {
         $marca = Marca::all();
-        $movimiento->load(['movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
+        $movimiento->load([
+            'movimientoDetalles.producto' => function ($query) {
+                $query->withTrashed(); // Incluir productos eliminados
+            }, 'movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
         $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
             return $detalle->producto->marca->id; // Agrupar por nombre de la marca
         });
