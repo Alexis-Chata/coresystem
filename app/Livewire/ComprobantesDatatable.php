@@ -8,18 +8,22 @@ use App\Models\FComprobanteSunat;
 use App\Models\FGuiaSunat;
 use App\Models\FSerie;
 use App\Services\EnvioSunatService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\On;
 use Rappasoft\LaravelLivewireTables\Views\Columns\DateColumn;
 
 class ComprobantesDatatable extends DataTableComponent
 {
-    protected $model = FComprobanteSunat::class;
+    //protected $model = FComprobanteSunat::class;
     protected ?int $searchFilterDebounce = 1000;
+    public ?int $perPage = 50;
+    public array $perPageAccepted = [10, 25, 50, 100];
 
     public function configure(): void
     {
@@ -29,6 +33,31 @@ class ComprobantesDatatable extends DataTableComponent
     public array $bulkActions = [
         'enviarSeleccionados' => 'Enviar Comprobantes',
     ];
+
+    public $fecha_emision;
+
+    public function builder(): Builder
+    {
+        return FComprobanteSunat::query()->where("fechaEmision", $this->fecha_emision);
+    }
+
+    #[On('actualiza_tabla')]
+    public function actualizando_tabla($fecha)
+    {
+        $this->fecha_emision = $fecha;
+        $this->dispatch('refreshDatatable');
+    }
+
+    public function mount()
+    {
+        $this->fecha_emision = Carbon::now();
+
+        if ($this->fecha_emision->isMonday()) {
+            $this->fecha_emision = $this->fecha_emision->subDays(2)->toDateString();
+        } else {
+            $this->fecha_emision = $this->fecha_emision->subDay()->toDateString();
+        }
+    }
 
     public function enviarSeleccionados()
     {
@@ -218,7 +247,7 @@ class ComprobantesDatatable extends DataTableComponent
         return [
             Column::make('Action')
                 ->label(
-                    fn($row, Column $column) => view('livewire.components.dropdown')->with([
+                    fn ($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
                         'codigo_sunat' => $row->codigo_sunat,
                         'tipo_doc' => $row->tipoDoc,

@@ -4,6 +4,10 @@
     <h1>envio Comprobantes</h1>
     <br />
     <livewire:enviar-comprobantes />
+    <br />
+    <div id="data-table">
+    @livewire('comprobantes-datatable')
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
