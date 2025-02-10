@@ -94,7 +94,7 @@ class GenerarMovimientoLiquido extends Component
             Cache::lock('generar_movimiento', 15)->block(10, function () {
                 DB::beginTransaction();
                 $fecha_reparto = $this->fecha_reparto;
-                $productos = Producto::with('marca')->get();
+                $productos = Producto::withTrashed()->with('marca')->get();
                 foreach ($this->checkbox_conductor_seleccionados as $conductor_id) {
 
                     $pedidos = Pedido::lockForUpdate()->where('conductor_id', $conductor_id)->where('fecha_reparto', $fecha_reparto)->where('estado', 'asignado')->get("id");

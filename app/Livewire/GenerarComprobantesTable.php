@@ -387,9 +387,9 @@ final class GenerarComprobantesTable extends PowerGridComponent
             });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
-            logger("Error al guardar movimiento:", ["error" => $e->getMessage()]);
+            logger("Error al generar comprobante:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-movimiento", "Error al guardar el movimiento" . "<br>" . $e->getMessage());
+            $this->dispatch("error-guardando-movimiento", "Error al generar comprobante" . "<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());
         }
 
