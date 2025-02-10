@@ -118,6 +118,8 @@ class ImprimirComprobante extends Component
                 $printer->text("DESCUENTOS : 0.00");
                 $printer->feed();
                 if($comprobante->tipoDoc === "01"){
+                    $printer->text("IMPORTE NETO : ".number_format($comprobante->valorVenta, 2));
+                    $printer->feed();
                     $printer->text("IMPORTE IGV : ".number_format($comprobante->totalImpuestos, 2));
                     $printer->feed();
                 }
