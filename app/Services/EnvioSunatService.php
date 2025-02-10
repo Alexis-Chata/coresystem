@@ -13,7 +13,7 @@ class EnvioSunatService
     public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $this->xml($comprobante);
-        $this->pdf($comprobante);
+        //$this->pdf($comprobante);
 
         $company = $comprobante->sede->empresa;
 

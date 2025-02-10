@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Forms\FserieForm;
 use App\Models\FSede;
-use App\Models\Fserie;
+use App\Models\FSerie;
 use App\Models\FTipoComprobante;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,7 +51,7 @@ final class FSerieTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Fserie::query();
+        return FSerie::query();
     }
 
     public function relationSearch(): array
