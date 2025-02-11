@@ -46,7 +46,7 @@ class ComprobantesDatatable extends DataTableComponent
                 $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
             })
             ->when($this->fecha_emision, function ($query, $fecha) {
-                $query->where("fechaEmision", $fecha); // 2️⃣ Luego filtra por fechaEmision
+                $query->where("fechaEmision", 'like', '%'.$fecha.'%'); // 2️⃣ Luego filtra por fechaEmision
             })
             ->when($this->estado_envio, function ($query) {
                 $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
