@@ -114,6 +114,7 @@ class ComprobantesDatatable extends DataTableComponent
     public function cdr($id)
     {
         $comprobante = FComprobanteSunat::find($id);
+        //dd($comprobante);
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
         }

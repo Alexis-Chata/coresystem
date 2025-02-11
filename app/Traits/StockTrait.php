@@ -110,8 +110,10 @@ trait StockTrait
         }
 
         $movimiento->movimientoDetalles->each(function ($detalle) use ($movimiento, $tipo_movimiento, $codigo_movimiento) {
-            $producto = Producto::find($detalle->producto_id);
+            $producto = Producto::withTrashed()->find($detalle->producto_id);
+            logger("movimientoStock:", ["error" => $detalle->producto_id]);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $movimiento->almacen_id)->first();
+            
 
             if (!$almacenProducto) {
                 $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $movimiento->almacen_id, "stock_disponible" => 0, "stock_fisico" => 0]);
