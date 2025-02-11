@@ -40,7 +40,7 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function builder(): Builder
     {
-        $return =  FComprobanteSunat::query()
+        $return =  FComprobanteSunat::query()->where("tipoDoc", "!=", "00")
             ->when($this->fecha_emision, function ($query, $fecha) {
                 $query->where("fechaEmision", $fecha);
             })
