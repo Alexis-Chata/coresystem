@@ -19,7 +19,7 @@
         <table
             wire:key="{{ $tableName }}-table"
             {{ $attributes->merge($customAttributes['table'])
-                ->class(['min-w-full divide-y divide-gray-200 dark:divide-none mb-16' => $customAttributes['table']['default'] ?? true])
+                ->class(['min-w-full divide-y divide-gray-200 dark:divide-none mb-52' => $customAttributes['table']['default'] ?? true])
                 ->except(['default','default-styling','default-colors']) }}
 
         >

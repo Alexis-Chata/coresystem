@@ -348,6 +348,8 @@ class ComprobantesDatatable extends DataTableComponent
                         'tipo_doc' => $row->tipoDoc,
                     ])
                 ),
+            Column::make("Estado Reporte", "estado_reporte")
+                ->sortable(),
             Column::make("Id", "id")
                 ->hideIf(true),
             DateColumn::make('Fecha Emision', 'fechaEmision')
