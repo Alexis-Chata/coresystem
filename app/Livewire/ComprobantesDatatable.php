@@ -40,23 +40,26 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function builder(): Builder
     {
-        $return =  FComprobanteSunat::query()->where("tipoDoc", "!=", "00")
-            ->when($this->fecha_emision, function ($query, $fecha) {
-                $query->where("fechaEmision", $fecha);
-            })
-            ->when($this->buscar_search, function ($query) {
-                $query->where(function ($q) {
-                    $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
-                        ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
-                });
-            })
-            ->when($this->estado_envio, function ($query) {
+        $return =  FComprobanteSunat::query()
+        ->where("tipoDoc", "!=", "00") // 1️⃣ Siempre filtra por tipoDoc primero
+        ->when($this->fecha_emision, function ($query, $fecha) {
+            $query->where("fechaEmision", $fecha); // 2️⃣ Luego filtra por fechaEmision
+        })
+        ->when($this->estado_envio, function ($query) {
+            $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
                 if ($this->estado_envio == 'enviados') {
-                    $query->where("codigo_sunat", '0');
+                    $q->where("codigo_sunat", '0');
                 } else {
-                    $query->where("codigo_sunat", '!=', '0')->orWhere("codigo_sunat", null);
+                    $q->where("codigo_sunat", '!=', '0')->orWhereNull("codigo_sunat");
                 }
             });
+        })
+        ->when($this->buscar_search, function ($query) {
+            $query->where(function ($q) {
+                $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
+                    ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
+            });
+        });
         $sql = vsprintf(str_replace('?', "'%s'", $return->toSql()), $return->getBindings());
         logger()->info($sql);
         //dd($sql);
