@@ -84,7 +84,7 @@ class Movimiento extends Component
         }
 
         if (strlen($this->search) > 0) {
-            $this->productos = Producto::where(function ($query) {
+            $this->productos = Producto::withTrashed()->where(function ($query) {
                 $query
                     ->where("name", "like", "%" . $this->search . "%")
                     ->orWhere("id", "like", "%" . $this->search . "%");
@@ -124,7 +124,7 @@ class Movimiento extends Component
             return;
         }
 
-        $producto = Producto::with([
+        $producto = Producto::withTrashed()->with([
             "listaPrecios" => function ($query) {
                 $query->where("lista_precio_id", $this->lista_precio);
             },
@@ -172,7 +172,7 @@ class Movimiento extends Component
     public function actualizarCantidad($index)
     {
         $detalle = $this->detalles[$index];
-        $producto = Producto::find($detalle["producto_id"]);
+        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
 
         $precio =
             $producto
@@ -188,7 +188,7 @@ class Movimiento extends Component
     public function calcularImporte($index)
     {
         $detalle = $this->detalles[$index];
-        $producto = Producto::find($detalle['producto_id']);
+        $producto = Producto::withTrashed()->find($detalle['producto_id']);
 
         if ($producto) {
             $precioCaja = $producto->listaPrecios->where('id', $this->lista_precio)->first()->pivot->precio ?? 0;
@@ -322,7 +322,7 @@ class Movimiento extends Component
         }
 
         // Validar que los paquetes no excedan la cantidad de productos por caja
-        $producto = Producto::find($detalle['producto_id']);
+        $producto = Producto::withTrashed()->find($detalle['producto_id']);
         $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
 
         if ($paquetes >= $cantidadProducto) {
