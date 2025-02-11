@@ -102,9 +102,13 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->feed();
                 foreach ($comprobante->detalle as $detalle) {
+                    $monto_valor = $detalle->mtoValorVenta;
+                    if($detalle->tipAfeIgv == 21){
+                        $monto_valor = $detalle->mtoValorUnitario;
+                    }
                     $printer->text(strtoupper(str_pad($detalle->codProducto, 5, "0", STR_PAD_LEFT) . " " . substr($detalle->descripcion, 0, 34)));
                     $printer->feed();
-                    $printer->text("CAJX" . str_pad($detalle->ref_producto_cantidad_cajon, 2, "0", STR_PAD_LEFT) . "    " . str_pad(number_format_punto2($detalle->ref_producto_cant_vendida), 6, " ", STR_PAD_LEFT) . " " . str_pad(number_format($detalle->ref_producto_precio_cajon, 2), 10, " ", STR_PAD_LEFT) . " " . str_pad(number_format(($detalle->mtoValorVenta + $detalle->totalImpuestos), 2), 12, " ", STR_PAD_LEFT));
+                    $printer->text("CAJX" . str_pad($detalle->ref_producto_cantidad_cajon, 2, "0", STR_PAD_LEFT) . "    " . str_pad(number_format_punto2($detalle->ref_producto_cant_vendida), 6, " ", STR_PAD_LEFT) . " " . str_pad(number_format($detalle->ref_producto_precio_cajon, 2), 10, " ", STR_PAD_LEFT) . " " . str_pad(number_format(($monto_valor + $detalle->totalImpuestos), 2), 12, " ", STR_PAD_LEFT));
                     $printer->feed();
                 }
                 $printer->text("**SON: " . strtoupper($formatter->toInvoice($comprobante->mtoImpVenta, 2, 'SOLES')));
