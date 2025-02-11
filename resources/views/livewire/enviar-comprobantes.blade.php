@@ -16,6 +16,7 @@
             <option value="">todos</option>
             <option value="01">factura</option>
             <option value="03">boleta</option>
+            <option value="07">nota credito</option>
             <option value="00">nota_pedido</option>
         </select>
     </div>
