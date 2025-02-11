@@ -42,27 +42,27 @@ class ComprobantesDatatable extends DataTableComponent
     public function builder(): Builder
     {
         $return =  FComprobanteSunat::query()
-        ->when($this->tipoDoc, function ($query, $tipo_doc) {
-            $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
-        })
-        ->when($this->fecha_emision, function ($query, $fecha) {
-            $query->where("fechaEmision", $fecha); // 2️⃣ Luego filtra por fechaEmision
-        })
-        ->when($this->estado_envio, function ($query) {
-            $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
-                if ($this->estado_envio == 'enviados') {
-                    $q->where("codigo_sunat", '0');
-                } else {
-                    $q->where("codigo_sunat", '!=', '0')->orWhereNull("codigo_sunat");
-                }
+            ->when($this->tipoDoc, function ($query, $tipo_doc) {
+                $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
+            })
+            ->when($this->fecha_emision, function ($query, $fecha) {
+                $query->where("fechaEmision", $fecha); // 2️⃣ Luego filtra por fechaEmision
+            })
+            ->when($this->estado_envio, function ($query) {
+                $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
+                    if ($this->estado_envio == 'enviados') {
+                        $q->where("codigo_sunat", '0');
+                    } else {
+                        $q->where("codigo_sunat", '!=', '0')->orWhereNull("codigo_sunat");
+                    }
+                });
+            })
+            ->when($this->buscar_search, function ($query) {
+                $query->where(function ($q) {
+                    $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
+                        ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
+                });
             });
-        })
-        ->when($this->buscar_search, function ($query) {
-            $query->where(function ($q) {
-                $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
-                    ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
-            });
-        });
         $sql = vsprintf(str_replace('?', "'%s'", $return->toSql()), $return->getBindings());
         logger()->info($sql);
         //dd($sql);
@@ -210,9 +210,15 @@ class ComprobantesDatatable extends DataTableComponent
 
         $comprobante_guia = $comprobante_guia->id ? $comprobante_guia : FGuiaSunat::find($id);
         $validando = match ($comprobante_guia->tipoDoc) {
+            "00" => "nota_pedido",
             "01", "03" => false,
             default => true,
         };
+        if ($validando == "nota_pedido") {
+            $comprobante_guia->estado_reporte = false;
+            $comprobante_guia->save();
+            return;
+        }
         if ($validando) {
             return;
         }
@@ -413,6 +419,8 @@ class ComprobantesDatatable extends DataTableComponent
             Column::make("Mensaje sunat", "mensaje_sunat")
                 ->sortable(),
             Column::make("Obs", "obs")
+                ->sortable(),
+            Column::make("Estado Reporte", "estado_reporte")
                 ->sortable(),
             // Column::make("Empresa id", "empresa_id")
             //     ->sortable(),
