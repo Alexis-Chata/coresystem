@@ -35,16 +35,41 @@ class ComprobantesDatatable extends DataTableComponent
     ];
 
     public $fecha_emision;
+    public $buscar_search;
+    public $estado_envio;
 
     public function builder(): Builder
     {
-        return FComprobanteSunat::query()->where("fechaEmision", $this->fecha_emision);
+        $return =  FComprobanteSunat::query()
+            ->when($this->fecha_emision, function ($query, $fecha) {
+                $query->where("fechaEmision", $fecha);
+            })
+            ->when($this->buscar_search, function ($query) {
+                $query->where(function ($q) {
+                    $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
+                        ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
+                });
+            })
+            ->when($this->estado_envio, function ($query) {
+                if ($this->estado_envio == 'enviados') {
+                    $query->where("codigo_sunat", '0');
+                } else {
+                    $query->where("codigo_sunat", '!=', '0')->orWhere("codigo_sunat", null);
+                }
+            });
+        $sql = vsprintf(str_replace('?', "'%s'", $return->toSql()), $return->getBindings());
+        logger()->info($sql);
+        //dd($sql);
+        return $return;
     }
 
     #[On('actualiza_tabla')]
-    public function actualizando_tabla($fecha)
+    public function actualizando_tabla($fecha, $search, $estado_envio)
     {
         $this->fecha_emision = $fecha;
+        $this->buscar_search = $search;
+        $this->estado_envio = $estado_envio;
+        //dd(isset($this->estado_envio) && $this->estado_envio);
         $this->dispatch('refreshDatatable');
     }
 
@@ -247,7 +272,7 @@ class ComprobantesDatatable extends DataTableComponent
         return [
             Column::make('Action')
                 ->label(
-                    fn ($row, Column $column) => view('livewire.components.dropdown')->with([
+                    fn($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
                         'codigo_sunat' => $row->codigo_sunat,
                         'tipo_doc' => $row->tipoDoc,
@@ -280,6 +305,9 @@ class ComprobantesDatatable extends DataTableComponent
                 ->sortable()
                 ->searchable(),
             Column::make("MtoImpVenta", "mtoImpVenta")
+                ->sortable()
+                ->searchable(),
+            Column::make("CodCliente", "cliente_id")
                 ->sortable()
                 ->searchable(),
             // Column::make("Ruta", "ruta.name")

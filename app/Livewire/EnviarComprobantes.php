@@ -13,8 +13,11 @@ class EnviarComprobantes extends Component
     }
 
     public $fecha_emision;
+    public $search;
+    public $estado_envio;
 
-    public function mount(){
+    public function mount()
+    {
         $this->fecha_emision = Carbon::now();
 
         if ($this->fecha_emision->isMonday()) {
@@ -24,7 +27,13 @@ class EnviarComprobantes extends Component
         }
     }
 
-    public function actualizar_table(){
-        $this->dispatch("actualiza_tabla", fecha: $this->fecha_emision);
+    public function actualizar_table()
+    {
+        $this->dispatch("actualiza_tabla", fecha: $this->fecha_emision, search: $this->search, estado_envio: $this->estado_envio);
+    }
+
+    public function updatedSearch()
+    {
+        $this->actualizar_table();
     }
 }
