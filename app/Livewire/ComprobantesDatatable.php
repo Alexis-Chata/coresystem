@@ -151,6 +151,7 @@ class ComprobantesDatatable extends DataTableComponent
             $zip->close();
         }
         $comprobante->update([ 'cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
+        return Storage::download($comprobante->cdrxml);
     }
 
     public function pdf($id)
@@ -174,9 +175,12 @@ class ComprobantesDatatable extends DataTableComponent
     {
         $comprobante = FComprobanteSunat::find($id);
         //dd($comprobante);
-        if($comprobante->codigo_sunat !== '0' or $comprobante->codigo_sunat !== null ){
-            $this->consulta_cdr($id);
-            return Storage::download($comprobante->cdrxml);
+        if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '0') { 
+            logger("validando que no sea null ni cero", [
+                'value_null' => false,
+                'value_cero' => false
+            ]);
+            return $this->consulta_cdr($id);
         }
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
@@ -301,6 +305,7 @@ class ComprobantesDatatable extends DataTableComponent
 
                 $notaSunat = $comprobante->replicate();
                 $notaSunat->fill([
+                    "conductor_id" => 10,
                     "ublVersion" => "2.1",
                     "tipoDoc" => $tipoDoc,
                     "tipoDoc_name" => $serie->fTipoComprobante->name,
