@@ -15,6 +15,7 @@ class EnviarComprobantes extends Component
     public $fecha_emision;
     public $search;
     public $estado_envio;
+    public $tipo_comprobante;
 
     public function mount()
     {
@@ -29,7 +30,7 @@ class EnviarComprobantes extends Component
 
     public function actualizar_table()
     {
-        $this->dispatch("actualiza_tabla", fecha: $this->fecha_emision, search: $this->search, estado_envio: $this->estado_envio);
+        $this->dispatch("actualiza_tabla", fecha: $this->fecha_emision, search: $this->search, estado_envio: $this->estado_envio, tipoDoc: $this->tipo_comprobante);
     }
 
     public function updatedSearch()

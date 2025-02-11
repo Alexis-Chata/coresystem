@@ -37,11 +37,14 @@ class ComprobantesDatatable extends DataTableComponent
     public $fecha_emision;
     public $buscar_search;
     public $estado_envio;
+    public $tipoDoc;
 
     public function builder(): Builder
     {
         $return =  FComprobanteSunat::query()
-        ->where("tipoDoc", "!=", "00") // 1️⃣ Siempre filtra por tipoDoc primero
+        ->when($this->tipoDoc, function ($query, $tipo_doc) {
+            $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
+        })
         ->when($this->fecha_emision, function ($query, $fecha) {
             $query->where("fechaEmision", $fecha); // 2️⃣ Luego filtra por fechaEmision
         })
@@ -67,11 +70,12 @@ class ComprobantesDatatable extends DataTableComponent
     }
 
     #[On('actualiza_tabla')]
-    public function actualizando_tabla($fecha, $search, $estado_envio)
+    public function actualizando_tabla($fecha, $search, $estado_envio, $tipoDoc)
     {
         $this->fecha_emision = $fecha;
         $this->buscar_search = $search;
         $this->estado_envio = $estado_envio;
+        $this->tipoDoc = $tipoDoc;
         //dd(isset($this->estado_envio) && $this->estado_envio);
         $this->dispatch('refreshDatatable');
     }
