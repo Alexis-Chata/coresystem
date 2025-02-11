@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Empresa;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\FComprobanteSunat;
@@ -10,6 +11,8 @@ use App\Models\FSerie;
 use App\Services\EnvioSunatService;
 use Carbon\Carbon;
 use Exception;
+use Greenter\Ws\Services\ConsultCdrService;
+use Greenter\Ws\Services\SoapClient;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Rappasoft\LaravelLivewireTables\Views\Columns\DateColumn;
+use ZipArchive;
 
 class ComprobantesDatatable extends DataTableComponent
 {
@@ -46,7 +50,7 @@ class ComprobantesDatatable extends DataTableComponent
                 $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
             })
             ->when($this->fecha_emision, function ($query, $fecha) {
-                $query->where("fechaEmision", 'like', '%'.$fecha.'%'); // 2️⃣ Luego filtra por fechaEmision
+                $query->where("fechaEmision", 'like', '%' . $fecha . '%'); // 2️⃣ Luego filtra por fechaEmision
             })
             ->when($this->estado_envio, function ($query) {
                 $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
@@ -101,6 +105,54 @@ class ComprobantesDatatable extends DataTableComponent
         session()->flash('mensaje', '¡Comprobantes enviados correctamente!');
     }
 
+    public function consulta_cdr($id)
+    {
+        $comprobante = FComprobanteSunat::find($id);
+        $empresa = Empresa::find($comprobante->empresa_id);
+        // URL CDR de Producción
+        $wsdlUrl = 'https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService?wsdl';
+        $soap = new SoapClient($wsdlUrl);
+        $soap->setCredentials($empresa->ruc.$empresa->sol_user, $empresa->sol_pass);
+
+        $service = new ConsultCdrService();
+        $service->setClient($soap);
+        
+        $rucEmisor = $comprobante->companyRuc;
+        $tipoDocumento = $comprobante->tipoDoc; // 01: Factura, 07: Nota de Crédito, 08: Nota de Débito
+        $serie = $comprobante->serie;
+        $correlativo = $comprobante->correlativo;
+        $result = $service->getStatusCdr($rucEmisor, $tipoDocumento, $serie, $correlativo);
+        
+        if (!$result->isSuccess()) {
+            //var_dump($result->getError());
+            logger("consultar_cdr", ["result_getError" => $result->getError()]);
+            return;
+        }
+        
+        $cdr = $result->getCdrResponse();
+        if ($cdr === null) {
+            logger('CDR no encontrado, el comprobante no ha sido comunicado a SUNAT.');
+            return;
+        }
+
+        $path_cdrzip = 'invoices/' .$rucEmisor.'-'.$tipoDocumento.'-'.$serie.'-'.$correlativo.'-CDR.zip';
+        $path_cdrxml = 'invoices/R-' . $rucEmisor.'-'.$tipoDocumento.'-'.$serie.'-'.$correlativo. '.xml';
+
+        // Guardar el archivo ZIP en el almacenamiento de Laravel
+        // $result->getCdrZip() - Contenido binario del ZIP
+        Storage::put($path_cdrzip, $result->getCdrZip());
+
+        // Registrar la respuesta CDR en los logs correctamente
+        logger("Consulta CDR realizada", ['cdr' => $cdr]);
+
+        $zip = new ZipArchive;
+        if ($zip->open(storage_path('app/private/' . $path_cdrzip)) === true) {
+            $zip->extractTo(storage_path('app/private/invoices/'));
+            $zip->close();
+        }
+        $comprobante->update([ 'cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
+    }
+
     public function pdf($id)
     {
         $comprobante = FComprobanteSunat::find($id);
@@ -122,6 +174,10 @@ class ComprobantesDatatable extends DataTableComponent
     {
         $comprobante = FComprobanteSunat::find($id);
         //dd($comprobante);
+        if($comprobante->codigo_sunat !== '0' or $comprobante->codigo_sunat !== null ){
+            $this->consulta_cdr($id);
+            return Storage::download($comprobante->cdrxml);
+        }
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
         }
