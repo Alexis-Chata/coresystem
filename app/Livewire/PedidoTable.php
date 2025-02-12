@@ -330,6 +330,10 @@ class PedidoTable extends Component
         $this->resetValidation();
         $this->validate();
 
+        // foreach ($this->pedido_detalles as $index => $item_detalle) {
+        //     $this->actualizarCantidad($index);
+        // }
+
         try {
             DB::beginTransaction();
 

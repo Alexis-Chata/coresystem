@@ -36,6 +36,7 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     {
         return [
             PowerGrid::header()
+                ->showSoftDeletes()
                 ->showSearchInput()
                 ->includeViewOnTop('components.create-producto-lista-precio-form'),
             PowerGrid::footer()
