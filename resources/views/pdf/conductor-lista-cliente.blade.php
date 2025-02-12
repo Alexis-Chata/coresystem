@@ -153,7 +153,7 @@
         }
 
         @page {
-            margin: 90px 5px 20px;
+            margin: 90px 5px 60px;
             /* Margen superior e inferior para header y footer */
         }
 
@@ -168,11 +168,11 @@
 
         .footer {
             position: fixed;
-            bottom: -20px;
+            bottom: -70px;
             /* Ajuste para coincidir con @page margin inferior */
             left: 0;
             right: 0;
-            /* height: 60px; */
+            height: 60px;
             font-size: 10px;
             line-height: 1.5;
         }
@@ -225,7 +225,7 @@
         <tbody>
             @foreach ($comprobantes_rutas->groupBy('ruta_id') as $key => $comprobantes)
                 <tr class="empty-row">
-                    <td colspan="7">*** RUTA: {{ str_pad($key, 3, '0', STR_PAD_LEFT) }} :
+                    <td colspan="7" style="font-weight: bold;font-size: 11px;">*** RUTA: {{ str_pad($key, 3, '0', STR_PAD_LEFT) }} :
                         {{ $rutas->find($key)->name }}
                     </td>
                 </tr>
@@ -278,7 +278,7 @@
 
     <!-- Tercera Tabla -->
     <p>*** RESUMEN PREVENDEDOR - RUTAS ***</p>
-    <table style="width: 100%; border-collapse: collapse">
+    <table style="width: 80%; border-collapse: collapse">
         <thead>
             <tr>
                 <th>NOMBRE y APELLIDOS</th>
@@ -297,7 +297,7 @@
                         </td>
                         <td>{{ $comprobante->unique('cliente_id')->count() }}</td>
                         <td>{{ $comprobante->count() }}</td>
-                        <td>{{ number_format($comprobante->sum('mtoImpVenta'), 2) }}</td>
+                        <td style="text-align: right">{{ number_format($comprobante->sum('mtoImpVenta'), 2) }}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -305,9 +305,9 @@
         <tfoot>
             <td>*** TOTAL</td>
             <td></td>
-            <td>{{ $comprobantes_rutas->unique('cliente_id')->count() }}</td>
-            <td>{{ $comprobantes_rutas->count() }}</td>
-            <td>{{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
+            <td style="font-weight: bold">{{ $comprobantes_rutas->unique('cliente_id')->count() }}</td>
+            <td style="font-weight: bold">{{ $comprobantes_rutas->count() }}</td>
+            <td style="font-weight: bold; text-align: right">{{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
         </tfoot>
     </table>
 
@@ -324,8 +324,8 @@
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '01')->sum('mtoImpVenta') }}</td>
             </tr>
             <tr>
-                <td>TOTAL CREDITO</td>
-                <td>0.00</td>
+                <td></td>
+                <td></td>
                 <td>TOTAL BOLETAS</td>
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->count() }}</td>
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->sum('mtoImpVenta') }}</td>
@@ -350,11 +350,11 @@
             </tr>
         </tbody>
         <tfoot>
-            <td>TOTAL IMPORTE ==></td>
-            <td><span>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</span></td>
-            <td>TOTAL DOCUMENTOS ===></td>
-            <td>{{ $comprobantes_rutas->count() }}</td>
-            <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
+            <td style="font-weight: bold; font-size: 11px">TOTAL IMPORTE ==></td>
+            <td style="font-weight: bold; font-size: 11px"><span>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</span></td>
+            <td style="font-weight: bold; font-size: 11px">TOTAL DOCUMENTOS ===></td>
+            <td style="font-weight: bold; font-size: 11px">{{ $comprobantes_rutas->count() }}</td>
+            <td style="font-weight: bold; font-size: 11px">{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
         </tfoot>
     </table>
 
