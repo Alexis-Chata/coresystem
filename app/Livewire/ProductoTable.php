@@ -168,7 +168,7 @@ final class ProductoTable extends PowerGridComponent
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
-        Producto::query()->find($id)->update([
+        Producto::query()->withTrashed()->find($id)->update([
             $field => $value,
         ]);
         $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
@@ -206,7 +206,7 @@ final class ProductoTable extends PowerGridComponent
     #[On('deleteProducto')]
     public function deleteProducto($productoId): void
     {
-        $producto = Producto::find($productoId);
+        $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
             $producto->delete();
             $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
@@ -255,7 +255,7 @@ final class ProductoTable extends PowerGridComponent
     public function getProductoStock($productoId, $componentId)
     {
         try {
-            $producto = Producto::findOrFail($productoId);
+            $producto = Producto::withTrashed()->findOrFail($productoId);
             $stock = $producto->cantidad ?? 0;
 
             // Agregar un log para depuración
@@ -376,14 +376,14 @@ final class ProductoTable extends PowerGridComponent
     public function editProductoComponents($productoId): void
     {
         $this->editingProductoId = $productoId;
-        $producto = Producto::with(['componentProducts'])->find($productoId);
+        $producto = Producto::withTrashed()->with(['componentProducts'])->find($productoId);
         if ($producto) {
             $cantidadTotal = ProductoComponent::where('producto_id', $productoId)
                 ->first()
                 ->cantidad_total ?? '';
 
             $components = $producto->componentProducts->map(function ($component) use ($cantidadTotal) {
-                $componentProduct = Producto::find($component->id);
+                $componentProduct = Producto::withTrashed()->find($component->id);
 
                 return [
                     'id' => $component->pivot->id ?? uniqid(),

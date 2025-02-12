@@ -278,7 +278,7 @@ final class AsignarConductorTable extends PowerGridComponent
             Pedido::whereIn("id", $this->checkboxValues)->update([
                 "conductor_id" => $this->selectedConductor === "null" ? null : $this->selectedConductor,
                 "fecha_reparto" => $this->fecha_reparto,
-                "estado" => "asignado",
+                "estado" => $this->selectedConductor === "null" ? "pendiente" :"asignado",
             ]);
 
             $this->selectedConductor = "";
