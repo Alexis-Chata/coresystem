@@ -49,7 +49,9 @@ class ImprimirComprobante extends Component
             $nombre_impresora_compartida = "POS-80C-1";
             $correlativo_desde = (int)$serie->correlativo_desde;
             $correlativo_hasta = (int)$serie->correlativo_hasta;
-            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron', 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])->get();
+            $comprobantes = FComprobanteSunat::with(['vendedor', 'tipo_doc', 'cliente.padron' => function ($query) {
+                $query->withTrashed();
+            }, 'conductor', 'detalle.producto'])->where('sede_id', $serie->f_sede_id)->where('serie', $serie->serie)->whereBetween('correlativo', [$correlativo_desde, $correlativo_hasta])->get();
             //dd($comprobantes);
 
             $font = Printer::FONT_A;
@@ -92,6 +94,7 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->text(strtoupper("VENDEDOR: " . str_pad($comprobante->vendedor_id, 3, "0", STR_PAD_LEFT) . " " . $comprobante->vendedor->name));
                 $printer->feed();
+                logger("imprimir-info", [$comprobante->cliente->id]);
                 $printer->text("RUTA: " . str_pad($comprobante->ruta_id, 4, "0", STR_PAD_LEFT) . "  SEC.: " . str_pad($comprobante->cliente->padron->nro_secuencia, 5, "0", STR_PAD_LEFT));
                 $printer->feed();
                 $printer->text("FORMA DE PAGO : CONTADO");
