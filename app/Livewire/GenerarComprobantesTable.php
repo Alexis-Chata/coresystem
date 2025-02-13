@@ -268,7 +268,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'companyAddressCodLocal' => $sede->addresstypecode,
                                 'clientTipoDoc' => $cliente->tipoDocumento->codigo,
                                 'clientNumDoc' => $cliente->numero_documento,
-                                'clientRazonSocial' => $cliente->razon_social,
+                                'clientRazonSocial' => trim($cliente->razon_social),
                                 'clientDireccion' => $cliente->direccion,
                                 'mtoOperGravadas' => $subtotales->mtoOperGravadas,
                                 'mtoOperInafectas' => $subtotales->mtoOperInafectas,

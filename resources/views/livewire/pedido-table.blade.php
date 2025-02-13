@@ -295,7 +295,7 @@
             @endif
         </div>
     </div>
-    <button wire:click="guardarPedido" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto"
+    <button wire:click="guardarPedido" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto" wire:loading.attr="disabled"
         class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
         Registrar Pedido
     </button>

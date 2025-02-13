@@ -157,7 +157,7 @@ class PedidoReporteDiario extends Component
         try {
             DB::beginTransaction();
 
-            $producto = Producto::with([
+            $producto = Producto::withTrashed()->with([
                 "listaPrecios" => function ($query) {
                     $query->where(
                         "lista_precio_id",
@@ -171,6 +171,9 @@ class PedidoReporteDiario extends Component
             }
 
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
+            if ($producto->f_tipo_afectacion_id == '21') {
+                $precioPorPaquete = 0;
+            }
 
             // Verificar si el producto ya existe en el pedido
             $detalleExistente = $this->pedidoEnEdicion
@@ -502,7 +505,7 @@ class PedidoReporteDiario extends Component
         try {
             // Obtiene el detalle del pedido y el producto
             $detalle = PedidoDetalle::find($detalleId);
-            $producto = Producto::find($detalle->producto_id);
+            $producto = Producto::withTrashed()->find($detalle->producto_id);
 
             // Procesa la cantidad según el tipo de producto
             if ($producto->cantidad == 1) {
