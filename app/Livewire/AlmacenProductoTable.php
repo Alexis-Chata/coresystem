@@ -83,8 +83,12 @@ final class AlmacenProductoTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Producto id', 'producto_id'),
-            Column::make('Producto Name', 'producto_name'),
+            Column::make('Producto id', 'producto_id')
+            ->sortable()
+            ->searchable(),
+            Column::make('Producto Name', 'producto_name')->searchable()
+            ->sortable()
+            ->searchable(),
 
             Column::make('Stock disponible', 'stock_disponible')
             ->sortable()
@@ -94,7 +98,9 @@ final class AlmacenProductoTable extends PowerGridComponent
             ->sortable()
             ->searchable(),
 
-            Column::make('Marca', 'marca_name'),
+            Column::make('Marca', 'marca_name')
+            ->sortable()
+            ->searchable(),
             Column::make('Almacen', 'almacen_id'),
             Column::make('Created at', 'created_at_formatted', 'created_at')
             ->sortable()
