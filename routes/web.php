@@ -125,31 +125,31 @@ Route::middleware([
 
     Route::get('/asignar-pedidos', function () {
         return view('asignar-pedidos');
-    })->name('pedido.asignar');
+    })->middleware('can:asignar pedido')->name('pedido.asignar');
 
     Route::get('/generar-comprobantes', function () {
         return view('generar-comprobantes');
-    })->name('comprobantes.create');
+    })->middleware('can:create comprobante')->name('comprobantes.create');
 
     Route::get('/comprobantes', function () {
         return view('comprobantes');
-    })->name('comprobantes.index');
+    })->middleware('can:view movimiento')->name('comprobantes.index');
 
     Route::get('/imprimir-comprobantes', function () {
         return view('imprimir-comprobantes');
-    })->name('comprobantes.imprimir');
+    })->middleware('can:imprimir comprobante')->name('comprobantes.imprimir');
 
     Route::get('/envio-comprobantes', function () {
         return view('envio-comprobantes');
-    })->name('comprobantes.envio');
+    })->middleware('can:envio comprobante')->name('comprobantes.envio');
 
     Route::get('/envio-guias', function () {
         return view('envio-guias');
-    })->name('guias.envio');
+    })->middleware('can:envio-guias comprobante')->name('guias.envio');
 
     Route::get('/reporte', function () {
         return view('reporte-view');
-    })->name('reporte.view');
+    })->middleware('can:view reporte')->name('reporte.view');
 
     Route::get('storage/{filename}', function ($filename) {
         // Verificar si el archivo existe en el disco 'private'

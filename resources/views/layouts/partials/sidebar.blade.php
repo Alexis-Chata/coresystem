@@ -439,7 +439,7 @@
                     @endcan
 
                     <!-- reporte -->
-                    @can('view empresa')
+                    @can('view reporte')
                         <li>
                             <a href="{{ route('reporte.view') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('reporte.view')) bg-graydark dark:bg-meta-4 @endif">

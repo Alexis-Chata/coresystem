@@ -136,17 +136,17 @@ class PedidoReporteDiario extends Component
                 ->get();
 
             // Debug para verificar los precios
-            logger("Productos encontrados:", [
-                "lista_precio" => $this->pedidoEnEdicion->lista_precio,
-                "productos" => $this->productos->map(function ($producto) {
-                    return [
-                        "id" => $producto->id,
-                        "name" => $producto->name,
-                        "precio" => $producto->listaPrecios->first()?->pivot
-                            ?->precio,
-                    ];
-                }),
-            ]);
+            // logger("Productos encontrados:", [
+            //     "lista_precio" => $this->pedidoEnEdicion->lista_precio,
+            //     "productos" => $this->productos->map(function ($producto) {
+            //         return [
+            //             "id" => $producto->id,
+            //             "name" => $producto->name,
+            //             "precio" => $producto->listaPrecios->first()?->pivot
+            //                 ?->precio,
+            //         ];
+            //     }),
+            // ]);
         } else {
             $this->productos = [];
         }
