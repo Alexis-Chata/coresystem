@@ -40,7 +40,9 @@ final class AlmacenProductoTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return AlmacenProducto::query()->with(['producto.marca', 'almacen']);
+        return AlmacenProducto::query()->with(['producto' => function ($query) {
+            $query->withTrashed();
+        },'producto.marca', 'almacen']);
     }
 
     public function relationSearch(): array
