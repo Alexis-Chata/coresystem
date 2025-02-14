@@ -36,7 +36,7 @@ class PedidoReporteDiario extends Component
 
     public function render()
     {
-        $user = auth()->user();
+        $user = auth_user();
         $fechaBusqueda = Carbon::parse($this->fecha);
 
         if ($user->hasRole("admin")) {
@@ -154,6 +154,9 @@ class PedidoReporteDiario extends Component
 
     public function agregarProducto($productoId)
     {
+        // $this->pedidoEnEdicion,  colecction | Pedido
+        // $detalleExistente,       colecction | PedidoDetalle
+        // $this->detallesEdit),    array
         try {
             DB::beginTransaction();
 
@@ -172,7 +175,7 @@ class PedidoReporteDiario extends Component
 
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
             if ($producto->f_tipo_afectacion_id == '21') {
-                $precioPorPaquete = 0;
+                $precio = 0;
             }
 
             // Verificar si el producto ya existe en el pedido
@@ -193,7 +196,7 @@ class PedidoReporteDiario extends Component
                     $precio,
                     $producto->cantidad
                 );
-
+                // Actualizar el detalle existente directamente en bd (mejorar)
                 $detalleExistente->update([
                     "cantidad" => $nuevaCantidad,
                     "importe" => $nuevoImporte,
@@ -204,6 +207,7 @@ class PedidoReporteDiario extends Component
                     "cantidad" => $nuevaCantidad,
                     "importe" => $nuevoImporte,
                 ];
+                //dd($this->pedidoEnEdicion, $detalleExistente, $nuevaCantidad, $nuevoImporte, $this->detallesEdit);
             } else {
                 // Si no existe, crear nuevo detalle
                 $cantidad = $producto->cantidad == 1 ? 1 : 0.01;
@@ -211,7 +215,7 @@ class PedidoReporteDiario extends Component
                     $producto->cantidad == 1
                     ? $precio
                     : $precio / $producto->cantidad;
-
+                // Crear el nuevo detalle directamente en bd (mejorar)
                 $nuevoDetalle = $this->pedidoEnEdicion
                     ->pedidoDetalles()
                     ->create([
@@ -241,8 +245,7 @@ class PedidoReporteDiario extends Component
                         "nombre" => $detalle->producto_name,
                         "cantidad" => $detalle->cantidad,
                         "importe" => $detalle->importe,
-                        "tipAfeIgv" =>
-                        $detalle->producto->f_tipo_afectacion_id ?? 10,
+                        "tipAfeIgv" => $detalle->producto->f_tipo_afectacion_id ?? 10,
                         "tipSisIsc" => "01",
                         "producto_precio" => $detalle->producto_precio,
                         "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
@@ -603,6 +606,7 @@ class PedidoReporteDiario extends Component
         $precioCaja,
         $cantidadPorCaja
     ) {
+        $cantidad = number_format_punto2($cantidad);
         // Separar cajas y paquetes
         list($cajas, $paquetes) = explode(".", $cantidad);
         $cajas = intval($cajas);
