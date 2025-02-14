@@ -59,6 +59,7 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
         $num_documento = $this->num_documento;
         $producto = $this->producto;
         $fecha_emision = $this->fecha_emision;
+        //ini_set('memory_limit', '512M');
         $productos = Producto::withTrashed()->get();
 
         $collect_by = collect([
