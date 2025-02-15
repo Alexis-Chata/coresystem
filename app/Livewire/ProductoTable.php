@@ -169,7 +169,7 @@ final class ProductoTable extends PowerGridComponent
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
         Producto::query()->withTrashed()->find($id)->update([
-            $field => $value,
+            $field => strtoupper($value),
         ]);
         $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
     }
