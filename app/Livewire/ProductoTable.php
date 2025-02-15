@@ -314,7 +314,7 @@ final class ProductoTable extends PowerGridComponent
             $this->validate($baseValidation);
 
             $productoData = [
-                'name' => $this->newProducto['name'],
+                'name' => strtoupper($this->newProducto['name']),
                 'empresa_id' => $this->newProducto['empresa_id'],
                 'marca_id' => $this->newProducto['marca_id'],
                 'categoria_id' => $this->newProducto['categoria_id'],
