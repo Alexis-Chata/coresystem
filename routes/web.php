@@ -1,5 +1,6 @@
 <?php
 
+use App\Exports\PedidoDetallesExport;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\MarcaController;
@@ -7,6 +8,7 @@ use App\Models\Marca;
 use App\Models\Movimiento;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Rutas públicas (si las hay)
 // ...
@@ -170,5 +172,9 @@ Route::middleware([
 Route::get('/', function () {
     return redirect(route('dashboard'));
 })->name('index');
+
+Route::get('/pedido_detalles_report', function () {
+    return Excel::download(new PedidoDetallesExport, 'users.xlsx');
+})->name('report.pedido_detalle');
 
 // ... código existente ...
