@@ -19,6 +19,8 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();
+
+            $table->unique(['producto_id', 'lista_precio_id']);
         });
     }
 
