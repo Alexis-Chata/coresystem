@@ -140,12 +140,12 @@ final class AsignarConductorTable extends PowerGridComponent
             Column::make("Conductor id", "conductor_id")->sortable()->editOnClick(),
             Column::make("Ruta", "ruta_nombre")->sortable()->searchable(),
             Column::make("Vendedor", "vendedor_nombre")
-            ->sortable()
-            ->searchable(),
+                ->sortable()
+                ->searchable(),
             Column::make("Cliente", "cliente_nombre")->sortable()->searchable(),
             Column::make("Importe total", "importe_total")
-            ->sortable()
-            ->searchable(),
+                ->sortable()
+                ->searchable(),
             Column::make("Fecha Emision", "fecha_emision")->sortable()->searchable(),
         ];
     }
@@ -190,7 +190,7 @@ final class AsignarConductorTable extends PowerGridComponent
         $selectHtml = '
         <div class="flex items-center gap-4">
             <div class="relative w-auto">
-                <select
+                <select id="conductor"
                     wire:model="selectedConductor"
                     class="cursor-pointer block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                 >
@@ -207,9 +207,8 @@ final class AsignarConductorTable extends PowerGridComponent
 
         $selectHtml .= '<option value="null">Desasignar Conductor</option>
                 </select>
-                <label
-                    class="absolute text-2xstext-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                >
+                <label for="conductor"
+                    class="absolute leading-normal text-[8px] sm:text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
                     Asignar Conductor
                 </label>
             </div>
@@ -278,7 +277,7 @@ final class AsignarConductorTable extends PowerGridComponent
             Pedido::whereIn("id", $this->checkboxValues)->update([
                 "conductor_id" => $this->selectedConductor === "null" ? null : $this->selectedConductor,
                 "fecha_reparto" => $this->fecha_reparto,
-                "estado" => $this->selectedConductor === "null" ? "pendiente" :"asignado",
+                "estado" => $this->selectedConductor === "null" ? "pendiente" : "asignado",
             ]);
 
             $this->selectedConductor = "";
