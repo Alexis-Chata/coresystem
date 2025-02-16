@@ -116,19 +116,19 @@ class ComprobantesDatatable extends DataTableComponent
 
         $service = new ConsultCdrService();
         $service->setClient($soap);
-        
+
         $rucEmisor = $comprobante->companyRuc;
         $tipoDocumento = $comprobante->tipoDoc; // 01: Factura, 07: Nota de Crédito, 08: Nota de Débito
         $serie = $comprobante->serie;
         $correlativo = $comprobante->correlativo;
         $result = $service->getStatusCdr($rucEmisor, $tipoDocumento, $serie, $correlativo);
-        
+
         if (!$result->isSuccess()) {
             //var_dump($result->getError());
             logger("consultar_cdr", ["result_getError" => $result->getError()]);
             return;
         }
-        
+
         $cdr = $result->getCdrResponse();
         if ($cdr === null) {
             logger('CDR no encontrado, el comprobante no ha sido comunicado a SUNAT.');
@@ -175,7 +175,7 @@ class ComprobantesDatatable extends DataTableComponent
     {
         $comprobante = FComprobanteSunat::find($id);
         //dd($comprobante);
-        if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '0') { 
+        if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '0') {
             logger("validando que no sea null ni cero", [
                 'value_null' => false,
                 'value_cero' => false
