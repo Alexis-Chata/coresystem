@@ -177,4 +177,8 @@ Route::get('/pedido_detalles_report', function () {
     return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_'.now().'.xlsx');
 })->name('report.pedido_detalle');
 
+Route::get('/zip', function () {
+    return Storage::download('micarpeta.zip');
+})->name('download.zip');
+
 // ... código existente ...
