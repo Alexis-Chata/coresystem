@@ -68,11 +68,15 @@ class ImprimirComprobante extends Component
                 $printer->setTextSize(1, 1);
                 // $printer->setLineSpacing(65);
                 $printer->setFont($font);
-                $printer->text(strtoupper($comprobante->companyRazonSocial));
-                $printer->feed();
-                $printer->text("RUC: " . $comprobante->companyRuc);
-                $printer->feed();
-                $printer->text(strtoupper("PUNTO PARTIDA: " . $comprobante->companyAddressDireccion));
+                if ($comprobante->tipoDoc === "00") {
+                    $printer->feed();
+                } else {
+                    $printer->text(strtoupper($comprobante->companyRazonSocial));
+                    $printer->feed();
+                    $printer->text("RUC: " . $comprobante->companyRuc);
+                    $printer->feed();
+                    $printer->text(strtoupper("PUNTO PARTIDA: " . $comprobante->companyAddressDireccion));
+                }
                 $printer->feed();
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
                 $printer->feed();
@@ -106,7 +110,7 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 foreach ($comprobante->detalle as $detalle) {
                     $monto_valor = $detalle->mtoValorVenta;
-                    if($detalle->tipAfeIgv == 21){
+                    if ($detalle->tipAfeIgv == 21) {
                         $monto_valor = $detalle->mtoValorUnitario;
                     }
                     $printer->text(strtoupper(str_pad($detalle->codProducto, 5, "0", STR_PAD_LEFT) . " " . substr($detalle->descripcion, 0, 34)));
@@ -124,10 +128,10 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->text("DESCUENTOS : 0.00");
                 $printer->feed();
-                if($comprobante->tipoDoc === "01"){
-                    $printer->text("IMPORTE NETO : ".number_format($comprobante->valorVenta, 2));
+                if ($comprobante->tipoDoc === "01") {
+                    $printer->text("IMPORTE NETO : " . number_format($comprobante->valorVenta, 2));
                     $printer->feed();
-                    $printer->text("IMPORTE IGV : ".number_format($comprobante->totalImpuestos, 2));
+                    $printer->text("IMPORTE IGV : " . number_format($comprobante->totalImpuestos, 2));
                     $printer->feed();
                 }
                 $printer->text("IMPORTE TOTAL: " . number_format($comprobante->mtoImpVenta, 2));
