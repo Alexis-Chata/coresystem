@@ -153,12 +153,12 @@ Route::middleware([
         return view('reporte-view');
     })->middleware('can:view reporte')->name('reporte.view');
 
-    Route::get('storage/{filename}', function ($filename) {
-        // Verificar si el archivo existe en el disco 'private'
-        if (Storage::disk('local')->exists($filename)) {
-            // Obtener el archivo
-            $file = Storage::disk('local')->get($filename);
-            $mimeType = Storage::disk('local')->mimeType($filename);
+    Route::get('storage/{anyPath}', function ($anyPath) {
+        // Verificar si el archivo existe en el disco 'local'
+        if (Storage::disk('local')->exists($anyPath)) {
+            // Obtener el archivo y su tipo MIME
+            $file = Storage::disk('local')->get($anyPath);
+            $mimeType = Storage::disk('local')->mimeType($anyPath);
 
             // Devolver el archivo con el tipo MIME adecuado
             return response($file, 200)->header('Content-Type', $mimeType);
@@ -166,7 +166,7 @@ Route::middleware([
 
         // Si el archivo no existe, devolver un error 404
         return abort(404, 'Archivo no encontrado');
-    })->name('storage_file.view');
+    })->where('anyPath', '.*')->name('storage_file.view');
 });
 
 Route::get('/', function () {
