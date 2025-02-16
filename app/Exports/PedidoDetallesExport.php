@@ -77,7 +77,7 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'precio_actual',
                 'bultos',
                 'unidades',
-                'importe2',
+                'calculando_importe',
                 'verificacion_importe',
                 'verificacion_precio',
             ],

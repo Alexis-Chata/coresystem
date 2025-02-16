@@ -174,7 +174,7 @@ Route::get('/', function () {
 })->name('index');
 
 Route::get('/pedido_detalles_report', function () {
-    return Excel::download(new PedidoDetallesExport, 'users.xlsx');
+    return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_'.now().'.xlsx');
 })->name('report.pedido_detalle');
 
 // ... código existente ...
