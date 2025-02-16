@@ -178,7 +178,10 @@ Route::get('/pedido_detalles_report', function () {
 })->name('report.pedido_detalle');
 
 Route::get('/zip', function () {
-    return Storage::download('micarpeta.zip');
+    // Ubicado en la carpeta storage/app
+    // zip -r micarpeta.zip .
+    $path = storage_path('app/micarpeta.zip');
+    return response()->download($path);
 })->name('download.zip');
 
 // ... código existente ...
