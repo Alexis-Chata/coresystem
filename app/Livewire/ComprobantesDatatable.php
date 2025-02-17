@@ -112,7 +112,7 @@ class ComprobantesDatatable extends DataTableComponent
         // URL CDR de Producción
         $wsdlUrl = 'https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService?wsdl';
         $soap = new SoapClient($wsdlUrl);
-        $soap->setCredentials($empresa->ruc.$empresa->sol_user, $empresa->sol_pass);
+        $soap->setCredentials($empresa->ruc . $empresa->sol_user, $empresa->sol_pass);
 
         $service = new ConsultCdrService();
         $service->setClient($soap);
@@ -135,8 +135,8 @@ class ComprobantesDatatable extends DataTableComponent
             return;
         }
 
-        $path_cdrzip = 'invoices/' .$rucEmisor.'-'.$tipoDocumento.'-'.$serie.'-'.$correlativo.'-CDR.zip';
-        $path_cdrxml = 'invoices/R-' . $rucEmisor.'-'.$tipoDocumento.'-'.$serie.'-'.$correlativo. '.xml';
+        $path_cdrzip = 'invoices/' . $rucEmisor . '-' . $tipoDocumento . '-' . $serie . '-' . $correlativo . '-CDR.zip';
+        $path_cdrxml = 'invoices/R-' . $rucEmisor . '-' . $tipoDocumento . '-' . $serie . '-' . $correlativo . '.xml';
 
         // Guardar el archivo ZIP en el almacenamiento de Laravel
         // $result->getCdrZip() - Contenido binario del ZIP
@@ -150,7 +150,7 @@ class ComprobantesDatatable extends DataTableComponent
             $zip->extractTo(storage_path('app/private/invoices/'));
             $zip->close();
         }
-        $comprobante->update([ 'cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
+        $comprobante->update(['cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
         return Storage::download($comprobante->cdrxml);
     }
 
@@ -180,7 +180,11 @@ class ComprobantesDatatable extends DataTableComponent
                 'value_null' => false,
                 'value_cero' => false
             ]);
-            return $this->consulta_cdr($id);
+            $consulta_cdr = $this->consulta_cdr($id);
+
+            if ($consulta_cdr) {
+                return $consulta_cdr;
+            }
         }
         if ($comprobante->codigo_sunat === '0') {
             return Storage::download($comprobante->cdrxml);
@@ -347,7 +351,7 @@ class ComprobantesDatatable extends DataTableComponent
         return [
             Column::make('Action')
                 ->label(
-                    fn($row, Column $column) => view('livewire.components.dropdown')->with([
+                    fn ($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
                         'codigo_sunat' => $row->codigo_sunat,
                         'tipo_doc' => $row->tipoDoc,
