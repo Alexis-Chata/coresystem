@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('producto_cantidad_caja')->nullable();
             $table->string('lista_precio')->nullable();
             $table->string('importe')->nullable();
+            $table->string('peso')->default('0.250');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

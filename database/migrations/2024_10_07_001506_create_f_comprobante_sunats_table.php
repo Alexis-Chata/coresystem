@@ -72,6 +72,7 @@ return new class extends Migration
             $table->string('codigo_sunat')->nullable();
             $table->longText('mensaje_sunat')->nullable();
             $table->longText('obs')->nullable();
+            $table->enum('estado_cpe_sunat', ['pendiente', 'aceptado', 'rechazado'])->default('pendiente');
             $table->boolean('estado_reporte')->default(true);
             $table->foreignId('empresa_id')->constrained('empresas');
             $table->timestamp('created_at')->useCurrent();

@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('tipSisIsc')->nullable();
             $table->string('porcentajeIsc')->nullable();
             $table->string('isc')->nullable();
+            $table->string('peso')->default('0.250');
             $table->foreignId('f_comprobante_sunat_id')->constrained('f_comprobante_sunats');
             $table->string('ref_producto_lista_precio')->nullable();
             $table->string('ref_producto_precio_cajon')->nullable();
