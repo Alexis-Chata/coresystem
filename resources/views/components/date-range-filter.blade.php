@@ -1,4 +1,7 @@
 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-5.5 pt-2 text-[8px] text-sm">
+    <button wire:click="report_pedido_detalle"
+        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Reporte
+        Pedido Detalle</button>
     <div class="relative w-full sm:w-auto">
         <input type="date" wire:model.live="startDate"
             class="block w-full px-2.5 pb-2.5 pt-4 text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
@@ -21,4 +24,10 @@
             Descargar PDF
         </button>
     </div>
+    <button wire:click="cerrar_sessiones"
+        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Cerrar
+        Sessiones</button>
+    <button wire:click="permiso_crear_pedido"
+        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Devolver
+        Permisos</button>
 </div>

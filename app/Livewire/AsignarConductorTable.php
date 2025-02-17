@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Exports\PedidoDetallesExport;
 use App\Models\Pedido;
 use App\Models\Empleado;
 use App\Models\Ruta;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -14,6 +16,9 @@ use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
 
 final class AsignarConductorTable extends PowerGridComponent
 {
@@ -59,7 +64,7 @@ final class AsignarConductorTable extends PowerGridComponent
             PowerGrid::header()->includeViewOnTop(
                 "components.date-range-filter"
             ),
-            PowerGrid::footer()->showPerPage()->showRecordCount(),
+            PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 25),
         ];
     }
 
@@ -130,20 +135,22 @@ final class AsignarConductorTable extends PowerGridComponent
             ->add("cliente_nombre", function ($model) {
                 return $model->cliente_id . " - " . $model->cliente_nombre;
             })
-            ->add("importe_total")
+            ->add("importe_total", function ($model) {
+                return number_format($model->importe_total, 2);
+            })
             ->add("fecha_emision");
     }
 
     public function columns(): array
     {
         return [
-            Column::make("Conductor id", "conductor_id")->sortable()->editOnClick(),
+            Column::make("Chofer", "conductor_id")->sortable()->editOnClick(),
             Column::make("Ruta", "ruta_nombre")->sortable()->searchable(),
             Column::make("Vendedor", "vendedor_nombre")
                 ->sortable()
                 ->searchable(),
             Column::make("Cliente", "cliente_nombre")->sortable()->searchable(),
-            Column::make("Importe total", "importe_total")
+            Column::make("Importe", "importe_total")->bodyAttribute('text-right')
                 ->sortable()
                 ->searchable(),
             Column::make("Fecha Emision", "fecha_emision")->sortable()->searchable(),
@@ -383,5 +390,36 @@ final class AsignarConductorTable extends PowerGridComponent
             fn() => print $pdf->output(),
             "pedidos_" . $this->startDate . "_a_" . $this->endDate . ".pdf"
         );
+    }
+
+    public function report_pedido_detalle()
+    {
+        $inicio = $this->startDate;
+        $fin = $this->endDate;
+        return Excel::download(new PedidoDetallesExport($inicio, $fin), 'pedido_detalles_report_' . now() . '.xlsx');
+    }
+
+    public function cerrar_sessiones()
+    {
+        // 1️⃣ Obtener el rol "vendedor"
+        $role = Role::findByName('vendedor', 'web');
+
+        // 2️⃣ Quitar el permiso "create pedido"
+        $role->revokePermissionTo('create pedido');
+
+        // Obtener los IDs de los usuarios con el rol "vendedor"
+        $userIds = User::role('vendedor')->pluck('id');
+
+        // Eliminar sus sesiones
+        DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+    }
+
+    public function permiso_crear_pedido()
+    {
+        // 1️⃣ Obtener el rol "vendedor"
+        $role = Role::findByName('vendedor', 'web');
+
+        // 2️⃣ Asignarle el permiso "create pedido"
+        $role->givePermissionTo('create pedido');
     }
 }

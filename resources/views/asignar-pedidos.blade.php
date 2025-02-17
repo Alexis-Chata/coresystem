@@ -3,8 +3,6 @@
 @section('content')
     <h1 class="leading-normal ">Asignar Pedidos</h1>
     <br />
-    <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out"><a href="{{ route('report.pedido_detalle') }}">Reporte Pedido Deatlle</a></button>
-    <br />
     @can('asignar pedido')
         <livewire:asignar-conductor-table />
     @endcan

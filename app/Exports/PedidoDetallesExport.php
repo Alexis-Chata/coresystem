@@ -38,7 +38,9 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
             })
             ->select([
                 'pedidos.cliente_id as cliente_cod',
+                'pedidos.conductor_id as conductor_cod',
                 'pedidos.fecha_emision as pedido_fecha',
+                'pedidos.estado as pedido_estado',
                 'marcas.name as marca_name',
                 'pedido_detalles.*',
                 'producto_lista_precios.precio as precio_actual', // Agregamos el precio actual
@@ -60,7 +62,9 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
         $encabezados = [
             [
                 'cliente_cod',
+                'conductor_cod',
                 'pedido_fecha',
+                'pedido_estado',
                 'marca',
                 'id',
                 'pedido_id',

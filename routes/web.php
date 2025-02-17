@@ -35,7 +35,6 @@ Route::get('/test-email', function () {
 
 // Grupo de rutas protegidas por autenticación
 Route::middleware([
-    'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {

@@ -2,7 +2,13 @@
 
 @section('content')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <livewire:pedido-table />
+    @can('create pedido')
+        <livewire:pedido-table />
+    @endcan
+
+    @cannot('create pedido')
+        <h1 class="leading-normal ">Sin Permisos, sistema cerrado</h1>
+    @endcannot
     <script>
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('pedido-guardado', message => {
