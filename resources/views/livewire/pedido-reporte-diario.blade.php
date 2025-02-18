@@ -19,14 +19,14 @@
 
     <!-- Cabecera del Reporte -->
     <header class="flex justify-between items-center">
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 class="text-xl font-bold text-gray-800 sm:text-2xl dark:text-white">
             Reporte Diario de Pedidos
         </h1>
         <input
             type="date"
             wire:loading.attr="disabled"
             wire:model.live="fecha"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            class="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         >
         <div wire:loading wire:target="fecha">
             Cargando...
@@ -36,10 +36,10 @@
     <!-- Contenido del Reporte -->
     <section class="mb-5.5" wire:loading.class="hidden" wire:target="fecha">
         @forelse($pedidosPorVendedor as $vendedorId => $pedidosVendedor)
-            <details class="mb-2 my-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
-                <summary class="bg-blue-50 dark:bg-blue-800 p-4 flex justify-between items-center cursor-pointer group-open:bg-blue-100 dark:group-open:bg-blue-700 transition-colors">
-                    <div class="flex items-center gap-2">
-                        <span class="flex-none rounded-full bg-blue-100 p-2 dark:bg-blue-900">
+            <details class="overflow-hidden my-1 mb-2 rounded-lg border dark:border-gray-700 group">
+                <summary class="flex justify-between items-center p-4 bg-blue-50 transition-colors cursor-pointer dark:bg-blue-800 group-open:bg-blue-100 dark:group-open:bg-blue-700">
+                    <div class="flex gap-2 items-center">
+                        <span class="flex-none p-2 bg-blue-100 rounded-full dark:bg-blue-900">
                             <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
@@ -52,11 +52,11 @@
                         Total Pedidos: {{ $pedidosVendedor->count() }}
                     </span>
                 </summary>
-                <div class="space-y-2 p-1 bg-blue-50 dark:bg-blue-800">
+                <div class="p-1 space-y-2 bg-blue-50 dark:bg-blue-800">
                     @foreach($pedidosVendedor->groupBy('ruta_id') as $rutaId => $pedidosRuta)
-                        <details class="border rounded-lg dark:border-gray-700 overflow-hidden group">
-                            <summary class="bg-green-100 dark:bg-green-800 p-3 flex items-center cursor-pointer group-open:bg-green-200 dark:group-open:bg-green-700 transition-colors">
-                                <span class="flex-none rounded-full bg-green-100 p-1.5 mr-3 dark:bg-green-900">
+                        <details class="overflow-hidden rounded-lg border dark:border-gray-700 group">
+                            <summary class="flex items-center p-3 bg-green-100 transition-colors cursor-pointer dark:bg-green-800 group-open:bg-green-200 dark:group-open:bg-green-700">
+                                <span class="flex-none p-1.5 mr-3 bg-green-100 rounded-full dark:bg-green-900">
                                     <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
                                     </svg>
@@ -64,28 +64,28 @@
                                 <span class="font-semibold text-gray-700 dark:text-gray-300">
                                     #{{ $pedidosRuta->first()->ruta->id }} - {{ $pedidosRuta->first()->ruta->name }}
                                 </span>
-                                <span class="ml-auto px-3 py-1 text-sm font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-400" style="margin-left:auto">
+                                <span class="px-3 py-1 ml-auto text-sm font-medium text-green-600 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-400" style="margin-left:auto">
                                     Monto: S/. {{ number_format($pedidosRuta->sum('importe_total'), 2) }}
                                 </span>
                             </summary>
                             <div class="p-1 bg-green-100 dark:bg-green-800">
                                 @foreach($pedidosRuta as $pedido)
-                                    <details class="mb-1 border rounded-lg dark:border-gray-700 overflow-hidden group">
-                                        <summary class="bg-purple-100 dark:bg-purple-800 p-3 flex items-center cursor-pointer group-open:bg-purple-200 dark:group-open:bg-purple-700 transition-colors">
-                                            <span class="flex-none rounded-full bg-purple-100 p-1.5 mr-3 dark:bg-purple-900">
+                                    <details class="overflow-hidden mb-1 rounded-lg border dark:border-gray-700 group">
+                                        <summary class="flex items-center p-3 bg-purple-100 transition-colors cursor-pointer dark:bg-purple-800 group-open:bg-purple-200 dark:group-open:bg-purple-700">
+                                            <span class="flex-none p-1.5 mr-3 bg-purple-100 rounded-full dark:bg-purple-900">
                                                 <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                                 </svg>
                                             </span>
                                             <div>
-                                                <span class="text-gray-800 dark:text-gray-300 font-medium">
+                                                <span class="font-medium text-gray-800 dark:text-gray-300">
                                                     #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }}
                                                 </span>
                                                 <span class="block text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $pedido->cliente->direccion }}
                                                 </span>
                                             </div>
-                                            <span class="ml-auto px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full dark:bg-purple-900 dark:text-purple-400" style="margin-left:auto">
+                                            <span class="px-3 py-1 ml-auto text-sm font-medium text-purple-600 bg-purple-100 rounded-full dark:bg-purple-900 dark:text-purple-400" style="margin-left:auto">
                                                 Total: S/. {{ number_format($pedido->importe_total, 2) }} |
                                                 Lista: {{ $pedido->listaPrecio->name ?? 'Sin lista' }}
                                             </span>
@@ -93,7 +93,7 @@
                                             <button
                                                 wire:loading.attr="disabled"
                                                 wire:click="editarPedido({{ $pedido->id }})"
-                                                class="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
+                                                class="p-1.5 text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200"
                                             >
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -115,7 +115,7 @@
                                                             <th class="px-6 py-3">Importe</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-400">
+                                                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700 dark:text-gray-400">
                                                         @foreach($pedido->pedidoDetalles as $detalle)
                                                             <tr>
                                                                 <td class="px-6 py-4">#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
@@ -135,7 +135,7 @@
                                                                     </div>
                                                                 @endif
                                                             </td>
-                                                            <td class="px-6 py-4 text-right font-medium text-gray-800 dark:text-white">
+                                                            <td class="px-6 py-4 font-medium text-right text-gray-800 dark:text-white">
                                                                 Total Pedido:
                                                             </td>
                                                             <td class="px-6 py-4 text-gray-800 dark:text-white">
@@ -154,7 +154,7 @@
                 </div>
             </details>
         @empty
-            <div class="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div class="py-12 text-center bg-gray-50 rounded-lg dark:bg-gray-800">
                 <p class="text-gray-500 dark:text-gray-400">
                     No hay pedidos registrados para esta fecha
                 </p>
@@ -165,7 +165,7 @@
      x-show="open"
      @open-modal.window="open = true"
      @close-modal.window="open = false"
-     class="edit_modal fixed inset-0 z-50 overflow-y-auto"
+     class="overflow-y-auto fixed inset-0 z-50 edit_modal"
      style="display: none;">
          <style>
              .edit_modal {
@@ -202,14 +202,14 @@
                  }
              }
          </style>
-    <div class="flex items-center justify-center min-h-screen">
+    <div class="flex justify-center items-center min-h-screen">
         <!-- Overlay -->
         <div class="fixed inset-0 bg-black opacity-50"></div>
 
         <!-- Modal -->
-        <div class="modal_pad relative bg-white dark:bg-gray-800 w-full max-w-6xl rounded-lg shadow-xl sm:px-6">
+        <div class="relative w-full max-w-6xl bg-white rounded-lg shadow-xl modal_pad dark:bg-gray-800 sm:px-6">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between py-4 border-b dark:border-gray-700">
+            <div class="flex justify-between items-center py-4 border-b dark:border-gray-700">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                     Editar Pedido
                 </h3>
@@ -224,12 +224,12 @@
             <div class="py-6">
                 @if($pedidoEnEdicion)
                     <!-- Información básica -->
-                    <div class="grid md:grid-cols-2 gap-6 mb-4">
+                    <div class="grid gap-6 mb-4 md:grid-cols-2">
                         <!-- Cliente -->
                         <div class="relative">
                             <input
                                 type="text"
-                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                 value="#{{ $pedidoEnEdicion->cliente->id }} - {{ $pedidoEnEdicion->cliente->razon_social }}"
                                 disabled
                             />
@@ -243,7 +243,7 @@
                         <div class="relative">
                             <input
                                 type="text"
-                                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                 value="{{ $pedidoEnEdicion->fecha_emision }}"
                                 disabled
                             />
@@ -262,7 +262,7 @@
                                 <input
                                     type="text"
                                     wire:model.live.debounce.300ms="search"
-                                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                    class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                     placeholder=" "
                                 />
                                 <label class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
@@ -271,7 +271,7 @@
 
                                 <!-- Resultados de búsqueda -->
                                 @if(strlen($search) > 0)
-                                    <div class="absolute z-20 w-full mt-1 bg-white rounded-lg shadow-lg dark:bg-gray-700">
+                                    <div class="absolute z-20 mt-1 w-full bg-white rounded-lg shadow-lg dark:bg-gray-700">
                                         @if($productos && count($productos) > 0)
                                             @foreach($productos as $producto)
                                                 @php
@@ -301,7 +301,7 @@
                             </div>
 
                     <!-- Tabla de productos -->
-                    <table class="w-full mt-4" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                    <table class="mt-4 w-full" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th scope="col">Código - Producto</th>
@@ -315,7 +315,7 @@
                                     <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
                                     <td>
                                             @php
-                                                $producto = App\Models\Producto::find($detalle->producto_id);
+                                                $producto = App\Models\Producto::withTrashed()->find($detalle->producto_id);
                                                 $esPaqueteUnico = $producto->cantidad == 1;
                                             @endphp
 
@@ -326,7 +326,7 @@
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
-                                                    class="w-20 px-2 py-1 text-sm border rounded"
+                                                    class="px-2 py-1 w-20 text-sm rounded border"
                                                 />
                                             @else
                                                 <input
@@ -336,7 +336,7 @@
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
-                                                    class="w-20 px-2 py-1 text-sm border rounded"
+                                                    class="px-2 py-1 w-20 text-sm rounded border"
                                                 />
                                             @endif
                                         </td>
@@ -392,18 +392,18 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="flex justify-end gap-3 py-4 border-t dark:border-gray-700" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+            <div class="flex gap-3 justify-end py-4 border-t dark:border-gray-700" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
                 @if($pedidoEnEdicion)
                     <button
                         wire:click="eliminarPedido"
                         wire:confirm="¿Está seguro de eliminar este pedido? Esta acción no se puede deshacer."
-                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
                     >
                         Eliminar Pedido
                     </button>
                     <button
                         wire:click="guardarCambios"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
                     >
                         Guardar Cambios
                     </button>
