@@ -1,6 +1,6 @@
 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-5.5 pt-2 text-[8px] text-sm">
     <button wire:click="report_pedido_detalle"
-        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Reporte
+        class="px-4 py-2 bg-green-600 hover:bg-green-800 text-white rounded-lg transition-colors duration-200 ease-in-out">Reporte
         Pedido Detalle</button>
     <div class="relative w-full sm:w-auto">
         <input type="date" wire:model.live="startDate"
@@ -20,8 +20,8 @@
     </div>
     <div class="w-full sm:w-auto">
         <button wire:click="exportarPedidosPDF"
-            class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">
-            Descargar PDF
+            class="w-full sm:w-auto px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 ease-in-out">
+            Asignando Progamacion Carga PDF
         </button>
     </div>
     <button wire:click="cerrar_sessiones"

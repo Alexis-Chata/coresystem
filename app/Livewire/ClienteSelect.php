@@ -39,7 +39,7 @@ class ClienteSelect extends Component
         }
 
         $rutasDelVendedor = Ruta::where('vendedor_id', $this->vendedor_id)->pluck('id');
-        Log::info('Rutas del vendedor', ['rutas' => $rutasDelVendedor]);
+        //Log::info('Rutas del vendedor', ['rutas' => $rutasDelVendedor]);
 
         $query = Cliente::whereIn('ruta_id', $rutasDelVendedor);
 

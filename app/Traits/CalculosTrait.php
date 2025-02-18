@@ -22,6 +22,10 @@ trait CalculosTrait
             list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
             $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
 
+            if($data_detalle['bultos'] == 0 and $data_detalle['unidades'] == 0 ){
+                logger("data detalle", ["revisar cantidad vendida" => $data_detalle]);
+            }
+
             $data_detalle['codProducto'] = $data_detalle['producto_id'];
             $data_detalle['unidad'] = "NIU";
             $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];

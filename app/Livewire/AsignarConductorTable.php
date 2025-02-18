@@ -197,25 +197,17 @@ final class AsignarConductorTable extends PowerGridComponent
         $selectHtml = '
         <div class="flex items-center gap-4">
             <div class="relative w-auto">
-                <select id="conductor"
-                    wire:model="selectedConductor"
-                    class="cursor-pointer block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                >
+                <select id="conductor" wire:model="selectedConductor" class="cursor-pointer block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" >
                     <option value="">Seleccione un conductor</option>';
 
         foreach ($conductores as $conductor) {
             $selectHtml .=
-                '<option value="' .
-                $conductor["id"] .
-                '">' .
-                $conductor["name"] .
-                "</option>";
+                '<option value="' . $conductor["id"] . '">' . $conductor["name"] . "</option>";
         }
 
         $selectHtml .= '<option value="null">Desasignar Conductor</option>
                 </select>
-                <label for="conductor"
-                    class="absolute leading-normal text-[8px] sm:text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                <label for="conductor" class="absolute leading-normal text-[8px] sm:text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
                     Asignar Conductor
                 </label>
             </div>
@@ -225,16 +217,9 @@ final class AsignarConductorTable extends PowerGridComponent
                     Fecha de Reparto
                 </label>
             </div>
-            <button
-                wire:click="asignarConductorASeleccionados"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out"
-            >
-            <span class="flex items-center gap-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    Asignar
-                                                </span>
+            <button wire:click="asignarConductorASeleccionados" class="px-4 py-2 bg-gray-500 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 ease-in-out" >
+                <span class="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path> </svg> Asignar
+                </span>
             </button>
         </div>';
 
