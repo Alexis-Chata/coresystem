@@ -227,7 +227,7 @@
         </tfoot>
     </table>
     <!-- FIN DE REPORTE -->
-    <p style="text-align: center; padding-bottom;: 40px">
+    <p style="text-align: center; padding: 0">
         *** FIN DE REPORTE ***
     </p>
 </body>

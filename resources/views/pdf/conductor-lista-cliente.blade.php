@@ -359,7 +359,7 @@
     </table>
 
     <!-- FIN DE REPORTE -->
-    <p style="text-align: center; padding: 40px 0">
+    <p style="text-align: center; padding: 0">
         *** FIN DE REPORTE ***
     </p>
 </body>

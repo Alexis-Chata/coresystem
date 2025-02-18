@@ -122,20 +122,20 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->text("---------------------------------------");
                 $printer->feed();
-                $printer->text("NUMERO DE ITEMS = " . $comprobante->detalle->count());
+                $printer->text(str_pad("NUMERO DE ITEMS = ", 15, " ", STR_PAD_RIGHT) . str_pad($comprobante->detalle->count(), 12, " ", STR_PAD_LEFT));
                 $printer->feed();
-                $printer->text("IMPORTE BRUTO: " . number_format($comprobante->subTotal, 2));
+                $printer->text(str_pad("IMPORTE BRUTO: ", 15, " ", STR_PAD_RIGHT) . str_pad(number_format($comprobante->subTotal, 2), 12, " ", STR_PAD_LEFT));
                 $printer->feed();
-                $printer->text("DESCUENTOS : 0.00");
+                $printer->text(str_pad("DESCUENTOS : ", 15, " ", STR_PAD_RIGHT) . str_pad("0.00", 12, " ", STR_PAD_LEFT));
                 $printer->feed();
                 if ($comprobante->tipoDoc === "01") {
-                    $printer->text("IMPORTE NETO : " . number_format($comprobante->valorVenta, 2));
+                    $printer->text(str_pad("IMPORTE NETO : ", 15, " ", STR_PAD_RIGHT) . str_pad(number_format($comprobante->valorVenta, 2), 12, " ", STR_PAD_LEFT));
                     $printer->feed();
-                    $printer->text("IMPORTE IGV : " . number_format($comprobante->totalImpuestos, 2));
+                    $printer->text(str_pad("IMPORTE IGV : ", 15, " ", STR_PAD_RIGHT) . str_pad(number_format($comprobante->totalImpuestos, 2), 12, " ", STR_PAD_LEFT));
                     $printer->feed();
                 }
+                $printer->text(str_pad("IMPORTE TOTAL: ", 15, " ", STR_PAD_RIGHT) . str_pad(number_format($comprobante->mtoImpVenta, 2), 12, " ", STR_PAD_LEFT));
                 $printer->feed();
-                $printer->text("IMPORTE TOTAL: " . number_format($comprobante->mtoImpVenta, 2));
                 $printer->feed();
                 $printer->text(strtoupper("CHOFER: " . str_pad($comprobante->conductor_id, 3, "0", STR_PAD_LEFT) . " " . $comprobante->conductor->name));
                 $printer->feed();

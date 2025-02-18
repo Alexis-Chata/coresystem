@@ -9,7 +9,7 @@ use Livewire\Form;
 
 class FserieForm extends Form
 {
-    public ?FSerie $fserie;
+    public ?FSerie $fserie = null;
 
     public $serie;
     public $correlativo;
@@ -47,20 +47,14 @@ class FserieForm extends Form
 
     public function rules()
     {
-        $rules_serie = [
-            'required',
-            'string',
-            'min:4',
-            'max:4',
-            'unique'
-        ];
-        if (isset($this->fserie)) {
-            $rules_serie[] = Rule::unique('f_series')->ignore($this->fserie);
-        } else {
-            $rules_serie[] = 'unique:f_series';
-        }
         return [
-            'serie' => $rules_serie,
+            'serie' => [
+                'required',
+                'string',
+                'min:4',
+                'max:4',
+                Rule::unique('f_series', 'serie')->ignore(optional($this->fserie)->id),
+            ],
             'correlativo' => 'required',
             'fechaemision' => 'required',
             'f_sede_id' => 'required|exists:f_sedes,id',
