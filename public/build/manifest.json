@@ -1,11 +1,11 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CJ1CI_SB.css",
+    "file": "assets/app-CKYanQtu.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-BxEPw8Hn.css",
+    "file": "assets/tailadmin-ClTYvg1p.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true
   },
@@ -128,6 +128,14 @@
   "resources/fonts/Satoshi-Regular.woff2": {
     "file": "assets/Satoshi-Regular-CPM9dct4.woff2",
     "src": "resources/fonts/Satoshi-Regular.woff2"
+  },
+  "resources/images/icon/icon-arrow-down.svg": {
+    "file": "assets/icon-arrow-down-0uYKjY_E.svg",
+    "src": "resources/images/icon/icon-arrow-down.svg"
+  },
+  "resources/images/icon/icon-calendar.svg": {
+    "file": "assets/icon-calendar-BTrXymgd.svg",
+    "src": "resources/images/icon/icon-calendar.svg"
   },
   "resources/js/app.js": {
     "file": "assets/app-z-Rg4TxU.js",
