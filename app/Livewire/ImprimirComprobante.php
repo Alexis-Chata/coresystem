@@ -134,6 +134,7 @@ class ImprimirComprobante extends Component
                     $printer->text("IMPORTE IGV : " . number_format($comprobante->totalImpuestos, 2));
                     $printer->feed();
                 }
+                $printer->feed();
                 $printer->text("IMPORTE TOTAL: " . number_format($comprobante->mtoImpVenta, 2));
                 $printer->feed();
                 $printer->text(strtoupper("CHOFER: " . str_pad($comprobante->conductor_id, 3, "0", STR_PAD_LEFT) . " " . $comprobante->conductor->name));
