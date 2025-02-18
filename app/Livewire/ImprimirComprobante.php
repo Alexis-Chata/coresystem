@@ -122,7 +122,7 @@ class ImprimirComprobante extends Component
                 $printer->feed();
                 $printer->text("---------------------------------------");
                 $printer->feed();
-                $printer->text(str_pad("NUMERO DE ITEMS = ", 15, " ", STR_PAD_RIGHT) . str_pad($comprobante->detalle->count(), 12, " ", STR_PAD_LEFT));
+                $printer->text("NUMERO DE ITEMS = " . $comprobante->detalle->count());
                 $printer->feed();
                 $printer->text(str_pad("IMPORTE BRUTO: ", 15, " ", STR_PAD_RIGHT) . str_pad(number_format($comprobante->subTotal, 2), 12, " ", STR_PAD_LEFT));
                 $printer->feed();
