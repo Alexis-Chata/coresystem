@@ -9,7 +9,7 @@
         }
         body {
             font-family: Arial, sans-serif;
-            font-size: 8px;
+            font-size: 9px;
             margin: 0;
             padding: 0;
         }
@@ -31,7 +31,7 @@
         .total-row td {
             background-color: #f2f2f2;
             font-weight: bold;
-            padding-top: 20px;
+            padding-top: 15px;
         }
 
         .total-row td.total-label {
