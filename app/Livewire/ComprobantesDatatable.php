@@ -489,6 +489,8 @@ class ComprobantesDatatable extends DataTableComponent
                 ->sortable(),
             Column::make("Estado Reporte", "estado_reporte")
                 ->sortable(),
+            Column::make("Estado Cpe Sunat", "estado_cpe_sunat")
+                ->sortable(),
             // Column::make("Empresa id", "empresa_id")
             //     ->sortable(),
             DateColumn::make("Created at", "created_at")
