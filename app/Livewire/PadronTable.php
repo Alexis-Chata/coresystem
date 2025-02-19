@@ -80,13 +80,13 @@ final class PadronTable extends PowerGridComponent
         $var_rutaSelectOptions = $this->rutaSelectOptions();
         return PowerGrid::fields()
             ->add('id')
+            // ->add('cliente_id', function ($padron) use ($var_clienteSelectOptions) {
+            //     return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
+            // })
             ->add('cliente_id', function ($padron) use ($var_clienteSelectOptions) {
-                return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
-            })
-            ->add('cliente_id', function ($padron) use ($var_clienteSelectOptions) {
-                if ($this->user->can('edit padron')) {
-                    return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
-                }
+                // if ($this->user->can('edit padron')) {
+                //     return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
+                // }
                 return $padron->cliente_nombre;
             })
             ->add('ruta_id', function ($padron) use ($var_rutaSelectOptions) {
