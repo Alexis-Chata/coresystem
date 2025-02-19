@@ -174,9 +174,6 @@ class PedidoReporteDiario extends Component
             }
 
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
-            if ($producto->f_tipo_afectacion_id == '21') {
-                $precio = 0;
-            }
 
             // Verificar si el producto ya existe en el pedido
             $detalleExistente = $this->pedidoEnEdicion
@@ -194,7 +191,8 @@ class PedidoReporteDiario extends Component
                 $nuevoImporte = $this->calcularImporteDetalle(
                     $nuevaCantidad,
                     $precio,
-                    $producto->cantidad
+                    $producto->cantidad,
+                    $producto->f_tipo_afectacion_id
                 );
                 // Actualizar el detalle existente directamente en bd (mejorar)
                 $detalleExistente->update([
@@ -215,6 +213,9 @@ class PedidoReporteDiario extends Component
                     $producto->cantidad == 1
                     ? $precio
                     : $precio / $producto->cantidad;
+                if ($producto->f_tipo_afectacion_id == '21') {
+                    $importe = 0;
+                }
                 // Crear el nuevo detalle directamente en bd (mejorar)
                 $nuevoDetalle = $this->pedidoEnEdicion
                     ->pedidoDetalles()
@@ -604,13 +605,18 @@ class PedidoReporteDiario extends Component
     private function calcularImporteDetalle(
         $cantidad,
         $precioCaja,
-        $cantidadPorCaja
+        $cantidadPorCaja,
+        $f_tipo_afectacion_id = null
     ) {
         $cantidad = number_format_punto2($cantidad);
         // Separar cajas y paquetes
         list($cajas, $paquetes) = explode(".", $cantidad);
         $cajas = intval($cajas);
         $paquetes = intval($paquetes);
+
+        if ($f_tipo_afectacion_id == 21) {
+            $precioCaja = 0;
+        }
 
         // Calcular precio por paquete
         $precioPorPaquete = $precioCaja / $cantidadPorCaja;
