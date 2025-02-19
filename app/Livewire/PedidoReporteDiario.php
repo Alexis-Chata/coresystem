@@ -523,7 +523,8 @@ class PedidoReporteDiario extends Component
                 $importe = $this->calcularImporteDetalle(
                     $cantidad,
                     $detalle->producto_precio,
-                    $producto->cantidad
+                    $producto->cantidad,
+                    $producto->f_tipo_afectacion_id
                 );
             }
 
