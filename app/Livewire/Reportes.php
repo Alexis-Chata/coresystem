@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Exports\ReportesExport;
 use App\Models\Empleado;
 use App\Models\Marca;
+use App\Models\Ruta;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -19,6 +20,8 @@ class Reportes extends Component
 
     public $fecha_inicio;
     public $fecha_fin;
+    public $rutas;
+    public $ruta_id;
     public $marcas;
     public $marca_id;
     public $vendedores;
@@ -26,6 +29,7 @@ class Reportes extends Component
     public $productos;
     public $producto_id;
 
+    public $rutas_name;
     public $marcas_name;
     public $tipo_documento;
     public $conductor;
@@ -45,6 +49,16 @@ class Reportes extends Component
         } else {
             $this->fecha_fin = $this->fecha_fin->subDay()->toDateString(); // Agregar 1 día en otros casos
         }
+
+        $rutas_id = DB::table('f_comprobante_sunat_detalles')
+            ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
+            ->join('productos', 'f_comprobante_sunat_detalles.codProducto', '=', 'productos.id')
+            ->select('f_comprobante_sunats.ruta_id')
+            ->whereBetween('pedido_fecha_factuacion', [$this->fecha_inicio, $this->fecha_fin])
+            ->where("estado_reporte", true)
+            ->distinct()
+            ->pluck('ruta_id');
+        $this->rutas = Ruta::whereIn('id', $rutas_id)->get();
 
         $marcas_id = DB::table('f_comprobante_sunat_detalles')
             ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
@@ -81,10 +95,12 @@ class Reportes extends Component
     {
         $fecha_inicio = $this->fecha_inicio;
         $fecha_fin = $this->fecha_fin;
+        $ruta_id   = $this->ruta_id;
         $marca_id = $this->marca_id;
         $vendedor_id = $this->vendedor_id;
         $producto_id = $this->producto_id;
 
+        $ruta = $this->rutas_name ?? false;
         $marcas_name = $this->marcas_name ?? false;
         $tipo_documento = $this->tipo_documento ?? false;
         $conductor = $this->conductor ?? false;
@@ -93,7 +109,7 @@ class Reportes extends Component
         $num_documento = $this->num_documento ?? false;
         $producto = $this->producto ?? false;
         $fecha_emision = $this->fecha_emision ?? false;
-        //dd($marcas_name, $fecha_emision, $cantidad_bultos_venta);
-        return Excel::download(new ReportesExport($fecha_inicio, $fecha_fin, $marca_id, $vendedor_id, $producto_id, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision), 'reporte_ventas.xlsx');
+        //dd($marcas_name, $fecha_emision, $ruta);
+        return Excel::download(new ReportesExport($fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision), 'reporte_ventas.xlsx');
     }
 }

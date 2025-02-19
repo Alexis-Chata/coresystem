@@ -12,10 +12,13 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     private $fecha_inicio;
     private $fecha_fin;
+    private $ruta_id;
     private $marca_id;
     private $marcas_name;
     private $vendedor_id;
     private $producto_id;
+
+    private $ruta;
     private $tipo_documento;
     private $conductor;
     private $vendedor;
@@ -24,17 +27,20 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
     private $producto;
     private $fecha_emision;
 
-    public function __construct($fecha_inicio, $fecha_fin, $marca = null, $vendedor_id = null, $producto_id = null, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false)
+    public function __construct($fecha_inicio, $fecha_fin, $ruta_id = null, $marca = null, $vendedor_id = null, $producto_id = null, $ruta = false, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false)
     {
         $this->fecha_inicio = $fecha_inicio;
         $this->fecha_fin = $fecha_fin;
+        $this->ruta_id = $ruta_id;
         $this->marca_id = $marca;
         $this->vendedor_id = $vendedor_id;
         $this->producto_id = $producto_id;
 
-        $this->marcas_name = ($marcas_name or !($tipo_documento or $conductor or $cliente or $num_documento or $fecha_emision)) or !is_null($marca);
+        $this->ruta = ($ruta or !is_null($ruta_id));
+        $this->marcas_name = ($marcas_name or !($this->ruta or $tipo_documento or $conductor or $vendedor or $cliente or $num_documento or $fecha_emision)) or !is_null($marca);
         $this->tipo_documento = $tipo_documento;
         $this->conductor = $conductor;
+        $this->vendedor = ($vendedor or !is_null($vendedor_id));
         $this->vendedor = ($vendedor or !is_null($vendedor_id));
         $this->cliente = $cliente;
         $this->num_documento = $num_documento;
@@ -47,10 +53,12 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
      */
     public function collection()
     {
+        $ruta_id = $this->ruta_id;
         $marca_id = $this->marca_id;
         $vendedor_id = $this->vendedor_id;
         $producto_id = $this->producto_id;
 
+        $ruta = $this->ruta;
         $marcas_name = $this->marcas_name;
         $tipo_documento = $this->tipo_documento;
         $conductor = $this->conductor;
@@ -63,6 +71,7 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
         $productos = Producto::withTrashed()->get();
 
         $collect_by = collect([
+            ["by" => "ruta_id", "estado" => $ruta],
             ["by" => "marcas.name", "estado" => $marcas_name],
             ["by" => "f_comprobante_sunats.tipoDoc", "estado" => $tipo_documento],
             ["by" => "f_comprobante_sunats.conductor_id", "estado" => $conductor],
@@ -88,6 +97,13 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             ->join('productos', 'f_comprobante_sunat_detalles.codProducto', '=', 'productos.id')
             ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->join('empleados', 'f_comprobante_sunats.vendedor_id', '=', 'empleados.id')
+            ->join('rutas', 'f_comprobante_sunats.ruta_id', '=', 'rutas.id')
+            ->when($ruta, function ($query) {
+                return $query->addSelect(
+                    'f_comprobante_sunats.ruta_id',
+                    'rutas.name as rutas_name',
+                );
+            })
             ->when($marcas_name, function ($query) {
                 return $query->addSelect('marcas.name');
             })
@@ -126,6 +142,9 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             })
             ->whereBetween('pedido_fecha_factuacion', [$this->fecha_inicio, $this->fecha_fin])
             ->where("estado_reporte", true)
+            ->when(isset($ruta_id), function ($query) use ($ruta_id) {
+                return $query->where('rutas.id', $ruta_id);
+            })
             ->when(isset($marca_id), function ($query) use ($marca_id) {
                 return $query->where('marcas.id', $marca_id);
             })
@@ -139,6 +158,9 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
                 return $query->groupBy(
                     $array_by
                 );
+            })
+            ->when($ruta, function ($q) {
+                return $q->orderBy('f_comprobante_sunats.ruta_id');
             })
             ->when($marcas_name, function ($q) {
                 return $q->orderBy('marcas.name');
@@ -191,6 +213,7 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
         $fecha_inicio = date("d-m-Y", strtotime($this->fecha_inicio));
         $fecha_fin = date("d-m-Y", strtotime($this->fecha_fin));
 
+        $ruta = $this->ruta;
         $marcas_name = $this->marcas_name;
         $tipo_documento = $this->tipo_documento;
         $conductor = $this->conductor;
@@ -201,6 +224,8 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
         $fecha_emision = $this->fecha_emision;
 
         $titulos = collect([
+            ["titulo" => "Ruta Cod", "estado" => $ruta],
+            ["titulo" => "Descrip Ruta", "estado" => $ruta],
             ["titulo" => "Descrip Marca", "estado" => $marcas_name],
             ["titulo" => "Tipo Doc", "estado" => $tipo_documento],
             ["titulo" => "Conductor", "estado" => $conductor],
