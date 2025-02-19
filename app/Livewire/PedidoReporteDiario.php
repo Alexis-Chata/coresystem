@@ -515,6 +515,9 @@ class PedidoReporteDiario extends Component
             if ($producto->cantidad == 1) {
                 $cantidad = floor($nuevaCantidad);
                 $importe = $cantidad * $detalle->producto_precio;
+                if ($producto->f_tipo_afectacion_id == 21) {
+                    $importe = 0;
+                }
             } else {
                 $cantidad = $this->ajustarCantidadDetalle(
                     $nuevaCantidad,
