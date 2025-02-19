@@ -70,6 +70,7 @@ class FComprobanteSunat extends Model
         'mensaje_sunat',
         'obs',
         'estado_reporte',
+        'estado_cpe_sunat',
         'empresa_id',
     ];
 

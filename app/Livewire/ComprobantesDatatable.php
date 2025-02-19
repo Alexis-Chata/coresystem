@@ -54,11 +54,11 @@ class ComprobantesDatatable extends DataTableComponent
             })
             ->when($this->estado_envio, function ($query) {
                 $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
-                    if ($this->estado_envio == 'enviados') {
-                        $q->where("codigo_sunat", '0');
-                    } else {
-                        $q->where("codigo_sunat", '!=', '0')->orWhereNull("codigo_sunat");
-                    }
+                    $estado = in_array($this->estado_envio, ['aceptado', 'rechazado'])
+                        ? $this->estado_envio
+                        : 'pendiente';
+
+                    $q->where("estado_cpe_sunat", $estado);
                 });
             })
             ->when($this->buscar_search, function ($query) {

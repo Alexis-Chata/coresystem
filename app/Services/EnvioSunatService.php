@@ -13,7 +13,7 @@ class EnvioSunatService
     public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $this->xml($comprobante);
-        //$this->pdf($comprobante);
+        $this->pdf($comprobante);
 
         $company = $comprobante->sede->empresa;
 
@@ -63,6 +63,16 @@ class EnvioSunatService
             $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'cdrxml' => $path_cdrxml, 'cdrbase64' => $response['sunatResponse']['cdrZip'], 'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'], 'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'], 'obs' => $response['sunatResponse']['cdrResponse']['notes']]);
         } else {
             $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'codigo_sunat' => $response['sunatResponse']['error']['code'], 'mensaje_sunat' => $response['sunatResponse']['error']['message']]);
+        }
+
+        if(str_contains($comprobante->mensaje_sunat, "acepta")){
+            $comprobante->estado_cpe_sunat = "aceptado";
+            $comprobante->save();
+        }
+
+        if(str_contains($comprobante->mensaje_sunat, "rechaza")){
+            $comprobante->estado_cpe_sunat = "rechazado";
+            $comprobante->save();
         }
 
         return $response;
