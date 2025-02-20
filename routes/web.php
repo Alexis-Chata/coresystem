@@ -138,7 +138,7 @@ Route::middleware([
 
     Route::get('/imprimir-comprobantes', function () {
         return view('imprimir-comprobantes');
-    })->middleware('can:imprimir comprobante')->name('comprobantes.imprimir');
+    })->middleware('can:view comprobante')->name('comprobantes.imprimir');
 
     Route::get('/envio-comprobantes', function () {
         return view('envio-comprobantes');

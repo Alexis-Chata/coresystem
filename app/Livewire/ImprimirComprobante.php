@@ -169,7 +169,7 @@ class ImprimirComprobante extends Component
             session()->forget('error');
         } catch (\Exception $e) {
             // Manejo de errores
-            if(isset($printer)){
+            if (isset($printer)) {
                 $printer->close();
             }
             session()->flash('error', 'Error al imprimir: ' . $e->getMessage());
