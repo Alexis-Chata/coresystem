@@ -22,7 +22,7 @@ trait CalculosTrait
             list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
             $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
 
-            if($data_detalle['bultos'] == 0 and $data_detalle['unidades'] == 0 ){
+            if ($data_detalle['bultos'] == 0 and $data_detalle['unidades'] == 0) {
                 logger("data detalle", ["revisar cantidad vendida" => $data_detalle]);
             }
 
@@ -37,8 +37,8 @@ trait CalculosTrait
             $data_detalle['factorIcbper'] = $producto->porcentaje_icbper ?? 0;
             $diferencia = ($data_detalle['mtoPrecioUnitario'] - $data_detalle['factorIcbper']);
             $porcentaje = ($data_detalle['porcentajeIgv'] + $data_detalle['porcentajeIsc']);
-            $data_detalle['mtoValorUnitario'] = number_format(($diferencia) / (1 + ($porcentaje / 100)), 2, '.', '');
-            $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorUnitario'] * $data_detalle['cantidad'];
+            $data_detalle['mtoValorUnitario'] = (($diferencia) / (1 + ($porcentaje / 100)));
+            $data_detalle['mtoValorVenta'] = number_format_punto2($data_detalle['mtoValorUnitario'] * $data_detalle['cantidad']);
 
             if ($data_detalle['tipAfeIgv'] == 21) {
                 $data_detalle['mtoValorGratuito'] = $data_detalle['ref_producto_precio_cajon'] / $data_detalle['ref_producto_cantidad_cajon'];
@@ -46,7 +46,8 @@ trait CalculosTrait
             }
             $data_detalle['mtoBaseIgv'] = $data_detalle['mtoValorVenta'] ?? 0;
             $data_detalle['mtoBaseIsc'] = ($data_detalle['porcentajeIsc'] > 0) ? $data_detalle['mtoValorVenta'] : 0;
-            $data_detalle['igv'] = $data_detalle['importe'] - $data_detalle['mtoBaseIgv'];
+            //$data_detalle['igv'] = number_format_punto2(($data_detalle['mtoBaseIgv'] * $data_detalle['porcentajeIgv']) / 100);
+            $data_detalle['igv'] = number_format_punto2($data_detalle['importe'] - $data_detalle['mtoBaseIgv']);
             if ($data_detalle['tipAfeIgv'] == 21) {
                 $data_detalle['igv'] = 0;
             }
