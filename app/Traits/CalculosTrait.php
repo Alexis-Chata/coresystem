@@ -44,7 +44,7 @@ trait CalculosTrait
                 $data_detalle['mtoValorGratuito'] = $data_detalle['ref_producto_precio_cajon'] / $data_detalle['ref_producto_cantidad_cajon'];
                 $data_detalle['mtoValorVenta'] = $data_detalle['mtoValorGratuito'] * $data_detalle['cantidad'];
             }
-            $data_detalle['mtoBaseIgv'] = $data_detalle['mtoValorVenta'] ?? 0;
+            $data_detalle['mtoBaseIgv'] = number_format_punto2($data_detalle['mtoValorVenta'] ?? 0);
             $data_detalle['mtoBaseIsc'] = ($data_detalle['porcentajeIsc'] > 0) ? $data_detalle['mtoValorVenta'] : 0;
             //$data_detalle['igv'] = number_format_punto2(($data_detalle['mtoBaseIgv'] * $data_detalle['porcentajeIgv']) / 100);
             $data_detalle['igv'] = number_format_punto2($data_detalle['importe'] - $data_detalle['mtoBaseIgv']);

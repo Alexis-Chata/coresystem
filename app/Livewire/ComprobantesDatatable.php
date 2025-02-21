@@ -194,7 +194,8 @@ class ComprobantesDatatable extends DataTableComponent
             return;
         }
         $envioSunat = new EnvioSunatService;
-        $envioSunat->send($comprobante);
+        $response = $envioSunat->send($comprobante);
+        logger("response_envio_sunat", [$response['sunatResponse']]);
         return Storage::download($comprobante->cdrxml);
     }
 

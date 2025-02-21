@@ -305,6 +305,10 @@ final class GenerarComprobantesTable extends PowerGridComponent
 
                             $invoice = FComprobanteSunat::create($datos_comprobante);
                             $invoice->detalle()->createMany($detalles->toArray());
+                            if($invoice->tipoDoc == '00'){
+                                $invoice->estado_cpe_sunat = 'aceptado';
+                                $invoice->save();
+                            }
 
                             if ($pedido->tipoComprobante->tipo_comprobante == '01' || $pedido->tipoComprobante->tipo_comprobante == '03') {
                                 $serie_guia = FSerie::where("f_sede_id", $sede->id)->where('f_tipo_comprobante_id', 6)->first();
