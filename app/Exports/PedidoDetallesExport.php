@@ -32,6 +32,7 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
             ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->join('pedido_detalles', 'pedido_detalles.producto_id', '=', 'productos.id')
             ->join('pedidos', 'pedido_detalles.pedido_id', '=', 'pedidos.id')
+            ->join('empleados', 'pedidos.vendedor_id', '=', 'empleados.id')
             ->join('producto_lista_precios', function ($join) {
                 $join->on('producto_lista_precios.producto_id', '=', 'productos.id')
                     ->on('producto_lista_precios.lista_precio_id', '=', 'pedido_detalles.lista_precio');
@@ -41,7 +42,10 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'pedidos.conductor_id as conductor_cod',
                 'pedidos.fecha_emision as pedido_fecha',
                 'pedidos.estado as pedido_estado',
+                'marcas.id as marca_id',
                 'marcas.name as marca_name',
+                'empleados.id as vendedor_id',
+                'empleados.name as vendedor_name',
                 'pedido_detalles.*',
                 'producto_lista_precios.precio as precio_actual', // Agregamos el precio actual
             ])
@@ -66,7 +70,10 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'conductor_cod',
                 'pedido_fecha',
                 'pedido_estado',
-                'marca',
+                'marca_id',
+                'marca_name',
+                'vendedor_id',
+                'vendedor_name',
                 'id',
                 'pedido_id',
                 'item',
