@@ -45,6 +45,7 @@ class PedidoTable extends Component
         "totalImpuestos" => 0,
         "subTotal" => 0,
     ];
+    public $cantidad_ofrecida = 0.01;
 
     // Propiedades para listas y usuario
     public $clientes = [];
@@ -91,14 +92,14 @@ class PedidoTable extends Component
         $this->empresa = Empresa::first();
         $this->fecha_emision = Carbon::now()->format("Y-m-d");
 
-        if (!$this->user->hasRole("admin")) {
+        if (!$this->user->can("admin pedido")) {
             $this->vendedor_id = $this->empleado->id;
         }
     }
 
     private function loadDataByRole()
     {
-        if ($this->user->hasRole("admin")) {
+        if ($this->user->can("admin pedido")) {
             $this->vendedores = Empleado::where(
                 "tipo_empleado",
                 "vendedor"
@@ -259,13 +260,18 @@ class PedidoTable extends Component
             return $detalle["producto_id"] === $producto_id;
         });
 
+        $cantidad = $producto->cantidad == 1 ? 1 : 0.01; // <-- Nueva lógica
+        if($this->cantidad_ofrecida > 0){
+            $cantidad = $this->cantidad_ofrecida;
+        }
+
         if (!$existe) {
             // Agregar el producto al detalle
             $this->pedido_detalles[] = [
                 "producto_id" => $producto->id,
                 "codigo" => $producto->id,
                 "nombre" => $producto->name,
-                "cantidad" => $producto->cantidad == 1 ? 1 : 0.01, // <-- Nueva lógica
+                "cantidad" => $cantidad,
                 "importe" => 0, // Se calculará en el siguiente paso
                 "marca_id" => $producto->marca_id,
             ];
@@ -277,6 +283,7 @@ class PedidoTable extends Component
         // Limpiar búsqueda
         $this->search = "";
         $this->productos = [];
+        $this->cantidad_ofrecida = 0.01;
 
         $this->actualizarTotales();
 
@@ -407,7 +414,7 @@ class PedidoTable extends Component
             ]);
 
             // Emitir eventos para limpiar los componentes
-            if ($this->user->hasRole("admin")) {
+            if ($this->user->can("admin pedido")) {
                 $this->dispatch("reset-vendedor-select");
             }
             $this->dispatch("reset-cliente-select");
@@ -474,16 +481,7 @@ class PedidoTable extends Component
 
             // Validar que los paquetes no excedan la cantidad de productos por caja
             if ($paquetes >= $cantidadProducto) {
-                logger(
-                    "Error: La cantidad de paquetes no puede ser mayor o igual a la cantidad de productos por caja.",
-                    [
-                        "cantidadIngresada" => $cantidad,
-                        "paquetes" => $paquetes,
-                        "cantidadProducto" => $cantidadProducto,
-                    ]
-                );
-                $this->pedido_detalles[$index]["importe"] = 0; // O puedes lanzar un mensaje de error
-                return;
+                $this->ajustarCantidad($index);
             }
 
             // Calcular cantidad total de paquetes
@@ -517,7 +515,7 @@ class PedidoTable extends Component
     public function ajustarCantidad($index)
     {
         $detalle = $this->pedido_detalles[$index];
-        $cantidad = $detalle["cantidad"];
+        $cantidad = number_format_punto2($detalle["cantidad"]);
 
         // Separar la cantidad ingresada en cajas y paquetes
         if (strpos($cantidad, ".") !== false) {
@@ -560,7 +558,7 @@ class PedidoTable extends Component
     // Método que se ejecuta cuando cambia el vendedor_id
     public function updatedVendedorId($value)
     {
-        if ($this->user->hasRole("admin")) {
+        if ($this->user->can("admin pedido")) {
             $this->cliente_id = null;
             if ($value) {
                 $this->dispatch("vendedorSelected", $value);
