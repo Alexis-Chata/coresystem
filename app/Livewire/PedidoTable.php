@@ -75,7 +75,7 @@ class PedidoTable extends Component
 
     public function mount()
     {
-        $this->user = auth()->user();
+        $this->user = auth_user();
         $this->empleado = $this->user->empleados()->first();
         $this->pedido_detalles = [];
 

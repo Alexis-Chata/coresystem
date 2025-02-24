@@ -352,7 +352,7 @@ class ComprobantesDatatable extends DataTableComponent
         return [
             Column::make('Action')
                 ->label(
-                    fn ($row, Column $column) => view('livewire.components.dropdown')->with([
+                    fn($row, Column $column) => view('livewire.components.dropdown')->with([
                         'id' => $row->id,
                         'codigo_sunat' => $row->codigo_sunat,
                         'tipo_doc' => $row->tipoDoc,
