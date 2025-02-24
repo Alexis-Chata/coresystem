@@ -17,6 +17,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Rappasoft\LaravelLivewireTables\Views\Columns\DateColumn;
@@ -195,7 +196,7 @@ class ComprobantesDatatable extends DataTableComponent
         }
         $envioSunat = new EnvioSunatService;
         $response = $envioSunat->send($comprobante);
-        logger("response_envio_sunat", [$response['sunatResponse']]);
+        Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse']);
         return Storage::download($comprobante->cdrxml);
     }
 
