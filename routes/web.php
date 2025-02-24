@@ -144,6 +144,10 @@ Route::middleware([
         return view('envio-comprobantes');
     })->middleware('can:envio comprobante')->name('comprobantes.envio');
 
+    Route::get('/invoice-nota', function () {
+        return view('invoice-nota');
+    })->middleware('can:invoice-nota comprobante')->name('comprobantes.invoice.nota');
+
     Route::get('/envio-guias', function () {
         return view('envio-guias');
     })->middleware('can:envio-guias comprobante')->name('guias.envio');
