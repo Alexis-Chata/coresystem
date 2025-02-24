@@ -93,6 +93,11 @@ class Reportes extends Component
 
     public function exportar_reporte()
     {
+        $this->ruta_id == "NULL" ? $this->ruta_id = null : $this->ruta_id;
+        $this->marca_id == "NULL" ? $this->marca_id = null : $this->marca_id;
+        $this->vendedor_id == "NULL" ? $this->vendedor_id = null : $this->vendedor_id;
+        $this->producto_id == "NULL" ? $this->producto_id = null : $this->producto_id;
+
         $fecha_inicio = $this->fecha_inicio;
         $fecha_fin = $this->fecha_fin;
         $ruta_id   = $this->ruta_id;
