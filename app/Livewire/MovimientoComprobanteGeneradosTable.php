@@ -9,6 +9,7 @@ use App\Models\Ruta;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
@@ -130,8 +131,16 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
     }
 
     #[\Livewire\Attributes\On('exportarpdf')]
-    public function exportarMovimientoCargaPDF($movimiento_id)
+    public function exportarConductorListaClientePDF($movimiento_id)
     {
+        // Ruta donde esta/guardará el archivo
+        $file_name = 'conductor-lista-cliente_'.$movimiento_id.'.pdf';
+        $filePath = 'cola-pdfs/'.$file_name;
+
+        if (Storage::disk('local')->exists($filePath)) {
+            return response()->download(storage_path("app/private/$filePath"));
+        }
+
         $movimiento = Movimiento::with('conductor')->find($movimiento_id);
         $rutas = Ruta::all();
         $vendedores = Empleado::all();
@@ -142,10 +151,12 @@ final class MovimientoComprobanteGeneradosTable extends PowerGridComponent
             "pdf.conductor-lista-cliente", compact('comprobantes_rutas', 'rutas', 'vendedores', 'movimiento')
         )->setPaper('A4');
 
+        // Guardar el PDF en storage/app/private
+        Storage::disk('local')->put($filePath, $pdf->output());
+
         // Descargar el PDF
         return response()->streamDownload(
-            fn() => print $pdf->output(),
-            "conductor-lista-cliente" . ".pdf"
+            fn() => print $pdf->output(), $file_name
         );
     }
 

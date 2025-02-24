@@ -17,6 +17,7 @@ use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class GenerarMovimientoLiquido extends Component
@@ -194,11 +195,24 @@ class GenerarMovimientoLiquido extends Component
 
     public function exportarMovimientoCargaPDF(Movimiento $movimiento)
     {
+        // Ruta donde esta/guardará el archivo
+        $file_name = 'movimiento_carga_'.$movimiento->id.'.pdf';
+        $filePath = 'cola-pdfs/'.$file_name;
+
+        if (Storage::disk('local')->exists($filePath)) {
+            return response()->download(storage_path("app/private/$filePath"));
+        }
         $marca = Marca::all();
         $movimiento->load([
             'movimientoDetalles.producto' => function ($query) {
                 $query->withTrashed(); // Incluir productos eliminados
-            }, 'movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
+            },
+            'movimientoDetalles.producto.marca',
+            'tipoMovimiento',
+            'conductor.fSede',
+            'almacen',
+            'vehiculo'
+        ]);
         $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
             return $detalle->producto->marca->id; // Agrupar por nombre de la marca
         });
@@ -209,10 +223,12 @@ class GenerarMovimientoLiquido extends Component
             compact("movimiento", "detallesAgrupados", "marca")
         );
 
+        // Guardar el PDF en storage/app/private
+        Storage::disk('local')->put($filePath, $pdf->output());
+
         // Descargar el PDF
         return response()->streamDownload(
-            fn () => print $pdf->output(),
-            "movimiento_carga_conductor" . ".pdf"
+            fn() => print $pdf->output(), $file_name
         );
     }
 }
