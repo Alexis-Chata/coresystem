@@ -11,7 +11,7 @@ class PermisosUser extends Component
 {
     public function render()
     {
-        $users = User::with('roles')->get();
+        $users = User::with(['roles', 'user_empleados.empleado'])->get();
         return view('livewire.permisos-user', compact('users'));
     }
 

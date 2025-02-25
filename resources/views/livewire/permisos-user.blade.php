@@ -8,6 +8,7 @@
                     <tr>
                         <th class="p-3 text-left">Nombre</th>
                         <th class="p-3 text-left">Email</th>
+                        <th class="p-3 text-left">Cod-Vendedor</th>
                         <th class="p-3 text-left">Roles</th>
                         <th class="p-3 text-left">Permisos</th>
                         <th class="p-3 text-left">Acciones</th>
@@ -18,6 +19,15 @@
                         <tr class="border-t h-full">
                             <td class="px-3 py-2">{{ $user->name }}</td>
                             <td class="px-3 py-2">{{ $user->email }}</td>
+                            <td class="px-3 py-2">
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach ($user->user_empleados as $user_empleado)
+                                        <span class="px-2 py-1 text-xs bg-neutral-200 text-gray-600 rounded">
+                                            {{ $user_empleado->empleado->id }}-{{ $user_empleado->empleado->name }}-{{ $user_empleado->tipo }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </td>
                             <td class="px-3 py-2">
                                 @foreach ($user->roles as $role)
                                     <span
@@ -33,7 +43,6 @@
                                     @endforeach
                                 </div>
                             </td>
-
                             <td class="px-3 py-2">
                                 <!-- Botón para abrir el modal -->
                                 <button wire:click="openModal({{ $user->id }})"
