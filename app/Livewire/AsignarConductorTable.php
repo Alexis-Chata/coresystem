@@ -17,6 +17,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
@@ -27,7 +28,8 @@ final class AsignarConductorTable extends PowerGridComponent
     public string $sortDirection = 'asc';
     public $selectedConductor = "";
     public $conductores = [];
-    public $fecha_reparto = "";
+    public $fecha_reparto = null;
+    public $rutas_agrupadas = [];
 
     public $startDate = null;
     public $endDate = null;
@@ -66,7 +68,7 @@ final class AsignarConductorTable extends PowerGridComponent
             PowerGrid::header()->includeViewOnTop(
                 "components.date-range-filter"
             ),
-            PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 25),
+            PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 25)->includeViewOnBottom("components.view-bottom"),
         ];
     }
 
@@ -99,14 +101,9 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Pedido::query()->whereIn('estado', ['pendiente', 'asignado'])
+        $pedidos = Pedido::query()->whereIn('estado', ['pendiente', 'asignado'])
             ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
-            ->join(
-                "empleados as vendedores",
-                "pedidos.vendedor_id",
-                "=",
-                "vendedores.id"
-            )
+            ->join("empleados as vendedores", "pedidos.vendedor_id", "=", "vendedores.id")
             ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
             ->when($this->startDate && $this->endDate, function ($query) {
                 return $query->whereBetween("pedidos.fecha_emision", [
@@ -121,6 +118,10 @@ final class AsignarConductorTable extends PowerGridComponent
                 "clientes.razon_social as cliente_nombre",
                 "pedidos.ruta_id"
             );
+            //dd($pedidos->get()[0]);
+
+            //$this->rutas_agrupadas = $pedidos->get()->groupBy("ruta_id");
+        return $pedidos;
     }
 
     public function fields(): PowerGridFields
@@ -332,10 +333,16 @@ final class AsignarConductorTable extends PowerGridComponent
             compact("pedidosAgrupados", "startDate", "endDate")
         );
 
+        // Ruta donde esta/guardará el archivo
+        $file_name = "pedidos_" . $this->startDate . "_a_" . $this->endDate . "-created-" . now()->format('d-m-Y_H-i-s') . ".pdf";
+        $filePath = 'cola-pdfs/'.$file_name;
+
+        // Guardar el PDF en storage/app/private
+        Storage::disk('local')->put($filePath, $pdf->output());
+
         // Descargar el PDF
         return response()->streamDownload(
-            fn() => print $pdf->output(),
-            "pedidos_" . $this->startDate . "_a_" . $this->endDate . ".pdf"
+            fn () => print $pdf->output(), $file_name
         );
     }
 
