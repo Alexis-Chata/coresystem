@@ -156,6 +156,10 @@ Route::middleware([
         return view('reporte-view');
     })->middleware('can:view reporte')->name('reporte.view');
 
+    Route::get('/permisos-usuario', function () {
+        return view('permisos-usuario');
+    })->middleware('can:view roles')->name('permisos.usuario');
+
     Route::get('storage/{anyPath}', function ($anyPath) {
         // Verificar si el archivo existe en el disco 'local'
         if (Storage::disk('local')->exists($anyPath)) {
