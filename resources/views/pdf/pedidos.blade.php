@@ -31,7 +31,7 @@
         .total-row td {
             background-color: #f2f2f2;
             font-weight: bold;
-            padding-top: 15px;
+            padding-top: 12px;
         }
 
         .total-row td.total-label {

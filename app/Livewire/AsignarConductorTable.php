@@ -65,9 +65,7 @@ final class AsignarConductorTable extends PowerGridComponent
         $this->initProperties();
         $this->showCheckBox();
         return [
-            PowerGrid::header()->includeViewOnTop(
-                "components.date-range-filter"
-            ),
+            PowerGrid::header()->includeViewOnTop("components.date-range-filter"),
             PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 25)->includeViewOnBottom("components.view-bottom"),
         ];
     }

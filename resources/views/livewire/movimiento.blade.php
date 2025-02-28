@@ -116,7 +116,7 @@
                                             <div class="text-xs text-gray-500 dark:text-gray-400">
                                                 Marca: {{ $producto->marca->name ?? 'N/A' }} |
                                                 Precio: S/. {{ number_format($precio, 2) }} |
-                                                Stock disp.: {{ $producto->almacenProductos->sum("stock_disponible") }}
+                                                Stock disp.: {{ number_format($producto->almacenProductos->sum("stock_disponible"), 2) }}
                                             </div>
                                         </div>
                                     @endforeach
