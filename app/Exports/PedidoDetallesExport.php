@@ -26,8 +26,8 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
         $fechaInicio = $this->fecha_inicio ?? now()->toDateString();
         $fechaFin = $this->fecha_fin ?? now()->toDateString();
 
-        ini_set('memory_limit', '512M');
-        $producto_lista_precio = ProductoListaPrecio::withTrashed()->get();
+        //ini_set('memory_limit', '512M');
+        //$producto_lista_precio = ProductoListaPrecio::withTrashed()->get();
         $pedidoDetalles = DB::table('productos')
             ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->join('pedido_detalles', 'pedido_detalles.producto_id', '=', 'productos.id')

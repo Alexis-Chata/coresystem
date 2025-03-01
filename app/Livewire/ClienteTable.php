@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exports\ClientesExport;
 use App\Models\Cliente;
 use App\Models\Empresa;
 use App\Models\FTipoDocumento;
@@ -18,6 +19,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Responsive;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\On;
+use Maatwebsite\Excel\Facades\Excel;
 
 final class ClienteTable extends PowerGridComponent
 {
@@ -40,7 +42,7 @@ final class ClienteTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        $this->user = auth()->user();
+        $this->user = auth_user();
         $this->empleado = $this->user->empleados()->first();
 
         return [
@@ -283,5 +285,9 @@ final class ClienteTable extends PowerGridComponent
     {
         $this->dispatch('pg:eventRefresh-default');
         $this->setUp();
+    }
+
+    public function descargar_clientes(){
+        return Excel::download(new ClientesExport, 'Clientes.xlsx');
     }
 }
