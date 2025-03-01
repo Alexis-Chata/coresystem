@@ -1,7 +1,7 @@
 <div>
-    <input type="date" wire:model="fecha_inicio"
+    <input type="date" wire:model.live="fecha_inicio"
         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
-    <input type="date" wire:model="fecha_fin"
+    <input type="date" wire:model.live="fecha_fin"
         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
 
     <select wire:model="ruta_id"
@@ -40,7 +40,7 @@
         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
         Exportar
     </button>
-    <div class="mb-2" wire:loading wire:target="exportar_reporte">
+    <div class="mb-2" wire:loading wire:target="exportar_reporte, fecha_inicio, fecha_fin">
         Cargando...
     </div>
     <br />

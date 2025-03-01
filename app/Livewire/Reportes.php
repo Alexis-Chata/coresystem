@@ -48,9 +48,13 @@ class Reportes extends Component
         } else {
             $fecha_fin = $this->fecha_fin->subDay(); // Agregar 1 día en otros casos
         }
-        $this->fecha_inicio = $fecha_fin->startOfMonth()->toDateString();
         $this->fecha_fin = $fecha_fin->toDateString();
+        $this->fecha_inicio = $fecha_fin->startOfMonth()->toDateString();
+        $this->mount_propiedades();
+    }
 
+    public function mount_propiedades()
+    {
         $rutas_id = DB::table('f_comprobante_sunat_detalles')
             ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
             ->join('productos', 'f_comprobante_sunat_detalles.codProducto', '=', 'productos.id')
@@ -90,6 +94,16 @@ class Reportes extends Component
             ->distinct()
             ->orderBy('productos.id')
             ->get();
+    }
+
+    public function updatedFechaFin()
+    {
+        $this->mount_propiedades();
+    }
+
+    public function updatedFechaInicio()
+    {
+        $this->mount_propiedades();
     }
 
     public function exportar_reporte()
