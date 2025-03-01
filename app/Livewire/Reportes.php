@@ -41,14 +41,15 @@ class Reportes extends Component
 
     public function mount()
     {
-        $this->fecha_inicio = Carbon::now()->startOfMonth()->toDateString();
         $this->fecha_fin = Carbon::now();
 
         if ($this->fecha_fin->isMonday()) {
-            $this->fecha_fin = $this->fecha_fin->subDays(2)->toDateString(); // Agregar 2 días si es sábado
+            $fecha_fin = $this->fecha_fin->subDays(2); // Agregar 2 días si es sábado
         } else {
-            $this->fecha_fin = $this->fecha_fin->subDay()->toDateString(); // Agregar 1 día en otros casos
+            $fecha_fin = $this->fecha_fin->subDay(); // Agregar 1 día en otros casos
         }
+        $this->fecha_inicio = $fecha_fin->startOfMonth()->toDateString();
+        $this->fecha_fin = $fecha_fin->toDateString();
 
         $rutas_id = DB::table('f_comprobante_sunat_detalles')
             ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
