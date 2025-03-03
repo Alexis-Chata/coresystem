@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exports\ProductosExport;
 use App\Models\Producto;
 use App\Models\Empresa;
 use App\Models\Marca;
@@ -19,6 +20,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 final class ProductoTable extends PowerGridComponent
 {
@@ -460,5 +462,11 @@ final class ProductoTable extends PowerGridComponent
             session()->flash('error', 'Error al actualizar los componentes: ' . $e->getMessage());
             $this->dispatch('error', ['message' => $e->getMessage()]);
         }
+    }
+
+    public function descargar_productos()
+    {
+        $filename = 'Productos.xlsx';
+        return Excel::download(new ProductosExport, $filename);
     }
 }
