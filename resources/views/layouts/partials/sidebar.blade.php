@@ -492,6 +492,18 @@
                         </li>
                     @endcan
 
+                    <!-- Gestión de Roles -->
+                    @can('view roles')
+                        <li>
+                            <a href="{{ route('permisos.roles') }}"
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('permisos.roles') }}' }">
+                                <x-svg_icon_user class="w-6 h-6" />
+                                Permisos de Roles
+                            </a>
+                        </li>
+                    @endcan
+
                 </ul>
             </div>
         </nav>
