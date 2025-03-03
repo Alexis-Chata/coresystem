@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Exports\PreciosExport;
 use App\Models\Producto;
 use App\Models\ProductoListaPrecio;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
@@ -13,13 +15,15 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 final class ProductoPreciosBodegaTable extends PowerGridComponent
 {
     public string $tableName = 'producto-precios-bodega-table';
+    public $lista_precio_id = 1;
 
     public function setUp(): array
     {
         return [
             PowerGrid::header()
                 ->showSearchInput()
-                ->showSoftDeletes(showMessage: true),
+                ->showSoftDeletes(showMessage: true)
+                ->includeViewOnTop('components.view-on-top'),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -72,5 +76,15 @@ final class ProductoPreciosBodegaTable extends PowerGridComponent
             Column::make('Precio Cajón', 'precio_bodega'),
             Column::make('Precio Unidad', 'precio_unidad'),
         ];
+    }
+
+    public function descargar_lista_precios(){
+        $lista_precio_id = $this->lista_precio_id;
+        $name = match ($lista_precio_id) {
+            1 => 'Lista Bodega.xlsx',
+            2 => 'Lista Mayorista.xlsx',
+            default => 'Lista de Precios.xlsx',
+        };
+        return Excel::download(new PreciosExport($lista_precio_id), $name);
     }
 }

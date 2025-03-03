@@ -54,5 +54,4 @@ class ClientesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'Vendedor'
         ];
     }
-
 }

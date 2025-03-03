@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Exports\PreciosExport;
 use App\Models\Producto;
 use App\Models\ProductoListaPrecio;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
@@ -13,12 +15,15 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 final class ProductoPreciosMayoristaTable extends PowerGridComponent
 {
     public string $tableName = 'producto-precios-mayorista-table';
+    public $lista_precio_id = 2;
 
     public function setUp(): array
     {
         return [
             PowerGrid::header()
-                ->showSearchInput(),
+                ->showSearchInput()
+                ->showSoftDeletes(showMessage: true)
+                ->includeViewOnTop('components.view-on-top'),
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -36,7 +41,7 @@ final class ProductoPreciosMayoristaTable extends PowerGridComponent
             ->addSelect([
                 'precio_mayorista' => ProductoListaPrecio::select('precio')
                     ->whereColumn('producto_id', 'productos.id')
-                    ->where('lista_precio_id', 2)
+                    ->where('lista_precio_id', $this->lista_precio_id)
                     ->limit(1)
             ]);
     }
@@ -74,5 +79,15 @@ final class ProductoPreciosMayoristaTable extends PowerGridComponent
             Column::make('Precio Cajón', 'precio_mayorista'),
             Column::make('Precio Unidad', 'precio_unidad'),
         ];
+    }
+
+    public function descargar_lista_precios(){
+        $lista_precio_id = $this->lista_precio_id;
+        $name = match ($lista_precio_id) {
+            1 => 'Lista Bodega.xlsx',
+            2 => 'Lista Mayorista.xlsx',
+            default => 'Lista de Precios.xlsx',
+        };
+        return Excel::download(new PreciosExport($lista_precio_id), $name);
     }
 }
