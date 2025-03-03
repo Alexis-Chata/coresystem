@@ -40,18 +40,20 @@ class ComprobantesDatatable extends DataTableComponent
     ];
 
     public $fecha_emision;
+    public $fecha_emision_fin;
     public $buscar_search;
     public $estado_envio;
     public $tipoDoc;
 
     public function builder(): Builder
     {
+
         $return =  FComprobanteSunat::query()
             ->when($this->tipoDoc, function ($query, $tipo_doc) {
                 $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
             })
-            ->when($this->fecha_emision, function ($query, $fecha) {
-                $query->where("fechaEmision", 'like', '%' . $fecha . '%'); // 2️⃣ Luego filtra por fechaEmision
+            ->when($this->fecha_emision, function ($query) {
+                $query->whereBetween("fechaEmision", [$this->fecha_emision . ' 00:00:00', $this->fecha_emision_fin . ' 23:59:59']);
             })
             ->when($this->estado_envio, function ($query) {
                 $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
@@ -75,9 +77,10 @@ class ComprobantesDatatable extends DataTableComponent
     }
 
     #[On('actualiza_tabla')]
-    public function actualizando_tabla($fecha, $search, $estado_envio, $tipoDoc)
+    public function actualizando_tabla($fecha_inicio, $fecha_fin, $search, $estado_envio, $tipoDoc)
     {
-        $this->fecha_emision = $fecha;
+        $this->fecha_emision = $fecha_inicio;
+        $this->fecha_emision_fin = $fecha_fin;
         $this->buscar_search = $search;
         $this->estado_envio = $estado_envio;
         $this->tipoDoc = $tipoDoc;
@@ -94,6 +97,7 @@ class ComprobantesDatatable extends DataTableComponent
         } else {
             $this->fecha_emision = $this->fecha_emision->subDay()->toDateString();
         }
+        $this->fecha_emision_fin = $this->fecha_emision;
     }
 
     public function enviarSeleccionados()
