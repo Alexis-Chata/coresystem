@@ -1,26 +1,25 @@
-<div class="p-3">
+<div class="p-0">
     <h2 class="text-xl md:text-2xl font-semibold mb-4 text-center md:text-left">
         Administración de Permisos de Usuarios
     </h2>
 
     <div class="overflow-x-auto">
-        <table class="w-full border border-gray-200 rounded-lg text-sm">
+        <table class="w-full border border-gray-200 rounded-lg text-sm hidden md:table">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="p-2 md:p-3 text-left">Nombre</th>
-                    <th class="p-2 md:p-3 text-left">Email</th>
-                    <th class="p-2 md:p-3 text-left hidden md:table-cell">Cod-Vendedor</th>
-                    <th class="p-2 md:p-3 text-left">Roles</th>
-                    <th class="p-2 md:p-3 text-left">Permisos</th>
-                    <th class="p-2 md:p-3 text-left">Acciones</th>
+                    <th class="p-2 text-left">Nombre</th>
+                    <th class="p-2 text-left">Email</th>
+                    <th class="p-2 text-left">Cod-Vendedor</th>
+                    <th class="p-2 text-left">Roles - Permisos</th>
+                    <th class="p-2 text-left">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($users as $user)
                     <tr class="border-t">
                         <td class="px-2 md:px-3 py-2">{{ $user->name }}</td>
-                        <td class="px-2 md:px-3 py-2">{{ $user->email }}</td>
-                        <td class="px-2 md:px-3 py-2 hidden md:table-cell">
+                        <td class="px-2 md:px-3 py-2 truncate whitespace-nowrap">{{ $user->email }}</td>
+                        <td class="px-2 md:px-3 py-2">
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($user->user_empleados as $user_empleado)
                                     <span class="px-2 py-1 text-xs bg-neutral-200 text-gray-600 rounded">
@@ -36,10 +35,6 @@
                                         {{ $role->name }}
                                     </span>
                                 @endforeach
-                            </div>
-                        </td>
-                        <td class="px-2 md:px-3 py-2">
-                            <div class="flex flex-wrap gap-1">
                                 @foreach ($user->permissions as $permission)
                                     <span class="px-2 py-1 text-xs bg-green-200 text-green-800 rounded">
                                         {{ $permission->name }}
@@ -57,8 +52,53 @@
                 @endforeach
             </tbody>
         </table>
-    </div>
 
+        <!-- Modo "Tarjetas" en dispositivos pequeños -->
+        <div class="md:hidden space-y-4">
+            @foreach ($users as $user)
+                <div class="border p-3 rounded-lg bg-white shadow-md">
+                    <p class="font-semibold">{{ $user->name }}</p>
+                    <p class="text-sm text-gray-600 truncate">{{ $user->email }}</p>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        @foreach ($user->user_empleados as $user_empleado)
+                            <span class="px-2 py-1 text-xs bg-neutral-200 text-gray-600 rounded">
+                                {{ $user_empleado->empleado->id }}-{{ $user_empleado->empleado->name }}
+                            </span>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-2">
+                        <strong class="text-xs text-gray-500">Roles:</strong>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            @foreach ($user->roles as $role)
+                                <span class="px-2 py-1 text-xs bg-blue-200 text-blue-800 rounded">
+                                    {{ $role->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <strong class="text-xs text-gray-500">Permisos:</strong>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            @foreach ($user->permissions as $permission)
+                                <span class="px-2 py-1 text-xs bg-green-200 text-green-800 rounded">
+                                    {{ $permission->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex justify-end">
+                        <button wire:click="openModal({{ $user->id }})"
+                            class="px-3 py-1 text-xs text-white bg-blue-600 rounded-md">
+                            Editar
+                        </button>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
     <!-- Modal -->
     <div x-data="{ open: @entangle('isOpen') }" x-show="open"
         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-3">
