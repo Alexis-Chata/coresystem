@@ -26,6 +26,8 @@ class RoleSeeder extends Seeder
         'sede' => ['view', 'create', 'edit', 'delete'],
         'roles' => ['view', 'assign'],
         'reporte' => ['view'],
+        'dashboard' => ['view'],
+        'precios' => ['bodega', 'mayorista'],
     ];
 
     // Define los roles y sus permisos

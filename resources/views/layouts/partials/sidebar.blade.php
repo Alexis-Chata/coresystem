@@ -13,361 +13,280 @@
     </div>
     <!-- SIDEBAR HEADER -->
 
+    @php
+        $grupos_links = [
+            [
+                'grupo_descripcion' => 'MENU', //opcional
+                'grupo_name' => 'MENU',
+                'links' => [
+                    [
+                        'link_descripcion' => 'Dashboard', //opcional
+                        'permission' => 'view dashboard',
+                        'route' => 'dashboard',
+                        'icon' => 'svg_grid_2x2', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Dashboard',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Marcas', //opcional
+                        'permission' => 'view marca',
+                        'route' => 'marcas.index',
+                        'icon' => 'svg_calendar', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Marcas',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Marcas', //opcional
+                        'permission' => 'view cliente',
+                        'route' => 'cliente.index',
+                        'icon' => 'svg_agenda', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Cliente',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Producto', //opcional
+                        'permission' => 'view producto',
+                        'route' => 'producto.*',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Productos', // Productos
+                        'sublinks' => [
+                            [
+                                'permission' => 'edit producto',
+                                'route' => 'producto.index',
+                                'name' => 'Lista de Productos',
+                            ],
+                            [
+                                'permission' => 'mayorista precios',
+                                'route' => 'producto.precios-mayorista',
+                                'name' => 'Precios Mayorista',
+                            ],
+                            [
+                                'permission' => 'bodega precios',
+                                'route' => 'producto.precios-bodega',
+                                'name' => 'Precios Bodega',
+                            ],
+                            [
+                                'permission' => 'stock producto',
+                                'route' => 'producto.stock',
+                                'name' => 'Stock de Productos',
+                            ],
+                        ],
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de movimientos', //opcional
+                        'permission' => 'view movimiento',
+                        'route' => 'movimiento.*',
+                        'icon' => 'svg_grid_add', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Movimientos', // Productos
+                        'sublinks' => [
+                            [
+                                'permission' => 'create movimiento',
+                                'route' => 'movimiento.create',
+                                'name' => 'Ingresar Movimiento',
+                            ],
+                            [
+                                'permission' => 'view movimiento',
+                                'route' => 'movimiento.view',
+                                'name' => 'Ver Movimientos',
+                            ],
+                        ],
+                    ],
+                    [
+                        'link_descripcion' => 'Pedido', //opcional
+                        'permission' => 'view pedido',
+                        'route' => 'pedido.index',
+                        'icon' => 'svg_tecla', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Pedido',
+                    ],
+                    [
+                        'link_descripcion' => 'Categoría', //opcional
+                        'permission' => 'view categoria',
+                        'route' => 'categoria.index',
+                        'icon' => 'svg_grid_2x2', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Categoría',
+                    ],
+                    [
+                        'link_descripcion' => 'Proveedor', //opcional
+                        'permission' => 'view proveedor',
+                        'route' => 'proveedor.index',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Proveedor',
+                    ],
+                    [
+                        'link_descripcion' => 'Empleado', //opcional
+                        'permission' => 'view empleado',
+                        'route' => 'empleado.index',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Empleados',
+                    ],
+                    [
+                        'link_descripcion' => 'Ruta', //opcional
+                        'permission' => 'view ruta',
+                        'route' => 'ruta.index',
+                        'icon' => 'svg_carrito', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Rutas',
+                    ],
+                    [
+                        'link_descripcion' => 'Padron', //opcional
+                        'permission' => 'view padron',
+                        'route' => 'padron.index',
+                        'icon' => 'svg_carrito', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Padrons',
+                    ],
+                    [
+                        'link_descripcion' => 'Asignar Pedido', //opcional
+                        'permission' => 'asignar pedido',
+                        'route' => 'pedido.asignar',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Asignar Pedidos',
+                    ],
+                    [
+                        'link_descripcion' => 'Generar movimiento o Generar Carga', //opcional
+                        'permission' => 'generar-movimientoliq movimiento',
+                        'route' => 'movimiento.generar-movimientoliq',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Generar Movimiento Liquido-Conductor',
+                    ],
+                    [
+                        'link_descripcion' => 'Generar Comprobantes', //opcional
+                        'permission' => 'create comprobante',
+                        'route' => 'comprobantes.create',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Generar Comprobantes',
+                    ],
+                    [
+                        'link_descripcion' => 'Imprimir Comprobantes', //opcional
+                        'permission' => 'view comprobante',
+                        'route' => 'comprobantes.imprimir',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Imprimir Comprobantes',
+                    ],
+                    [
+                        'link_descripcion' => 'Envio Comprobantes', //opcional
+                        'permission' => 'envio comprobante',
+                        'route' => 'comprobantes.envio',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Envio Comprobantes',
+                    ],
+                    [
+                        'link_descripcion' => 'Envio Guias', //opcional
+                        'permission' => 'envio-guias comprobante',
+                        'route' => 'guias.envio',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Envio Guias',
+                    ],
+                    [
+                        'link_descripcion' => 'Empresa', //opcional
+                        'permission' => 'view empresa',
+                        'route' => 'empresa.index',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Empresas',
+                    ],
+                    [
+                        'link_descripcion' => 'Reporte', //opcional
+                        'permission' => 'view reporte',
+                        'route' => 'reporte.view',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Reportes',
+                    ],
+                ],
+            ],
+
+            [
+                'grupo_descripcion' => 'OTROS', //opcional
+                'grupo_name' => 'OTROS',
+                'links' => [
+                    [
+                        'link_descripcion' => 'Gestión de Usuarios', //opcional
+                        'permission' => 'view usuarios',
+                        'route' => 'user.lista',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Gestión de Usuarios',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Roles', //opcional
+                        'permission' => 'view roles',
+                        'route' => 'user-roles.index',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Gestión de Roles',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Permisos', //opcional
+                        'permission' => 'view roles',
+                        'route' => 'permisos.usuario',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Permisos de Usuario',
+                    ],
+                    [
+                        'link_descripcion' => 'Gestión de Permisos', //opcional
+                        'permission' => 'view roles',
+                        'route' => 'permisos.roles',
+                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Permisos de Roles',
+                    ],
+                ],
+            ],
+        ];
+    @endphp;
+
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <!-- Sidebar Menu -->
-        <nav class="mt-5 px-4 py-4 lg:mt-9 lg:px-6" x-data="{ selected: $persist('Dashboard') }">
-            <!-- Menu Group -->
-            <div>
-                <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">MENU</h3>
+        <nav class="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+            @foreach ($grupos_links as $grupo_link)
+                <!-- Grupo {{ $grupo_link['grupo_descripcion'] ?? '' }} -->
+                <div>
+                    <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">{{ $grupo_link['grupo_name'] }}</h3>
 
-                <ul class="mb-6 flex flex-col gap-1.5">
-                    <!-- Menu Item Dashboard -->
-                    <!-- Dashboard -->
-                    <li>
-                        <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                            href="{{ route('dashboard') }}"
-                            :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('dashboard') }}' }">
-                            <x-svg_grid_2x2 />
-                            Dashboard
-                        </a>
-                    </li>
-
-                    <!-- Gestión de Marcas -->
-                    @can('view marca')
-                        <li>
-                            <a href="{{ route('marcas.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('marcas.index') }}' }">
-                                <x-svg_calendar />
-                                Marcas
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Cliente -->
-                    @can('view cliente')
-                        <li>
-                            <a href="{{ route('cliente.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('cliente.index') }}' }">
-                                <x-svg_agenda />
-                                Cliente
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Producto -->
-                    @can('view producto')
-                        <li x-data="{ open: {{ request()->routeIs('producto.*') ? 'true' : 'false' }} }">
-                            <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                href="#" @click.prevent="open = !open"
-                                :class="{ 'bg-graydark dark:bg-meta-4': open }">
-                                <x-svg_user />
-                                Productos
-                                <x-svg_desplegable />
-                            </a>
-
-                            <!-- Dropdown Menu -->
-                            <div class="translate transform overflow-hidden" x-show="open" x-transition>
-                                <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                                    @can('edit producto')
-                                        <li>
-                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                                href="{{ route('producto.index') }}"
-                                                :class="{ 'text-white': {{ request()->routeIs('producto.index') ? 'true' : 'false' }} }">
-                                                Lista de Productos
-                                            </a>
-                                        </li>
-                                    @endcan
+                    <ul class="mb-6 flex flex-col gap-1.5">
+                        <!-- Menu Item {{ $grupo_link['grupo_name'] }} -->
+                        @foreach ($grupo_link['links'] as $item)
+                            @can($item['permission'])
+                                <!-- {{ $item['link_descripcion'] ?? '' }} -->
+                                @if (!count($item['sublinks'] ?? []))
                                     <li>
-                                        <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                            href="{{ route('producto.precios-mayorista') }}"
-                                            :class="{ 'text-white': {{ request()->routeIs('producto.precios-mayorista') ? 'true' : 'false' }} }">
-                                            Precios Mayorista
+                                        <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                                            :class="{ 'bg-graydark dark:bg-meta-4': {{ request()->routeIs($item['route']) ? 'true' : 'false' }} }"
+                                            href="{{ route($item['route']) }}">
+                                            <x-dynamic-component :component="$item['icon']" />
+                                            {{-- <x-svg_user /> --}}
+                                            {{ $item['name'] }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                            href="{{ route('producto.precios-bodega') }}"
-                                            :class="{ 'text-white': {{ request()->routeIs('producto.precios-bodega') ? 'true' : 'false' }} }">
-                                            Precios Bodega
+                                @else
+
+                                    <li x-data="{ open: {{ request()->routeIs($item['route']) ? 'true' : 'false' }} }">
+                                        <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                                            href="#" @click.prevent="open = !open"
+                                            :class="{ 'bg-graydark dark:bg-meta-4': open }">
+                                            <x-dynamic-component :component="$item['icon']" />
+                                            {{-- <x-svg_user /> --}}
+                                            {{ $item['name'] }}
+                                            <x-svg_desplegable />
                                         </a>
+
+                                        <!-- Dropdown Menu -->
+                                        <div class="translate transform overflow-hidden" x-show="open" x-transition>
+                                            <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                                                @foreach ($item['sublinks'] as $sublink)
+                                                    @can($sublink['permission'])
+                                                        <li>
+                                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
+                                                                href="{{ route($sublink['route']) }}"
+                                                                :class="{ 'text-white': {{ request()->routeIs($sublink['route']) ? 'true' : 'false' }} }">
+                                                                {{ $sublink['name'] }}
+                                                            </a>
+                                                        </li>
+                                                    @endcan
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     </li>
-                                    @can('stock producto')
-                                        <li>
-                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                                href="{{ route('producto.stock') }}"
-                                                :class="{ 'text-white': {{ request()->routeIs('producto.stock') ? 'true' : 'false' }} }">
-                                                Stock de Productos
-                                            </a>
-                                        </li>
-                                    @endcan
-                                </ul>
-                            </div>
-                        </li>
 
-                    @endcan
-
-                    <!-- Pedido -->
-                    @can('view pedido')
-                        <li>
-                            <a href="{{ route('pedido.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('pedido.index') }}' }">
-                                <x-svg_tecla />
-                                Pedido
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Categoría -->
-                    @can('view categoria')
-                        <li>
-                            <a href="{{ route('categoria.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('categoria.index') }}' }">
-                                <x-svg_grid_2x2 />
-                                Categoría
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Proveedor -->
-                    @can('view proveedor')
-                        <li>
-                            <a href="{{ route('proveedor.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('proveedor.index') }}' }">
-                                <x-svg_user />
-                                Proveedor
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Empleado -->
-                    @can('view empleado')
-                        <li>
-                            <a href="{{ route('empleado.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('empleado.index')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_user />
-                                Empleados
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Elemento de menú Ruta -->
-                    @can('view ruta')
-                        <li>
-                            <a href="{{ route('ruta.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('ruta.index')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_carrito />
-                                Ruta
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Elemento de menú Padron -->
-                    @can('view padron')
-                        <li>
-                            <a href="{{ route('padron.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('padron.index')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_carrito />
-                                Padron
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Movimiento -->
-                    @can('view movimiento')
-                        <li x-data="{ open: {{ request()->routeIs('movimiento.*') ? 'true' : 'false' }} }">
-                            <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                href="#" @click.prevent="open = !open"
-                                :class="{ 'bg-graydark dark:bg-meta-4': open }">
-                                <x-svg_grid_add />
-                                Movimientos
-                                <x-svg_desplegable />
-                            </a>
-
-                            <!-- Dropdown Menu -->
-                            <div class="translate transform overflow-hidden" x-show="open" x-transition>
-                                <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                                    @can('create movimiento')
-                                        <li>
-                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                                href="{{ route('movimiento.create') }}"
-                                                :class="{ 'text-white': {{ request()->routeIs('movimiento.create') ? 'true' : 'false' }} }">
-                                                Ingresar Movimiento
-                                            </a>
-                                        </li>
-                                    @endcan
-
-                                    @can('view movimiento')
-                                        <li>
-                                            <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                                href="{{ route('movimiento.view') }}"
-                                                :class="{ 'text-white': {{ request()->routeIs('movimiento.view') ? 'true' : 'false' }} }">
-                                                Ver Movimientos
-                                            </a>
-                                        </li>
-                                    @endcan
-                                </ul>
-                            </div>
-                        </li>
-
-                    @endcan
-
-                    <!-- Asignar Pedidos -->
-                    @can('asignar pedido')
-                        <li>
-                            <a href="{{ route('pedido.asignar') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('pedido.asignar')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Asignar Pedidos
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Generar movimiento o Generar Carga -->
-                    @can('generar-movimientoliq movimiento')
-                        <li>
-                            <a href="{{ route('movimiento.generar-movimientoliq') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('movimiento.generar-movimientoliq')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Generar Movimiento Liquido-Conductor
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Generar Comprobantes -->
-                    @can('create comprobante')
-                        <li>
-                            <a href="{{ route('comprobantes.create') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('comprobantes.create')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Generar Comprobantes
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Imprimir Comprobantes -->
-                    @can('view comprobante')
-                        <li>
-                            <a href="{{ route('comprobantes.imprimir') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('comprobantes.imprimir')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Imprimir Comprobantes
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Envio Comprobantes -->
-                    @can('envio comprobante')
-                        <li>
-                            <a href="{{ route('comprobantes.envio') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('comprobantes.envio')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Envio Comprobantes
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Envio Comprobantes -->
-                    @can('envio-guias comprobante')
-                        <li>
-                            <a href="{{ route('guias.envio') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('guias.envio')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-                                Envio Guias
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Empresa -->
-                    @can('view empresa')
-                        <li>
-                            <a href="{{ route('empresa.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('empresa.index')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-
-                                Empresas
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- reporte -->
-                    @can('view reporte')
-                        <li>
-                            <a href="{{ route('reporte.view') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 @if (request()->routeIs('reporte.view')) bg-graydark dark:bg-meta-4 @endif">
-                                <x-svg_companys />
-
-                                Reportes
-                            </a>
-                        </li>
-                    @endcan
-                    <!-- Menu Item Settings -->
-                </ul>
-            </div>
-
-            <!-- Others Group -->
-            <div>
-                <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">OTROS</h3>
-
-                <ul class="mb-6 flex flex-col gap-1.5">
-                    <!-- Menu Item Chart -->
-
-                    <!-- Gestión de Usuarios -->
-                    @can('view usuarios')
-                        <li>
-                            <a href="{{ route('user.lista') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('user.lista') }}' }">
-                                <x-svg_user />
-                                Gestión de Usuarios
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Gestión de Roles -->
-                    @can('view roles')
-                        <li>
-                            <a href="{{ route('user-roles.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('user-roles.index') }}' }">
-                                <x-svg_user />
-                                Gestión de Roles
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Gestión de Roles -->
-                    @can('view roles')
-                        <li>
-                            <a href="{{ route('permisos.usuario') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('permisos.usuario') }}' }">
-                                <x-svg_user />
-                                Permisos de Usuario
-                            </a>
-                        </li>
-                    @endcan
-
-                    <!-- Gestión de Roles -->
-                    @can('view roles')
-                        <li>
-                            <a href="{{ route('permisos.roles') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('permisos.roles') }}' }">
-                                <x-svg_user />
-                                Permisos de Roles
-                            </a>
-                        </li>
-                    @endcan
-
-                </ul>
-            </div>
+                                @endif
+                            @endcan
+                        @endforeach
+                        <!-- Menu Item {{ $grupo_link['grupo_name'] }} -->
+                    </ul>
+                </div>
+            @endforeach
         </nav>
         <!-- Sidebar Menu -->
-
     </div>
 </aside>
