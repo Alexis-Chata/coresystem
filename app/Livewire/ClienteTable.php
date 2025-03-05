@@ -186,6 +186,8 @@ final class ClienteTable extends PowerGridComponent
 
     public function createCliente()
     {
+        $this->newCliente['razon_social'] = mb_strtoupper(preg_replace('/\s+/', ' ', trim($this->newCliente['razon_social'])), 'UTF-8');
+        $this->newCliente['direccion'] = mb_strtoupper(preg_replace('/\s+/', ' ', trim($this->newCliente['direccion'])), 'UTF-8');
         // Establecer valores por defecto si no están presentes
         if (empty($this->newCliente['f_tipo_documento_id'])) {
             $primerTipoDocumento = FTipoDocumento::first();
