@@ -113,7 +113,6 @@ trait StockTrait
             $producto = Producto::withTrashed()->find($detalle->producto_id);
             logger("movimientoStock:", ["producto_id" => $detalle->producto_id]);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $movimiento->almacen_id)->first();
-            
 
             if (!$almacenProducto) {
                 $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $movimiento->almacen_id, "stock_disponible" => 0, "stock_fisico" => 0]);
@@ -182,10 +181,4 @@ trait StockTrait
         return $nuevo_stock;
     }
 
-    // public function validarPrecio($producto, $detalle)
-    // {
-    //     if ($producto->f_tipo_afectacion_id != 21 && $detalle->importe <= 0) {
-    //         throw new \Exception("El precio del producto {$producto->id} no valido.");
-    //     }
-    // }
 }
