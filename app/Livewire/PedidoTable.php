@@ -261,8 +261,8 @@ class PedidoTable extends Component
         });
 
         $cantidad = $producto->cantidad == 1 ? 1 : 0.01; // <-- Nueva lógica
-        if($this->cantidad_ofrecida > 0){
-            $cantidad = $this->cantidad_ofrecida;
+        if ($this->cantidad_ofrecida > 0) {
+            $cantidad = number_format_punto2($this->cantidad_ofrecida);
         }
 
         if (!$existe) {
@@ -488,7 +488,7 @@ class PedidoTable extends Component
             $cantidadPaquetes = $cajas * $cantidadProducto + $paquetes; // Total de paquetes
 
             // Calcular importe total
-            $importe = number_format_punto2( $cantidadPaquetes * $precioPorPaquete ); // Total de paquetes * precio por paquete
+            $importe = number_format_punto2($cantidadPaquetes * $precioPorPaquete); // Total de paquetes * precio por paquete
 
             // Actualizar el importe en el detalle
             $this->pedido_detalles[$index]["importe"] = $importe;
@@ -514,6 +514,10 @@ class PedidoTable extends Component
 
     public function ajustarCantidad($index)
     {
+        // Convierte el valor en número
+        $cantidad = $this->pedido_detalles[$index]['cantidad'] == "" ? 0 : $this->pedido_detalles[$index]['cantidad'];
+        $this->pedido_detalles[$index]['cantidad'] = number_format_punto2($cantidad <= 0 ? 0.01 : $cantidad);
+
         $detalle = $this->pedido_detalles[$index];
         $cantidad = number_format_punto2($detalle["cantidad"]);
 

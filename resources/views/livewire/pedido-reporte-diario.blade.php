@@ -119,7 +119,7 @@
                                                         @foreach($pedido->pedidoDetalles as $detalle)
                                                             <tr>
                                                                 <td class="px-6 py-4">#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
-                                                                <td class="px-6 py-4">{{ $detalle->cantidad }}</td>
+                                                                <td class="px-6 py-4">{{ number_format($detalle->cantidad, 2) }}</td>
                                                                 <td class="px-6 py-4">S/. {{ number_format($detalle->producto_precio, 2) }}</td>
                                                                 <td class="px-6 py-4">S/. {{ number_format($detalle->importe, 2) }}</td>
                                                             </tr>

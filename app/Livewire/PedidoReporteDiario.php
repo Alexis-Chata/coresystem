@@ -513,7 +513,10 @@ class PedidoReporteDiario extends Component
 
             // Procesa la cantidad según el tipo de producto
             if ($producto->cantidad == 1) {
-                $cantidad = floor($nuevaCantidad);
+                $cantidad = $this->ajustarCantidadDetalle(
+                    $nuevaCantidad,
+                    $producto->cantidad
+                );
                 $importe = $cantidad * $detalle->producto_precio;
                 if ($producto->f_tipo_afectacion_id == 21) {
                     $importe = 0;
@@ -583,6 +586,10 @@ class PedidoReporteDiario extends Component
 
     private function ajustarCantidadDetalle($cantidad, $cantidadPorCaja)
     {
+        // Convierte el valor en número
+        $cantidad = ($cantidad == "" ? 0 : $cantidad);
+        $cantidad = number_format_punto2($cantidad <= 0 ? 0.01 : $cantidad);
+
         // Si la cantidad es menor a 1, asumimos que son paquetes
         if ($cantidad < 1) {
             $paquetes = round($cantidad * 100); // Convertir a paquetes
