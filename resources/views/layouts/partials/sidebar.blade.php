@@ -8,12 +8,7 @@
         </a>
 
         <button class="block lg:hidden" @click.stop="sidebarToggle = !sidebarToggle">
-            <svg class="fill-current" width="20" height="18" viewBox="0 0 20 18" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
-                    fill="" />
-            </svg>
+            <x-svg_back_arrow />
         </button>
     </div>
     <!-- SIDEBAR HEADER -->
@@ -30,7 +25,7 @@
                     <!-- Dashboard -->
                     <li>
                         <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                            href="{{ route('dashboard') }}" @click="selected = 'Dashboard'"
+                            href="{{ route('dashboard') }}"
                             :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('dashboard') }}' }">
                             <x-svg_grid_2x2 />
                             Dashboard
@@ -40,7 +35,7 @@
                     <!-- Gestión de Marcas -->
                     @can('view marca')
                         <li>
-                            <a href="{{ route('marcas.index') }}" @click="selected = 'Marcas'"
+                            <a href="{{ route('marcas.index') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('marcas.index') }}' }">
                                 <x-svg_calendar />
@@ -52,7 +47,7 @@
                     <!-- Cliente -->
                     @can('view cliente')
                         <li>
-                            <a href="{{ route('cliente.index') }}" @click="selected = 'Cliente'"
+                            <a href="{{ route('cliente.index') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('cliente.index') }}' }">
                                 <x-svg_agenda />
@@ -63,24 +58,23 @@
 
                     <!-- Producto -->
                     @can('view producto')
-                        <li>
+                        <li x-data="{ open: {{ request()->routeIs('producto.*') ? 'true' : 'false' }} }">
                             <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                href="#" @click.prevent="selected = (selected === 'Productos' ? '':'Productos')"
-                                :class="{ 'bg-graydark dark:bg-meta-4': (selected === 'Productos') }">
+                                href="#" @click.prevent="open = !open"
+                                :class="{ 'bg-graydark dark:bg-meta-4': open }">
                                 <x-svg_user />
                                 Productos
                                 <x-svg_desplegable />
                             </a>
 
-                            <!-- Dropdown Menu Start -->
-                            <div class="translate transform overflow-hidden"
-                                :class="(selected === 'Productos') ? 'block' : 'hidden'">
+                            <!-- Dropdown Menu -->
+                            <div class="translate transform overflow-hidden" x-show="open" x-transition>
                                 <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                                     @can('edit producto')
                                         <li>
                                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                                 href="{{ route('producto.index') }}"
-                                                :class="{ 'text-white': '{{ request()->routeIs('producto.index') }}' }">
+                                                :class="{ 'text-white': {{ request()->routeIs('producto.index') ? 'true' : 'false' }} }">
                                                 Lista de Productos
                                             </a>
                                         </li>
@@ -88,15 +82,14 @@
                                     <li>
                                         <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                             href="{{ route('producto.precios-mayorista') }}"
-                                            :class="{ 'text-white': '{{ request()->routeIs('producto.precios-mayorista') }}' }">
+                                            :class="{ 'text-white': {{ request()->routeIs('producto.precios-mayorista') ? 'true' : 'false' }} }">
                                             Precios Mayorista
                                         </a>
                                     </li>
-
                                     <li>
                                         <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                             href="{{ route('producto.precios-bodega') }}"
-                                            :class="{ 'text-white': '{{ request()->routeIs('producto.precios-bodega') }}' }">
+                                            :class="{ 'text-white': {{ request()->routeIs('producto.precios-bodega') ? 'true' : 'false' }} }">
                                             Precios Bodega
                                         </a>
                                     </li>
@@ -104,22 +97,23 @@
                                         <li>
                                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                                 href="{{ route('producto.stock') }}"
-                                                :class="{ 'text-white': '{{ request()->routeIs('producto.stock') }}' }">
+                                                :class="{ 'text-white': {{ request()->routeIs('producto.stock') ? 'true' : 'false' }} }">
                                                 Stock de Productos
                                             </a>
                                         </li>
                                     @endcan
                                 </ul>
                             </div>
-                            <!-- Dropdown Menu End -->
                         </li>
+
                     @endcan
 
                     <!-- Pedido -->
                     @can('view pedido')
                         <li>
                             <a href="{{ route('pedido.index') }}"
-                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4" :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('pedido.index') }}' }">
+                                class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                                :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('pedido.index') }}' }">
                                 <x-svg_tecla />
                                 Pedido
                             </a>
@@ -129,7 +123,7 @@
                     <!-- Categoría -->
                     @can('view categoria')
                         <li>
-                            <a href="{{ route('categoria.index') }}" @click="selected = 'Categoria'"
+                            <a href="{{ route('categoria.index') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('categoria.index') }}' }">
                                 <x-svg_grid_2x2 />
@@ -141,7 +135,7 @@
                     <!-- Proveedor -->
                     @can('view proveedor')
                         <li>
-                            <a href="{{ route('proveedor.index') }}" @click="selected = 'Proveedor'"
+                            <a href="{{ route('proveedor.index') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('proveedor.index') }}' }">
                                 <x-svg_user />
@@ -185,33 +179,23 @@
 
                     <!-- Movimiento -->
                     @can('view movimiento')
-                        <li>
+                        <li x-data="{ open: {{ request()->routeIs('movimiento.*') ? 'true' : 'false' }} }">
                             <a class="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                                href="#" @click.prevent="selected = (selected === 'Movimientos' ? '':'Movimientos')"
-                                :class="{ 'bg-graydark dark:bg-meta-4': (selected === 'Movimientos') }">
-
+                                href="#" @click.prevent="open = !open"
+                                :class="{ 'bg-graydark dark:bg-meta-4': open }">
                                 <x-svg_grid_add />
-
                                 Movimientos
-                                <svg class="absolute right-4 top-1/2 -translate-y-1/2 fill-current"
-                                    :class="{ 'rotate-180': (selected === 'Movimientos') }" width="20"
-                                    height="20" viewBox="0 0 20 20" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                                        fill="" />
-                                </svg>
+                                <x-svg_desplegable />
                             </a>
 
-                            <!-- Dropdown Menu Start -->
-                            <div class="translate transform overflow-hidden"
-                                :class="(selected === 'Movimientos') ? 'block' : 'hidden'">
+                            <!-- Dropdown Menu -->
+                            <div class="translate transform overflow-hidden" x-show="open" x-transition>
                                 <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                                     @can('create movimiento')
                                         <li>
                                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                                 href="{{ route('movimiento.create') }}"
-                                                :class="{ 'text-white': '{{ request()->routeIs('movimiento.create') }}' }">
+                                                :class="{ 'text-white': {{ request()->routeIs('movimiento.create') ? 'true' : 'false' }} }">
                                                 Ingresar Movimiento
                                             </a>
                                         </li>
@@ -221,15 +205,15 @@
                                         <li>
                                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                                 href="{{ route('movimiento.view') }}"
-                                                :class="{ 'text-white': '{{ request()->routeIs('movimiento.view') }}' }">
+                                                :class="{ 'text-white': {{ request()->routeIs('movimiento.view') ? 'true' : 'false' }} }">
                                                 Ver Movimientos
                                             </a>
                                         </li>
                                     @endcan
                                 </ul>
                             </div>
-                            <!-- Dropdown Menu End -->
                         </li>
+
                     @endcan
 
                     <!-- Asignar Pedidos -->
@@ -335,7 +319,7 @@
                     <!-- Gestión de Usuarios -->
                     @can('view usuarios')
                         <li>
-                            <a href="{{ route('user.lista') }}" @click="selected = 'User'"
+                            <a href="{{ route('user.lista') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('user.lista') }}' }">
                                 <x-svg_user />
@@ -347,7 +331,7 @@
                     <!-- Gestión de Roles -->
                     @can('view roles')
                         <li>
-                            <a href="{{ route('user-roles.index') }}" @click="selected = 'UserRoles'"
+                            <a href="{{ route('user-roles.index') }}"
                                 class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                                 :class="{ 'bg-graydark dark:bg-meta-4': '{{ request()->routeIs('user-roles.index') }}' }">
                                 <x-svg_user />
