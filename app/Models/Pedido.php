@@ -27,6 +27,11 @@ class Pedido extends Model
         "movimiento_id"
     ];
 
+    protected $casts = [
+        'fecha_emision' => 'datetime',
+        'fecha_reparto' => 'datetime',
+    ];
+
     public function pedidoDetalles()
     {
         return $this->hasMany(PedidoDetalle::class);
