@@ -20,16 +20,16 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'NombreCliente', 'TipoDocumento', 'DI',
             'Dirección', 'Mercado', 'Módulo', 'Canal', 'GiroNegocio', 'SubGiroNegocio', 'Ubigeo', 'Distrito',
             'Estatus', 'X', 'Y', 'CodigoPadre', 'FechaIngreso', 'FechaActualización', 'FechaProceso',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0)); // Usando el carácter NUL como enclosure
+        ]) . PHP_EOL); // Usando el carácter NUL como enclosure
 
         // Datos
         foreach ($clientes as $cliente) {
-            fputcsv($handle, [
+            fwrite($handle, implode('|', [
                 '', // CódigoProveedor (fijo)
                 '', // CodigoDistribuidor (fijo)
                 str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente (rellenado con ceros)
@@ -48,7 +48,7 @@ class ExportCsvService
                 $cliente->updated_at->format('Y-m-d'), // FechaActualización
                 now()->format('Y-m-d H:i:s'), // FechaProceso
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10 (Opcionales)
-            ], '|', chr(0)); // Usando el carácter NUL como enclosure
+            ]) . PHP_EOL); // Usando el carácter NUL como enclosure
         }
 
         fclose($handle);
@@ -62,15 +62,15 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoProducto', 'NombreProducto', 'EAN', 'DUN',
             'FactorCaja', 'Peso', 'FlagBonificado', 'Afecto', 'PrecioCompra', 'PrecioSugerido', 'PrecioPromedio',
             'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($productos as $producto) {
-            fputcsv($handle, [
+            fwrite($handle, implode('|', [
                 '', // CódigoProveedor (asignado por VidaSoftware)
                 '', // CodigoDistribuidor (asignado por ARCOR)
                 str_pad($producto->id, 8, '0', STR_PAD_LEFT), // CodigoProducto (rellenado con ceros)
@@ -86,7 +86,7 @@ class ExportCsvService
                 optional($producto->listaPrecios->first())->pivot->precio ?? '0.00', // PrecioPromedio
                 now()->format('Y-m-d H:i:s'), // FechaProceso
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-            ], '|', chr(0));
+            ]) . PHP_EOL);
         }
 
         fclose($handle);
@@ -100,17 +100,17 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoAlmacen', 'NombreAlmacen', 'CodigoProducto',
             'Lote', 'FechaVencimiento', 'StockEnUnidadMinima', 'UnidadDeMedidaMinima', 'StockEnUnidadesMaximas',
             'UnidadDeMedidaMaxima', 'ValorStock', 'FechaProceso', 'IngresosEnUnidadDeConsumo', 'ValorIngresos',
             'VentasEnUnidadDeConsumo', 'ValorVentas', 'OtrosEnUnidadDeConsumo', 'ValorOtros', 'Periodo',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($stock as $item) {
-            fputcsv($handle, [
+            fwrite($handle, implode('|', [
                 '', // CódigoProveedor (asignado por VidaSoftware)
                 '', // CodigoDistribuidor (asignado por ARCOR)
                 str_pad($item->almacen_id, 8, '0', STR_PAD_LEFT), // CodigoAlmacen (rellenado con ceros)
@@ -127,7 +127,7 @@ class ExportCsvService
                 '', '', '', '', '', '', // Ingresos, ValorIngresos, Ventas, ValorVentas, Otros, ValorOtros
                 now()->format('m'), // Periodo (mes actual)
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-            ], '|', chr(0));
+            ]) . PHP_EOL);
         }
 
         fclose($handle);
@@ -141,15 +141,15 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoVendedor', 'NombreVendedor', 'TipoDocumento', 'DI',
             'Canal', 'FechaIngreso', 'FechaActualización', 'FechaProceso', 'Exclusivo',
             'Codigovisor', 'NombreSupervisor', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($vendedores as $vendedor) {
-            fputcsv($handle, [
+            fwrite($handle, implode('|', [
                 '', // CódigoProveedor (asignado por VidaSoftware)
                 '', // CodigoDistribuidor (asignado por ARCOR)
                 $vendedor->codigo ?? str_pad($vendedor->id, 8, '0', STR_PAD_LEFT), // CodigoVendedor (rellenado con ceros si es necesario)
@@ -164,7 +164,7 @@ class ExportCsvService
                 '', // Codigovisor (Si se agrega en el futuro)
                 '', // NombreSupervisor (Si se agrega en el futuro)
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-            ], '|', chr(0));
+            ]) . PHP_EOL);
         }
 
         fclose($handle);
@@ -182,7 +182,7 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'TipoDocumento', 'NroDocumento', 'FechaDocumento', 'MotivoNC',
             'Origen', 'CodigoCliente', 'CanalCliente', 'TipoNegocio', 'CodigoVendedor', 'CanalVendedor', 'Ruta',
             'NumeroItem', 'CodigoProducto', 'CantidadUnidadMinima', 'TipoUnidadMinima', 'CantidadUnidadMaxima',
@@ -190,12 +190,12 @@ class ExportCsvService
             'TipoVenta', 'CodCombo', 'CodPromoción', 'TipoDocumentoReferencia', 'NroDocumentoReferencia',
             'FechaDocumentoReferencia', 'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7',
             'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($ventas as $venta) {
             foreach ($venta->detalle as $index => $detalle) {
-                fputcsv($handle, [
+                fwrite($handle, implode('|', [
                     '', // CódigoProveedor (asignado por VidaSoftware)
                     '', // CodigoDistribuidor (asignado por ARCOR)
                     $venta->tipoDoc, // TipoDocumento (FA, BO, NC, ND)
@@ -227,7 +227,7 @@ class ExportCsvService
                     '', // FechaDocumentoReferencia (Si se agrega en el futuro)
                     now()->format('Y-m-d H:i:s'), // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-                ], '|', chr(0));
+                ]) . PHP_EOL);
             }
         }
 
@@ -242,16 +242,16 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'CodigoVendedor', 'FuerzaDeVenta',
             'FrecuenciaVisita', 'Zona', 'Mesa', 'Ruta', 'Modulo', 'FechaProceso',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($rutas as $ruta) {
             foreach ($ruta->clientes as $cliente) {
-                fputcsv($handle, [
+                fwrite($handle, implode('|', [
                     '', // CódigoProveedor (asignado por VidaSoftware)
                     '', // CodigoDistribuidor (asignado por ARCOR)
                     str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
@@ -264,7 +264,7 @@ class ExportCsvService
                     '', // Modulo (Si se agrega en el futuro)
                     now()->format('Y-m-d H:i:s'), // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-                ], '|', chr(0));
+                ]) . PHP_EOL);
             }
         }
 
@@ -305,19 +305,19 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
-        fputcsv($handle, [
+        fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'CodigoVendedor', 'Origen', 'CodigoPedido',
             'FechaPedido', 'EstatusPedido', 'MotivoCancelación', 'TipoDocumento', 'Documento', 'FechaDocumento',
             'EstatusDocumento', 'NumeroItem', 'CodigoProducto', 'TipoProducto', 'CodPromoción', 'CantidadUnidadMinima',
             'TipoUnidadMinima', 'CantidadUnidadMaxima', 'TipoUnidadMaxima', 'ImportePedidoNetoSinImpuesto',
             'ImportePedidoNetoConImpuesto', 'Descuento', 'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5',
             'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
-        ], '|', chr(0));
+        ]) . PHP_EOL);
 
         // Datos
         foreach ($pedidos as $pedido) {
             foreach ($pedido->pedidoDetalles as $index => $detalle) {
-                fputcsv($handle, [
+                fwrite($handle, implode('|', [
                     '', // CódigoProveedor (asignado por VidaSoftware)
                     '', // CodigoDistribuidor (asignado por ARCOR)
                     str_pad($pedido->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
@@ -344,7 +344,7 @@ class ExportCsvService
                     number_format($detalle->descuento ?? 0, 4, '.', ''), // Descuento
                     now()->format('Y-m-d H:i:s'), // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-                ], '|', chr(0));
+                ]) . PHP_EOL);
             }
         }
 
