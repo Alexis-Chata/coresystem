@@ -68,19 +68,13 @@
                     </div>
 
                     <div class="mt-2">
-                        <strong class="text-xs text-gray-500">Roles:</strong>
+                        <strong class="text-xs text-gray-500">Roles - Permisos:</strong>
                         <div class="flex flex-wrap gap-1 mt-1">
                             @foreach ($user->roles as $role)
                                 <span class="px-2 py-1 text-xs bg-blue-200 text-blue-800 rounded">
                                     {{ $role->name }}
                                 </span>
                             @endforeach
-                        </div>
-                    </div>
-
-                    <div class="mt-2">
-                        <strong class="text-xs text-gray-500">Permisos:</strong>
-                        <div class="flex flex-wrap gap-1 mt-1">
                             @foreach ($user->permissions as $permission)
                                 <span class="px-2 py-1 text-xs bg-green-200 text-green-800 rounded">
                                     {{ $permission->name }}

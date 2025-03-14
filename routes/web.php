@@ -156,6 +156,10 @@ Route::middleware([
         return view('reporte-view');
     })->middleware('can:view reporte')->name('reporte.view');
 
+    Route::get('/liquidacion', function () {
+        return view('liquidacion-view');
+    })->middleware('can:view reporte')->name('liquidacion.view');
+
     Route::get('/permisos-usuario', function () {
         return view('permisos-usuario');
     })->middleware('can:view roles')->name('permisos.usuario');

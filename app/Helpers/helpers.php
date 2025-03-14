@@ -27,3 +27,10 @@ if (!function_exists('number_format_punto2')) {
         return number_format($number, 2, '.', '');
     }
 }
+
+if (!function_exists('carbon_parse')) {
+    function carbon_parse($date)
+    {
+        return \Carbon\Carbon::parse($date);
+    }
+}

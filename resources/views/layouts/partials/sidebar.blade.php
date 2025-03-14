@@ -186,6 +186,13 @@
                         'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
                         'name' => 'Reportes',
                     ],
+                    [
+                        'link_descripcion' => 'Liquidaciones', //opcional
+                        'permission' => 'view reporte',
+                        'route' => 'liquidacion.view',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Liquidaciones',
+                    ],
                 ],
             ],
 

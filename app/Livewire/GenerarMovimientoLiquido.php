@@ -164,7 +164,7 @@ class GenerarMovimientoLiquido extends Component
                         "nro_doc_liquidacion" => null,
                         "fecha_liquidacion" => $fecha_reparto,
                         "tipo_movimiento_name" => $tipo_movimiento->name,
-                        "empleado_id" => $user->id,
+                        'empleado_id' => $user->user_empleado->empleado->id,
                         "estado" => "facturas_por_generar",
                     ];
 

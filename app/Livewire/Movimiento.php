@@ -47,7 +47,7 @@ class Movimiento extends Component
 
     public function mount()
     {
-        $this->user = auth()->user();
+        $this->user = auth_user();
         $this->f_sede_id = $this->user->user_empleado->empleado->f_sede_id;
 
         $sedes_id = $this->user->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
@@ -155,6 +155,10 @@ class Movimiento extends Component
                 "costo_total" => $precio * $cantidad,
                 "empleado_id" => $this->user->user_empleado->empleado_id,
             ];
+
+            usort($this->detalles, function ($a, $b) {
+                return $b['producto_id'] <=> $a['producto_id'];
+            });
             //}
         }
 

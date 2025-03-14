@@ -71,7 +71,7 @@
                 right: 0;
             }
             .overflow-x-auto {
-                overflow-x: initial !important;
+                /* overflow-x: initial !important; */
             }
             [role="navigation"] .z-10{
                 z-index: 8 !important;

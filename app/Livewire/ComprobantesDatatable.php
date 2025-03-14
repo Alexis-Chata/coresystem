@@ -335,6 +335,7 @@ class ComprobantesDatatable extends DataTableComponent
                     "mensaje_sunat" => null,
                     "obs" => null,
                     "estado_reporte" => false,
+                    "estado_cpe_sunat" => 'pendiente',
                 ]);
                 $notaSunat->save();
                 $notaSunat->detalle()->createMany($comprobante->detalle->toArray());

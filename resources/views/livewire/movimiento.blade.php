@@ -130,14 +130,7 @@
                                 <th class="p-3 border-b border-gray-600">CÓDIGO - PRODUCTO</th>
                                 <th class="p-3 border-b border-gray-600">CANTIDAD</th>
                                 <th class="p-3 border-b border-gray-600">COSTO</th>
-                                <th class="p-3 border-b border-gray-600 justify-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.7" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                    </svg>
-
-                                </th>
+                                <th class="p-3 border-b border-gray-600 justify-items-center"><x-svg_circle_menu /></th>
                             </tr>
                         </thead>
                         <tbody class="text-sm">
@@ -153,7 +146,7 @@
                                     </td>
                                     <td class="p-3 border-b border-gray-600">{{ $detalle['precio_venta_total'] }}</td>
                                     <td class="p-3 border-b border-gray-600 grid justify-items-center">
-                                        <button wire:click="eliminarDetalle({{ $index }})"
+                                        <button type="button" wire:click="eliminarDetalle({{ $index }})"
                                             class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-semibold shadow-md">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                 width="20px" height="20px" stroke-width="1.7" stroke="currentColor"
