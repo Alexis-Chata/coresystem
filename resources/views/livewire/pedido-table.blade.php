@@ -257,7 +257,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 S/. {{ number_format($detalle['importe'], 2) }}
-                                <button wire:click="eliminarDetalle({{ $index }})"
+                                <button type="button" wire:click="eliminarDetalle({{ $index }})"
                                     class="font-medium text-red-600 dark:text-red-500 hover:underline">
                                     <svg width="20 " height="20" viewBox="0 0 17 17" class="inline-block"
                                         xmlns="http://www.w3.org/2000/svg">

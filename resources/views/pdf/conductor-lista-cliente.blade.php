@@ -233,7 +233,7 @@
                     <tr>
                         <td>{{ str_pad($comprobante->cliente_id, 7, '0', STR_PAD_LEFT) }}</td>
                         <td>{!! empty($comprobante->clientRazonSocial) ? '..............' : nl2br(wordwrap($comprobante->clientRazonSocial,30,"\n")) !!}</td>
-                        <td>{{ $comprobante->clientDireccion }}</td>
+                        <td>{!! empty($comprobante->clientDireccion) ? '..............' : nl2br(wordwrap($comprobante->clientDireccion,50,"\n")) !!}</td>
                         <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
                         </td>
                         <td style="text-align: right;">{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
