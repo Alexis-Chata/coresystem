@@ -27,6 +27,8 @@ class ExportCsvService
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL); // Usando el carácter NUL como enclosure
 
+        $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
+
         // Datos
         foreach ($clientes as $cliente) {
             fwrite($handle, implode('|', [
@@ -34,11 +36,11 @@ class ExportCsvService
                 '', // CodigoDistribuidor (fijo)
                 str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente (rellenado con ceros)
                 $cliente->razon_social ?? '', // NombreCliente
-                $cliente->tipoDocumento->name ?? '', // TipoDocumento
+                $cliente->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $cliente->numero_documento ?? '', // DI
                 $cliente->direccion ?? '', // Dirección
                 '', '', '', '', '', // Mercado, Módulo, Canal, GiroNegocio, SubGiroNegocio (Opcionales)
-                $cliente->ubigeo_inei, // Ubigeo
+                '', // Ubigeo
                 '', // Distrito (Opcional)
                 'A', // Estatus (Asignamos "A" por defecto)
                 '0', // X (Coordenada Longitud)
@@ -46,7 +48,7 @@ class ExportCsvService
                 '', // CodigoPadre (Opcional)
                 $cliente->created_at->format('Y-m-d'), // FechaIngreso
                 $cliente->updated_at->format('Y-m-d'), // FechaActualización
-                now()->format('Y-m-d H:i:s'), // FechaProceso
+                $fechaProceso, // FechaProceso
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10 (Opcionales)
             ]) . PHP_EOL); // Usando el carácter NUL como enclosure
         }
@@ -57,7 +59,7 @@ class ExportCsvService
 
     public static function exportProductos()
     {
-        $productos = Producto::with('listaPrecios')->get();
+        $productos = Producto::where('marca_id',10)->get();
         $filePath = 'exports/productos.csv';
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -67,6 +69,8 @@ class ExportCsvService
             'FactorCaja', 'Peso', 'FlagBonificado', 'Afecto', 'PrecioCompra', 'PrecioSugerido', 'PrecioPromedio',
             'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+
+        $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
         // Datos
         foreach ($productos as $producto) {
@@ -79,12 +83,12 @@ class ExportCsvService
                 '', // DUN (Si se agrega en el futuro)
                 $producto->cantidad, // FactorCaja
                 number_format($producto->peso, 4, '.', ''), // Peso con precisión (14,4)
-                $producto->tipo === 'bonificado' ? 'B' : 'P', // FlagBonificado
-                $producto->afecto_icbper ? '1' : '0', // Afecto a impuestos (1=Afecto, 0=Exonerado)
-                optional($producto->listaPrecios->first())->pivot->precio ?? '0.00', // PrecioCompra
-                optional($producto->listaPrecios->first())->pivot->precio ?? '0.00', // PrecioSugerido
-                optional($producto->listaPrecios->first())->pivot->precio ?? '0.00', // PrecioPromedio
-                now()->format('Y-m-d H:i:s'), // FechaProceso
+                $producto->f_tipo_afectacion_id === '21' ? 'B' : 'P', // FlagBonificado
+                $producto->f_tipo_afectacion_id === '21' ? '0' : '1', // Afecto a impuestos (1=Afecto, 0=Exonerado)
+                '0.00', // PrecioCompra
+                '0.00', // PrecioSugerido
+                '0.00', // PrecioPromedio
+                $fechaProceso, // FechaProceso
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
             ]) . PHP_EOL);
         }
@@ -108,23 +112,25 @@ class ExportCsvService
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
 
+        $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
+
         // Datos
         foreach ($stock as $item) {
             fwrite($handle, implode('|', [
                 '', // CódigoProveedor (asignado por VidaSoftware)
                 '', // CodigoDistribuidor (asignado por ARCOR)
                 str_pad($item->almacen_id, 8, '0', STR_PAD_LEFT), // CodigoAlmacen (rellenado con ceros)
-                $item->almacen->nombre ?? 'Principal', // NombreAlmacen
+                $item->almacen->name ?? '', // NombreAlmacen
                 str_pad($item->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto (rellenado con ceros)
                 '', // Lote (Si se agrega en el futuro)
                 '', // FechaVencimiento (Si se agrega en el futuro)
                 $item->stock_fisico, // StockEnUnidadMinima
-                $item->producto->tipo_unidad ?? '', // UnidadDeMedidaMinima
-                number_format($item->stock_subcantidad_fisico, 4, '.', ''), // StockEnUnidadesMaximas
-                '', // UnidadDeMedidaMaxima (Si se agrega en el futuro)
-                '', // ValorStock (Si se necesita calcular)
-                now()->format('Y-m-d H:i:s'), // FechaProceso
-                '', '', '', '', '', '', // Ingresos, ValorIngresos, Ventas, ValorVentas, Otros, ValorOtros
+                'Unidad', // UnidadDeMedidaMinima
+                number_format($item->stock_fisico, 4, '.', ''), // StockEnUnidadesMaximas
+                'Caja', // UnidadDeMedidaMaxima (Si se agrega en el futuro)
+                '0', // ValorStock (Si se necesita calcular)
+                $fechaProceso, // FechaProceso
+                '0', '0', '0', '0', '0', '0', // Ingresos, ValorIngresos, Ventas, ValorVentas, Otros, ValorOtros
                 now()->format('m'), // Periodo (mes actual)
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
             ]) . PHP_EOL);
@@ -140,6 +146,8 @@ class ExportCsvService
         $filePath = 'exports/vendedores.csv';
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
+        $fechaProceso = now()->format('Y-m-d H:i:s');
+
         // Encabezados
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoVendedor', 'NombreVendedor', 'TipoDocumento', 'DI',
@@ -154,12 +162,12 @@ class ExportCsvService
                 '', // CodigoDistribuidor (asignado por ARCOR)
                 $vendedor->codigo ?? str_pad($vendedor->id, 8, '0', STR_PAD_LEFT), // CodigoVendedor (rellenado con ceros si es necesario)
                 $vendedor->name, // NombreVendedor
-                $vendedor->tipoDocumento->name ?? '', // TipoDocumento
+                $vendedor->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $vendedor->numero_documento ?? '', // DI
                 '', // Canal (Si se agrega en el futuro)
                 $vendedor->created_at->format('Y-m-d'), // FechaIngreso
                 $vendedor->updated_at->format('Y-m-d'), // FechaActualización
-                now()->format('Y-m-d H:i:s'), // FechaProceso
+                $fechaProceso, // FechaProceso
                 '0', // Exclusivo (Asignamos "0" por defecto)
                 '', // Codigovisor (Si se agrega en el futuro)
                 '', // NombreSupervisor (Si se agrega en el futuro)
@@ -176,7 +184,7 @@ class ExportCsvService
         $ventas = FComprobanteSunat::with(['detalle', 'cliente', 'vendedor', 'ruta'])->whereBetween('fechaEmision', [
             now()->subMonths(1)->startOfMonth(),
             now()->endOfMonth()
-        ])->get();
+        ])->where('estado_reporte', true)->get();
 
         $filePath = 'exports/ventas.csv';
         $handle = fopen(storage_path("app/$filePath"), 'w');
@@ -192,40 +200,49 @@ class ExportCsvService
             'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
 
+        $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
+
         // Datos
         foreach ($ventas as $venta) {
             foreach ($venta->detalle as $index => $detalle) {
+                $tipoDoc = match($venta->tipoDoc){
+                    '01' => 'FA',
+                    '03' => 'BO',
+                    '07' => 'NC',
+                    '08' => 'ND',
+                    default => 'BO'
+                };
                 fwrite($handle, implode('|', [
                     '', // CódigoProveedor (asignado por VidaSoftware)
                     '', // CodigoDistribuidor (asignado por ARCOR)
-                    $venta->tipoDoc, // TipoDocumento (FA, BO, NC, ND)
+                    $tipoDoc, // TipoDocumento (FA, BO, NC, ND)
                     "{$venta->serie}-{$venta->correlativo}", // NroDocumento
-                    $venta->fechaEmision->format('Y-m-d'), // FechaDocumento
-                    $venta->desMotivo ?? '', // MotivoNC (Si aplica)
+                    carbon_parse($venta->fechaEmision)->format('Y-m-d'), // FechaDocumento
+                    '', // MotivoNC (Si aplica)
                     '', // Origen (Si se agrega en el futuro)
-                    str_pad($venta->cliente_id, 25, '0', STR_PAD_LEFT), // CodigoCliente
+                    str_pad($venta->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                     '', // CanalCliente (Si se agrega en el futuro)
                     '', // TipoNegocio (Si se agrega en el futuro)
-                    str_pad($venta->vendedor_id, 25, '0', STR_PAD_LEFT), // CodigoVendedor
+                    str_pad($venta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
                     '', // CanalVendedor (Si se agrega en el futuro)
-                    str_pad($venta->ruta_id, 10, '0', STR_PAD_LEFT), // Ruta
+                    str_pad($venta->ruta_id, 8, '0', STR_PAD_LEFT), // Ruta
                     $index + 1, // NumeroItem
-                    str_pad($detalle->producto_id, 25, '0', STR_PAD_LEFT), // CodigoProducto
-                    $venta->tipoDoc === 'NC' ? -$detalle->cantidad : $detalle->cantidad, // CantidadUnidadMinima (Negativo si NC)
-                    $detalle->unidad_medida ?? '', // TipoUnidadMinima
+                    str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
+                    $detalle->cantidad, // CantidadUnidadMinima (Negativo si NC)
+                    'Unidad', // TipoUnidadMinima
                     '', // CantidadUnidadMaxima (Si se agrega en el futuro)
-                    '', // TipoUnidadMaxima (Si se agrega en el futuro)
+                    'Caja', // TipoUnidadMaxima (Si se agrega en el futuro) CALCULAR
                     $venta->tipoMoneda, // Moneda
                     number_format($detalle->valor_venta, 4, '.', ''), // ImporteNetoSinImpuesto
                     number_format($detalle->mtoImpVenta, 4, '.', ''), // ImporteNetoConImpuesto
-                    number_format($detalle->descuento ?? 0, 4, '.', ''), // Descuento
-                    'P', // TipoVenta (Asumimos "P", si es bonificación cambiar a "B")
+                    '0', // Descuento
+                    $detalle->tipAfeIgv == '10' ? 'P' : 'B',
                     '', // CodCombo (Si se agrega en el futuro)
                     '', // CodPromoción (Si se agrega en el futuro)
                     $venta->tipDocAfectado ?? '', // TipoDocumentoReferencia
                     $venta->numDocfectado ?? '', // NroDocumentoReferencia
                     '', // FechaDocumentoReferencia (Si se agrega en el futuro)
-                    now()->format('Y-m-d H:i:s'), // FechaProceso
+                    $fechaProceso, // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
                 ]) . PHP_EOL);
             }
@@ -248,6 +265,8 @@ class ExportCsvService
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
 
+        $fechaProceso = now()->format('Y-m-d H:i:s');
+
         // Datos
         foreach ($rutas as $ruta) {
             foreach ($ruta->clientes as $cliente) {
@@ -257,12 +276,12 @@ class ExportCsvService
                     str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                     str_pad($ruta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
                     '', // FuerzaDeVenta (Si se agrega en el futuro)
-                    self::convertirFrecuenciaVisita($ruta->dia_visita), // FrecuenciaVisita
+                    self::convertirFrecuenciaVisita($ruta->dia_visita ?? 'Lunes'), // FrecuenciaVisita
                     '', // Zona (Si se agrega en el futuro)
                     '', // Mesa (Si se agrega en el futuro)
-                    str_pad($ruta->codigo, 8, '0', STR_PAD_LEFT), // Ruta
+                    str_pad($ruta->id, 8, '0', STR_PAD_LEFT), // Ruta
                     '', // Modulo (Si se agrega en el futuro)
-                    now()->format('Y-m-d H:i:s'), // FechaProceso
+                    $fechaProceso, // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
                 ]) . PHP_EOL);
             }
@@ -317,6 +336,13 @@ class ExportCsvService
         // Datos
         foreach ($pedidos as $pedido) {
             foreach ($pedido->pedidoDetalles as $index => $detalle) {
+                $tipoDoc = match($pedido->tipoDoc){
+                    '01' => 'FA',
+                    '03' => 'BO',
+                    '07' => 'NC',
+                    '08' => 'ND',
+                    default => 'BO'
+                };
                 fwrite($handle, implode('|', [
                     '', // CódigoProveedor (asignado por VidaSoftware)
                     '', // CodigoDistribuidor (asignado por ARCOR)
@@ -324,21 +350,21 @@ class ExportCsvService
                     str_pad($pedido->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
                     '', // Origen (Si se agrega en el futuro)
                     str_pad($pedido->id, 8, '0', STR_PAD_LEFT), // CodigoPedido
-                    $pedido->fecha_emision->format('Y-m-d'), // FechaPedido
-                    self::convertirEstatusPedido($pedido->estado), // EstatusPedido
+                    carbon_parse($pedido->fecha_emision)->format('Y-m-d'), // FechaPedido
+                    'PEND', // EstatusPedido
                     '', // MotivoCancelación (Si se agrega en el futuro)
-                    $pedido->tipoComprobante->codigo ?? '', // TipoDocumento
-                    '', // Documento (Si se agrega en el futuro)
+                    $tipoDoc, // TipoDocumento
+                    $pedido->id, // Documento (Si se agrega en el futuro)
                     $pedido->fecha_reparto ? $pedido->fecha_reparto->format('Y-m-d') : '', // FechaDocumento
                     '', // EstatusDocumento (Si se agrega en el futuro)
                     $index + 1, // NumeroItem
                     str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
-                    'P', // TipoProducto (Asumimos "P", si es bonificación cambiar a "B")
+                    $detalle->tipAfeIgv == '10' ? 'P' : 'B', // TipoProducto
                     '', // CodPromoción (Si se agrega en el futuro)
-                    $detalle->cantidad, // CantidadUnidadMinima
-                    $detalle->unidad_medida ?? '', // TipoUnidadMinima
-                    '', // CantidadUnidadMaxima (Si se agrega en el futuro)
-                    '', // TipoUnidadMaxima (Si se agrega en el futuro)
+                    $detalle->cantidad, // CantidadUnidadMinima CALCULAR
+                    'Unidad', // TipoUnidadMinima
+                    $detalle->cantidad, // CantidadUnidadMaxima (Si se agrega en el futuro)
+                    'Caja', // TipoUnidadMaxima (Si se agrega en el futuro)
                     number_format($detalle->valor_venta, 4, '.', ''), // ImportePedidoNetoSinImpuesto
                     number_format($detalle->mtoImpVenta, 4, '.', ''), // ImportePedidoNetoConImpuesto
                     number_format($detalle->descuento ?? 0, 4, '.', ''), // Descuento
@@ -350,15 +376,6 @@ class ExportCsvService
 
         fclose($handle);
         return $filePath;
-    }
-
-    private static function convertirEstatusPedido($estado)
-    {
-        return match ($estado) {
-            'facturado' => 'APRO',
-            'pendiente', 'movimiento-generado', 'asignado' => 'PEND',
-            default => 'CANC',
-        };
     }
 
 }
