@@ -227,10 +227,10 @@ class ExportCsvService
                     '', // CanalVendedor (Si se agrega en el futuro)
                     str_pad($venta->ruta_id, 8, '0', STR_PAD_LEFT), // Ruta
                     $index + 1, // NumeroItem
-                    str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
+                    str_pad($detalle->codProducto, 8, '0', STR_PAD_LEFT), // CodigoProducto
                     $detalle->cantidad, // CantidadUnidadMinima (Negativo si NC)
                     'Unidad', // TipoUnidadMinima
-                    '', // CantidadUnidadMaxima (Si se agrega en el futuro)
+                    convertir_a_cajas($detalle->cantidad, $detalle->ref_producto_cantidad_cajon), // CantidadUnidadMaxima (Si se agrega en el futuro)
                     'Caja', // TipoUnidadMaxima (Si se agrega en el futuro) CALCULAR
                     $venta->tipoMoneda, // Moneda
                     number_format($detalle->valor_venta, 4, '.', ''), // ImporteNetoSinImpuesto
@@ -361,7 +361,7 @@ class ExportCsvService
                     str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
                     $detalle->tipAfeIgv == '10' ? 'P' : 'B', // TipoProducto
                     '', // CodPromoción (Si se agrega en el futuro)
-                    $detalle->cantidad, // CantidadUnidadMinima CALCULAR
+                    convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja), // CantidadUnidadMaxima (Si se agrega en el futuro), // CantidadUnidadMinima CALCULAR
                     'Unidad', // TipoUnidadMinima
                     $detalle->cantidad, // CantidadUnidadMaxima (Si se agrega en el futuro)
                     'Caja', // TipoUnidadMaxima (Si se agrega en el futuro)
