@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Almacen;
 use App\Models\FComprobanteSunat;
 use App\Models\Movimiento;
 use App\Models\MovimientoDetalle;
@@ -28,6 +29,7 @@ class Liquidaciones extends Component
     public $search_productos;
     public $search;
     public $detalles;
+    public $almacenes;
 
     public function mount()
     {
@@ -202,13 +204,15 @@ class Liquidaciones extends Component
 
     public function updatedSearch()
     {
+        $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
+        $this->almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
         $lista_precio = 1;
         if (!$lista_precio) {
             return;
         }
 
         if (strlen($this->search) > 0) {
-            $this->productos = Producto::withTrashed()->where(function ($query) {
+            $this->search_productos = Producto::withTrashed()->where(function ($query) {
                 $query
                     ->where("name", "like", "%" . $this->search . "%")
                     ->orWhere("id", "like", "%" . $this->search . "%");
@@ -225,20 +229,21 @@ class Liquidaciones extends Component
                 ->take(15)
                 ->get();
         } else {
-            $this->productos = [];
+            $this->search_productos = [];
         }
     }
 
     public function agregarProducto($producto_id)
     {
-        if (!$this->lista_precio) {
+        $lista_precio = 1;
+        if (!$lista_precio) {
             // Mostrar mensaje de error o alerta
             return;
         }
 
         $producto = Producto::withTrashed()->with([
-            "listaPrecios" => function ($query) {
-                $query->where("lista_precio_id", $this->lista_precio);
+            "listaPrecios" => function ($query) use ($lista_precio) {
+                $query->where("lista_precio_id", $lista_precio);
             },
         ])->find($producto_id);
 
@@ -265,7 +270,7 @@ class Liquidaciones extends Component
                 "precio_venta_total" => $precio * $cantidad,
                 "costo_unitario" => $precio,
                 "costo_total" => $precio * $cantidad,
-                "empleado_id" => $this->user->user_empleado->empleado_id,
+                "empleado_id" => auth_user()->user_empleado->empleado_id,
             ];
 
             usort($this->detalles, function ($a, $b) {
@@ -276,7 +281,7 @@ class Liquidaciones extends Component
 
         // Limpiar búsqueda
         $this->search = "";
-        $this->productos = [];
+        $this->search_productos = [];
     }
 
     public function eliminarDetalle($index)
