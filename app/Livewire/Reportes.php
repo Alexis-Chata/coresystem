@@ -44,9 +44,9 @@ class Reportes extends Component
         $this->fecha_fin = Carbon::now();
 
         if ($this->fecha_fin->isMonday()) {
-            $fecha_fin = $this->fecha_fin->subDays(2); // Agregar 2 días si es sábado
+            $fecha_fin = $this->fecha_fin->subDays(3); // Agregar 2 días si es sábado
         } else {
-            $fecha_fin = $this->fecha_fin->subDay(); // Agregar 1 día en otros casos
+            $fecha_fin = $this->fecha_fin->subDays(2); // Agregar 1 día en otros casos
         }
         $this->fecha_fin = $fecha_fin->toDateString();
         $this->fecha_inicio = $fecha_fin->startOfMonth()->toDateString();
