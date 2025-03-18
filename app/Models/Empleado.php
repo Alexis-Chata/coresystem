@@ -41,4 +41,9 @@ class Empleado extends Model
     {
         return $this->belongsTo(FSede::class, 'f_sede_id');
     }
+
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class, 'vendedor_id');
+    }
 }

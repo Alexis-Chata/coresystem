@@ -13,11 +13,19 @@ use Illuminate\Support\Facades\Storage;
 
 class ExportCsvService
 {
-    public static function exportClientes()
+    public static function exportClientes($marcaId, $exportDir = 'exports')
     {
-        $clientes = Cliente::with('tipoDocumento')->get();
-        $filePath = 'exports/clientes.csv';
-        $handle = fopen(storage_path("app/$filePath"), 'w');
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $clientes = Cliente::with('tipoDocumento')
+        ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            $query->where('marca_id', $marcaId);
+        })
+        ->get();
+        $filePath = "{$exportDir}/clientes.csv";
+        $handle = fopen(storage_path("app/{$filePath}"), 'w');
 
         // Encabezados
         fwrite($handle, implode('|', [
@@ -32,8 +40,8 @@ class ExportCsvService
         // Datos
         foreach ($clientes as $cliente) {
             fwrite($handle, implode('|', [
-                '', // CódigoProveedor (fijo)
-                '', // CodigoDistribuidor (fijo)
+                $codigoProveedor, // CódigoProveedor (fijo)
+                $codigoDistribuidor, // CodigoDistribuidor (fijo)
                 str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente (rellenado con ceros)
                 $cliente->razon_social ?? '', // NombreCliente
                 $cliente->tipoDocumento->tipo_documento ?? '', // TipoDocumento
@@ -57,10 +65,14 @@ class ExportCsvService
         return $filePath;
     }
 
-    public static function exportProductos()
+    public static function exportProductos($marcaId, $exportDir = 'exports')
     {
-        $productos = Producto::where('marca_id',10)->get();
-        $filePath = 'exports/productos.csv';
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $productos = Producto::where('marca_id', $marcaId)->get();
+        $filePath = "{$exportDir}/productos.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
@@ -75,8 +87,8 @@ class ExportCsvService
         // Datos
         foreach ($productos as $producto) {
             fwrite($handle, implode('|', [
-                '', // CódigoProveedor (asignado por VidaSoftware)
-                '', // CodigoDistribuidor (asignado por ARCOR)
+                $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                 str_pad($producto->id, 8, '0', STR_PAD_LEFT), // CodigoProducto (rellenado con ceros)
                 $producto->name, // NombreProducto
                 '', // EAN (Si se agrega en el futuro)
@@ -97,10 +109,16 @@ class ExportCsvService
         return $filePath;
     }
 
-    public static function exportStock()
+    public static function exportStock($marcaId, $exportDir = 'exports')
     {
-        $stock = AlmacenProducto::with(['producto', 'almacen'])->get();
-        $filePath = 'exports/stock.csv';
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $stock = AlmacenProducto::whereHas('producto', function ($query) use ($marcaId){
+            $query->where('marca_id', $marcaId);
+        })->get();
+        $filePath = "{$exportDir}/stock.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
@@ -117,8 +135,8 @@ class ExportCsvService
         // Datos
         foreach ($stock as $item) {
             fwrite($handle, implode('|', [
-                '', // CódigoProveedor (asignado por VidaSoftware)
-                '', // CodigoDistribuidor (asignado por ARCOR)
+                $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                 str_pad($item->almacen_id, 8, '0', STR_PAD_LEFT), // CodigoAlmacen (rellenado con ceros)
                 $item->almacen->name ?? '', // NombreAlmacen
                 str_pad($item->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto (rellenado con ceros)
@@ -140,10 +158,18 @@ class ExportCsvService
         return $filePath;
     }
 
-    public static function exportVendedores()
+    public static function exportVendedores($marcaId, $exportDir = 'exports')
     {
-        $vendedores = Empleado::with('tipoDocumento')->where('tipo_empleado', 'vendedor')->get();
-        $filePath = 'exports/vendedores.csv';
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $vendedores = Empleado::with('tipoDocumento')
+        ->where('tipo_empleado', 'vendedor')
+        ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId){
+            $query->where('marca_id', $marcaId);
+        })->get();
+        $filePath = "{$exportDir}/vendedores.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         $fechaProceso = now()->format('Y-m-d H:i:s');
@@ -158,8 +184,8 @@ class ExportCsvService
         // Datos
         foreach ($vendedores as $vendedor) {
             fwrite($handle, implode('|', [
-                '', // CódigoProveedor (asignado por VidaSoftware)
-                '', // CodigoDistribuidor (asignado por ARCOR)
+                $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                 $vendedor->codigo ?? str_pad($vendedor->id, 8, '0', STR_PAD_LEFT), // CodigoVendedor (rellenado con ceros si es necesario)
                 $vendedor->name, // NombreVendedor
                 $vendedor->tipoDocumento->tipo_documento ?? '', // TipoDocumento
@@ -179,14 +205,24 @@ class ExportCsvService
         return $filePath;
     }
 
-    public static function exportVentas()
+    public static function exportVentas($marcaId, $exportDir = 'exports')
     {
-        $ventas = FComprobanteSunat::with(['detalle', 'cliente', 'vendedor', 'ruta'])->whereBetween('fechaEmision', [
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $ventas = FComprobanteSunat::with(['detalle', 'cliente', 'vendedor', 'ruta'])
+        ->whereHas('detalle.producto', function ($query) use ($marcaId){
+            $query->where('marca_id', $marcaId);
+        })
+        ->whereBetween('fechaEmision', [
             now()->subMonths(1)->startOfMonth(),
             now()->endOfMonth()
-        ])->where('estado_reporte', true)->get();
+        ])
+        ->where('estado_reporte', true)
+        ->get();
 
-        $filePath = 'exports/ventas.csv';
+        $filePath = "{$exportDir}/ventas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
@@ -213,8 +249,8 @@ class ExportCsvService
                     default => 'BO'
                 };
                 fwrite($handle, implode('|', [
-                    '', // CódigoProveedor (asignado por VidaSoftware)
-                    '', // CodigoDistribuidor (asignado por ARCOR)
+                    $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                    $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                     $tipoDoc, // TipoDocumento (FA, BO, NC, ND)
                     "{$venta->serie}-{$venta->correlativo}", // NroDocumento
                     carbon_parse($venta->fechaEmision)->format('Y-m-d'), // FechaDocumento
@@ -252,10 +288,17 @@ class ExportCsvService
         return $filePath;
     }
 
-    public static function exportRutas()
+    public static function exportRutas($marcaId, $exportDir = 'exports')
     {
-        $rutas = Ruta::with(['vendedor', 'clientes'])->get();
-        $filePath = 'exports/rutas.csv';
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+
+        $rutas = Ruta::with(['vendedor', 'clientes'])
+        ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId){
+            $query->where('marca_id', $marcaId);
+        })->get();
+        $filePath = "{$exportDir}/rutas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
@@ -271,8 +314,8 @@ class ExportCsvService
         foreach ($rutas as $ruta) {
             foreach ($ruta->clientes as $cliente) {
                 fwrite($handle, implode('|', [
-                    '', // CódigoProveedor (asignado por VidaSoftware)
-                    '', // CodigoDistribuidor (asignado por ARCOR)
+                    $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                    $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                     str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                     str_pad($ruta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
                     '', // FuerzaDeVenta (Si se agrega en el futuro)
@@ -312,15 +355,22 @@ class ExportCsvService
         return $frecuencia . $diasFlag;
     }
 
-    public static function exportPedidos()
+    public static function exportPedidos($marcaId, $exportDir = 'exports')
     {
-        $pedidos = Pedido::with(['pedidoDetalles', 'cliente', 'vendedor', 'tipoComprobante'])
-            ->whereBetween('fecha_emision', [
-                now()->subMonths(1)->startOfMonth(),
-                now()->endOfMonth()
-            ])->get();
+        // Definimos valores por defecto según la marca
+        $codigoProveedor = $marcaId == 7 ? "10005" : "";
+        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
 
-        $filePath = 'exports/pedidos.csv';
+        $pedidos = Pedido::with(['pedidoDetalles', 'cliente', 'vendedor', 'tipoComprobante'])
+        ->whereHas('pedidoDetalles.producto', function ($query) use ($marcaId){
+            $query->where('marca_id', $marcaId);
+        })
+        ->whereBetween('fecha_emision', [
+            now()->subMonths(1)->startOfMonth(),
+            now()->endOfMonth()
+        ])->get();
+
+        $filePath = "{$exportDir}/pedidos.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
@@ -344,8 +394,8 @@ class ExportCsvService
                     default => 'BO'
                 };
                 fwrite($handle, implode('|', [
-                    '', // CódigoProveedor (asignado por VidaSoftware)
-                    '', // CodigoDistribuidor (asignado por ARCOR)
+                    $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                    $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                     str_pad($pedido->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                     str_pad($pedido->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
                     '', // Origen (Si se agrega en el futuro)

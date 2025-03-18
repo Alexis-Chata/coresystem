@@ -90,4 +90,9 @@ class Cliente extends Model
     {
         return $this->belongsTo(Ruta::class);
     }
+
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class);
+    }
 }
