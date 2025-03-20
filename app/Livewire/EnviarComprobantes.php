@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Exports\FComprobanteSunatsExport;
 use Carbon\Carbon;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EnviarComprobantes extends Component
 {
@@ -38,5 +40,12 @@ class EnviarComprobantes extends Component
     public function updatedSearch()
     {
         $this->actualizar_table();
+    }
+
+    public function descargar_comprobantes()
+    {
+        $inicio = $this->fecha_emision_inicio;
+        $fin = $this->fecha_emision_fin;
+        return Excel::download(new FComprobanteSunatsExport($inicio, $fin), 'Reporte_Comprobantes_' . format_date($inicio) . '_' . format_date($fin) . '.xlsx');
     }
 }
