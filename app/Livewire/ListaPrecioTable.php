@@ -18,7 +18,7 @@ final class ListaPrecioTable extends PowerGridComponent
 {
     public string $tableName = 'lista-precio-table-zdubif-table';
     public bool $showCreateForm = false;
-    
+
     public $newListaPrecio = [
         'name' => '',
         'descripcion' => '',
@@ -79,7 +79,7 @@ final class ListaPrecioTable extends PowerGridComponent
         $listaPrecio = ListaPrecio::withTrashed()->find($rowId);
         if ($listaPrecio) {
             $listaPrecio->restore();
-            
+
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('lista-precio-SweetAlert2', 'Restaurado exitosamente');
         }
@@ -91,7 +91,7 @@ final class ListaPrecioTable extends PowerGridComponent
         $listaPrecio = ListaPrecio::find($rowId);
         if ($listaPrecio) {
             $listaPrecio->delete();
-            
+
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('lista-precio-SweetAlert2', 'Eliminado exitosamente');
         }

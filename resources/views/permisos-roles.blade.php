@@ -9,13 +9,6 @@
 </div>
 @endsection
 
-<style>
-    .max-w-full.overflow-x-auto {
-        overflow-x: auto !important;
-        padding-bottom: 99px;
-    }
-</style>
-
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 @endpush

@@ -73,6 +73,9 @@
             .overflow-x-auto {
                 /* overflow-x: initial !important; */
             }
+            #power-grid-table-container.overflow-x-auto {
+                overflow: visible;
+            }
             [role="navigation"] .z-10{
                 z-index: 8 !important;
             }

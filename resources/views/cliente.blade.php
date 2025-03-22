@@ -5,6 +5,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <livewire:cliente-table/>
     <br>
+    <br>
+    <br>
+    <br>
     <livewire:padron-table/>
 <script>
     document.addEventListener('livewire:initialized', () => {
