@@ -40,7 +40,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -55,6 +55,26 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+        ],
+
+        'sftp_cnch' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_CNCH_HOST'),
+            'username' => env('SFTP_CNCH_USERNAME'),
+            'password' => env('SFTP_CNCH_PASSWORD'), // O usa 'private_key' si usas autenticación por clave privada
+            'port' => env('SFTP_CNCH_PORT', 22), // El puerto por defecto de SFTP es 22
+            'root' => env('SFTP_CNCH_ROOT', '/ruta/en/servidor/'), // Ruta donde se subirán los archivos
+            'timeout' => 30,
+        ],
+
+        'sftp_arcor' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_ARCOR_HOST'),
+            'username' => env('SFTP_ARCOR_USERNAME'),
+            'password' => env('SFTP_ARCOR_PASSWORD'), // O usa 'private_key' si usas autenticación por clave privada
+            'port' => env('SFTP_ARCOR_PORT', 22), // El puerto por defecto de SFTP es 22
+            'root' => env('SFTP_ARCOR_ROOT', '/ruta/en/servidor/'), // Ruta donde se subirán los archivos
+            'timeout' => 30,
         ],
 
     ],
