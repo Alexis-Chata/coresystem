@@ -87,6 +87,13 @@ return [
             'timeout' => 30,
         ],
 
+        'exports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/exports'),
+            'serve' => true,
+            'throw' => false,
+        ],
+
     ],
 
     /*

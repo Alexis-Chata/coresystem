@@ -40,12 +40,25 @@ Route::middleware([
 ])->group(function () {
     Route::get('/dashboard', function () {
 
-        $localPath = 'logos/logo.png'; // Ruta en storage/app/
-        $remotePath = 'backups/logo.png'; // Ruta en el servidor SFTP con el nombre del archivo
+        $localPath = 'arcor/data.zip'; // Ruta en storage/app/
+        $remotePath = 'arcor/data.zip'; // Ruta en el servidor SFTP con el nombre del archivo
 
-        Storage::disk('sftp_prueba')->put($remotePath, Storage::disk('local')->get($localPath));
+        // Verificar si el archivo local existe
+        if (!Storage::disk('exports')->exists($localPath)) {
+            dd("El archivo exports no existe: $localPath");
+        }
 
-        dd("Archivo subido correctamente");
+        // Crear el directorio remoto si no existe
+        Storage::disk('sftp_prueba')->makeDirectory('arcor');
+
+        // Subir el archivo
+        Storage::disk('sftp_prueba')->put($remotePath, Storage::disk('exports')->get($localPath));
+
+        // Verificar si el archivo fue subido
+        $archivos = Storage::disk('sftp_prueba')->files('arcor');
+
+        dd("Archivo subido correctamente", $archivos);
+
 
         return view('dashboard');
     })->name('dashboard');
