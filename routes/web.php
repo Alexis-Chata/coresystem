@@ -39,17 +39,27 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $filePath = 'ejemplo.txt';
-        $contenido = 'Este es un archivo de prueba';
+        try {
+            $filePath = 'ejemplo.txt';
+            $contenido = 'Este es un archivo de prueba';
 
-        // Asegurar que $contenido no sea null
-        if (is_null($contenido)) {
-            throw new \Exception("El contenido del archivo no puede ser null.");
+            Storage::disk('sftp_prueba')->put($filePath, $contenido);
+            // Obtener la raíz del servidor SFTP desde la configuración
+            $root = config('filesystems.disks.sftp_prueba.root', '');
+
+            // Construir la ruta completa
+            $pathCompleto = rtrim($root, '/') . '/' . ltrim($filePath, '/');
+
+            echo($pathCompleto);
+
+            if (!Storage::disk('sftp_prueba')->exists($filePath)) {
+                throw new \Exception("El archivo no se encontró en el servidor...");
+            }
+
+            dd("Archivo subido correctamente");
+        } catch (\Exception $e) {
+            dd("Error: " . $e->getMessage());
         }
-
-        // Subir archivo al servidor SFTP
-        Storage::disk('sftp_prueba')->put($filePath, $contenido);
-        dd("Archivo subido correctamente");
 
         $localPath = 'logos/logo.png'; // Ruta en storage/app/
         $remotePath = 'backups'; // Ruta en el servidor SFTP

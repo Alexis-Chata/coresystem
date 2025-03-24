@@ -62,7 +62,7 @@ return [
             'host' => env('SFTP_CNCH_HOST'),
             'username' => env('SFTP_CNCH_USERNAME'),
             'password' => env('SFTP_CNCH_PASSWORD'), // O usa 'private_key' si usas autenticación por clave privada
-            'port' => env('SFTP_CNCH_PORT', 22), // El puerto por defecto de SFTP es 22
+            'port' => (int) env('SFTP_CNCH_PORT', 22), // El puerto por defecto de SFTP es 22
             'root' => env('SFTP_CNCH_ROOT', '/ruta/en/servidor/'), // Ruta donde se subirán los archivos
             'timeout' => 30,
         ],
@@ -72,7 +72,7 @@ return [
             'host' => env('SFTP_ARCOR_HOST'),
             'username' => env('SFTP_ARCOR_USERNAME'),
             'password' => env('SFTP_ARCOR_PASSWORD'), // O usa 'private_key' si usas autenticación por clave privada
-            'port' => env('SFTP_ARCOR_PORT', 22), // El puerto por defecto de SFTP es 22
+            'port' => (int) env('SFTP_ARCOR_PORT', 22), // El puerto por defecto de SFTP es 22
             'root' => env('SFTP_ARCOR_ROOT', '/ruta/en/servidor/'), // Ruta donde se subirán los archivos
             'timeout' => 30,
         ],
@@ -83,7 +83,7 @@ return [
             'username' => env('SFTP_PRUEBA_USERNAME'),
             'password' => env('SFTP_PRUEBA_PASSWORD'), // O usa 'private_key' si usas autenticación por clave privada
             'port' => (int) env('SFTP_PRUEBA_PORT', 22), // El puerto por defecto de SFTP es 22
-            'root' => env('SFTP_PRUEBA_ROOT', '/ruta/en/servidor/'), // Ruta donde se subirán los archivos (opcional)
+            'root' => env('SFTP_PRUEBA_ROOT', './'), // Ruta donde se subirán los archivos (opcional)
             'timeout' => 30,
         ],
 
