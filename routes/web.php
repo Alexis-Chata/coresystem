@@ -15,19 +15,19 @@ use Maatwebsite\Excel\Facades\Excel;
 Route::get('html', function () {
     $movimiento = Movimiento::find(1);
     $marca = Marca::all();
-        $movimiento->load(['movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
-        $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
-            return $detalle->producto->marca->id; // Agrupar por nombre de la marca
-        });
-        //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
+    $movimiento->load(['movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
+    $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
+        return $detalle->producto->marca->id; // Agrupar por nombre de la marca
+    });
+    //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
 
-        return view("pdf.movimiento-carga", compact("movimiento", "detallesAgrupados", "marca"));
+    return view("pdf.movimiento-carga", compact("movimiento", "detallesAgrupados", "marca"));
 });
 
 Route::get('/test-email', function () {
     Mail::raw('Este es un correo de prueba.', function ($message) {
         $message->to('alexis.golomix@gmail.com')
-                ->subject('Prueba de correo');
+            ->subject('Prueba de correo');
     });
 
     return 'Correo enviado correctamente';
@@ -39,6 +39,24 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
+        $filePath = 'ejemplo.txt';
+        $contenido = 'Este es un archivo de prueba';
+
+        // Asegurar que $contenido no sea null
+        if (is_null($contenido)) {
+            throw new \Exception("El contenido del archivo no puede ser null.");
+        }
+
+        // Subir archivo al servidor SFTP
+        Storage::disk('sftp_prueba')->put($filePath, $contenido);
+        dd("Archivo subido correctamente");
+
+        $localPath = 'logos/logo.png'; // Ruta en storage/app/
+        $remotePath = 'backups'; // Ruta en el servidor SFTP
+
+        Storage::disk('sftp_prueba')->put($remotePath, Storage::disk('local')->get($localPath));
+
+        dd("Archivo subido correctamente");
         return view('dashboard');
     })->name('dashboard');
 
@@ -189,7 +207,7 @@ Route::get('/', function () {
 })->name('index');
 
 Route::get('/pedido_detalles_report', function () {
-    return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_'.now().'.xlsx');
+    return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_' . now() . '.xlsx');
 })->name('report.pedido_detalle');
 
 Route::get('/zip', function () {
