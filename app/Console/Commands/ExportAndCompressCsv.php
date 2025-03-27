@@ -69,9 +69,9 @@ class ExportAndCompressCsv extends Command
             return;
         }
 
-        $disks = match ($marcaId) {
-            7 => 'sftp_cnch',
-            10 => 'sftp_arcor',
+        $disks = match ((int) $marcaId) {
+            7 => 'sftp_cnch', // sftp_prueba
+            10 => 'sftp_arcor', // sftp_prueba
             default => null,
         };
 
@@ -79,6 +79,7 @@ class ExportAndCompressCsv extends Command
             $this->error("El disco no está definido para la marca ID: $marcaId");
             return;
         }
+        $this->info("Usando disco: $disks");
 
         // Subir el archivo
         Storage::disk($disks)->put($remotePath, $contenido);
