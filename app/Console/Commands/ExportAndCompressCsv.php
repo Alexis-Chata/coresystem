@@ -65,15 +65,26 @@ class ExportAndCompressCsv extends Command
         if (file_exists($zipPath)) {
             $contenido = file_get_contents($zipPath);
         } else {
-            $this->info('Error: El archivo no existe en local');
+            $this->error('Error: El archivo no existe en local');
+            return;
+        }
+
+        $disks = match ($marcaId) {
+            7 => 'sftp_cnch',
+            10 => 'sftp_arcor',
+            default => null,
+        };
+
+        if ($disks === null) {
+            $this->error("El disco no está definido para la marca ID: $marcaId");
             return;
         }
 
         // Subir el archivo
-        Storage::disk('sftp_prueba')->put($remotePath, $contenido);
+        Storage::disk($disks)->put($remotePath, $contenido);
 
         // Verificar si el archivo fue subido
-        $archivos = Storage::disk('sftp_prueba')->files('.');
+        $archivos = Storage::disk($disks)->files('.');
         $this->info(implode(', ', $archivos));
 
         $this->info("Archivo subido correctamente " . $remotePath);
