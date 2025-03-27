@@ -16,14 +16,22 @@ class ExportCsvService
     public static function exportClientes($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $clientes = Cliente::with('tipoDocumento')
-        ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
-            $query->where('marca_id', $marcaId);
-        })
-        ->get();
+            ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+                $query->where('marca_id', $marcaId);
+            })
+            ->get();
         $filePath = "{$exportDir}/clientes.csv";
         $handle = fopen(storage_path("app/{$filePath}"), 'w');
 
@@ -68,8 +76,16 @@ class ExportCsvService
     public static function exportProductos($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $productos = Producto::where('marca_id', $marcaId)->get();
         $filePath = "{$exportDir}/productos.csv";
@@ -112,10 +128,18 @@ class ExportCsvService
     public static function exportStock($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
-        $stock = AlmacenProducto::whereHas('producto', function ($query) use ($marcaId){
+        $stock = AlmacenProducto::whereHas('producto', function ($query) use ($marcaId) {
             $query->where('marca_id', $marcaId);
         })->get();
         $filePath = "{$exportDir}/stock.csv";
@@ -161,14 +185,22 @@ class ExportCsvService
     public static function exportVendedores($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $vendedores = Empleado::with('tipoDocumento')
-        ->where('tipo_empleado', 'vendedor')
-        ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId){
-            $query->where('marca_id', $marcaId);
-        })->get();
+            ->where('tipo_empleado', 'vendedor')
+            ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+                $query->where('marca_id', $marcaId);
+            })->get();
         $filePath = "{$exportDir}/vendedores.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -208,19 +240,27 @@ class ExportCsvService
     public static function exportVentas($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $ventas = FComprobanteSunat::with(['detalle', 'cliente', 'vendedor', 'ruta'])
-        ->whereHas('detalle.producto', function ($query) use ($marcaId){
-            $query->where('marca_id', $marcaId);
-        })
-        ->whereBetween('fechaEmision', [
-            now()->subMonths(1)->startOfMonth(),
-            now()->endOfMonth()
-        ])
-        ->where('estado_reporte', true)
-        ->get();
+            ->whereHas('detalle.producto', function ($query) use ($marcaId) {
+                $query->where('marca_id', $marcaId);
+            })
+            ->whereBetween('fechaEmision', [
+                now()->subMonths(1)->startOfMonth(),
+                now()->endOfMonth()
+            ])
+            ->where('estado_reporte', true)
+            ->get();
 
         $filePath = "{$exportDir}/ventas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
@@ -241,7 +281,7 @@ class ExportCsvService
         // Datos
         foreach ($ventas as $venta) {
             foreach ($venta->detalle as $index => $detalle) {
-                $tipoDoc = match($venta->tipoDoc){
+                $tipoDoc = match ($venta->tipoDoc) {
                     '01' => 'FA',
                     '03' => 'BO',
                     '07' => 'NC',
@@ -291,13 +331,21 @@ class ExportCsvService
     public static function exportRutas($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $rutas = Ruta::with(['vendedor', 'clientes'])
-        ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId){
-            $query->where('marca_id', $marcaId);
-        })->get();
+            ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+                $query->where('marca_id', $marcaId);
+            })->get();
         $filePath = "{$exportDir}/rutas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -358,17 +406,25 @@ class ExportCsvService
     public static function exportPedidos($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
-        $codigoProveedor = $marcaId == 7 ? "10005" : "";
-        $codigoDistribuidor = $marcaId == 7 ? "LIMA.01.10732237" : "";
+        $codigoProveedor = match ((int) $marcaId) {
+            7 => "10005",
+            10 => "10004",
+            default => "",
+        };
+        $codigoDistribuidor = match ((int) $marcaId) {
+            7 => "LIMA.01.10732237",
+            10 => "58204545",
+            default => "",
+        };
 
         $pedidos = Pedido::with(['pedidoDetalles', 'cliente', 'vendedor', 'tipoComprobante'])
-        ->whereHas('pedidoDetalles.producto', function ($query) use ($marcaId){
-            $query->where('marca_id', $marcaId);
-        })
-        ->whereBetween('fecha_emision', [
-            now()->subMonths(1)->startOfMonth(),
-            now()->endOfMonth()
-        ])->get();
+            ->whereHas('pedidoDetalles.producto', function ($query) use ($marcaId) {
+                $query->where('marca_id', $marcaId);
+            })
+            ->whereBetween('fecha_emision', [
+                now()->subMonths(1)->startOfMonth(),
+                now()->endOfMonth()
+            ])->get();
 
         $filePath = "{$exportDir}/pedidos.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
@@ -386,7 +442,7 @@ class ExportCsvService
         // Datos
         foreach ($pedidos as $pedido) {
             foreach ($pedido->pedidoDetalles as $index => $detalle) {
-                $tipoDoc = match($pedido->tipoDoc){
+                $tipoDoc = match ($pedido->tipoDoc) {
                     '01' => 'FA',
                     '03' => 'BO',
                     '07' => 'NC',
@@ -427,5 +483,4 @@ class ExportCsvService
         fclose($handle);
         return $filePath;
     }
-
 }
