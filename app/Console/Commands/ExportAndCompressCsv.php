@@ -59,7 +59,8 @@ class ExportAndCompressCsv extends Command
 
         $fechaHora = date('Ymd_His'); // Formato: DíaMesAño_HoraMinutoSegundo
         $marcaNombre = preg_replace('/[^A-Za-z0-9]/', '_', $marcaNombre);
-        $remotePath = "data_{$marcaNombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+        $remotePath = "data.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+        //$remotePath = "data_{$marcaNombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
 
         // Verificar si el archivo local existe
         if (file_exists($zipPath)) {
@@ -81,12 +82,16 @@ class ExportAndCompressCsv extends Command
         }
         $this->info("Usando disco: $disks");
 
+        $this->info("Subiendo archivo a: {$disks}/{$remotePath}");
         // Subir el archivo
         Storage::disk($disks)->put($remotePath, $contenido);
 
+        $fullPath = Storage::disk($disks)->path($remotePath);
+        $this->info("Ruta completa del archivo en SFTP: $fullPath");
+
         // Verificar si el archivo fue subido
         $archivos = Storage::disk($disks)->files('.');
-        $this->info(implode(', ', $archivos));
+        $this->info("Archivos en el SFTP: " . implode(', ', $archivos));
 
         $this->info("Archivo subido correctamente " . $remotePath);
     }
