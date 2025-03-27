@@ -56,7 +56,10 @@ class ExportAndCompressCsv extends Command
         }
 
         $this->info("iniciando subida a SFTP...");
-        $remotePath = "data_{$marcaNombre}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+
+        $fechaHora = date('Ymd_His'); // Formato: DíaMesAño_HoraMinutoSegundo
+        $marcaNombre = preg_replace('/[^A-Za-z0-9]/', '_', $marcaNombre);
+        $remotePath = "data_{$marcaNombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
 
         // Verificar si el archivo local existe
         if (file_exists($zipPath)) {
