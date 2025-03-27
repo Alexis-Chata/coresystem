@@ -239,7 +239,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 @php
-                                    $producto = App\Models\Producto::find($detalle['producto_id']);
+                                    $producto = App\Models\Producto::withTrashed()->find($detalle['producto_id']);
                                     $esPaqueteUnico = $producto->cantidad == 1;
                                 @endphp
 

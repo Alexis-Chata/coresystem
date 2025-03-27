@@ -244,7 +244,7 @@ class PedidoTable extends Component
             return;
         }
 
-        $producto = Producto::with([
+        $producto = Producto::withTrashed()->with([
             "listaPrecios" => function ($query) {
                 $query->where("lista_precio_id", $this->lista_precio);
             },
@@ -314,7 +314,7 @@ class PedidoTable extends Component
     public function actualizarCantidad($index)
     {
         $detalle = $this->pedido_detalles[$index];
-        $producto = Producto::find($detalle["producto_id"]);
+        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
 
         $precio =
             $producto
@@ -354,7 +354,6 @@ class PedidoTable extends Component
             $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
             $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
             $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
-
             $pedido = Pedido::create([
                 "ruta_id" => $this->ruta_id,
                 "f_tipo_comprobante_id" => $this->f_tipo_comprobante_id,
@@ -369,7 +368,7 @@ class PedidoTable extends Component
             ]);
 
             foreach ($this->pedido_detalles as $index => $detalle) {
-                $producto = Producto::find($detalle["producto_id"]);
+                $producto = Producto::withTrashed()->find($detalle["producto_id"]);
                 $precioCaja =
                     $producto->listaPrecios
                     ->where("id", $this->lista_precio)
@@ -443,7 +442,7 @@ class PedidoTable extends Component
     public function calcularImporte($index)
     {
         $detalle = $this->pedido_detalles[$index];
-        $producto = Producto::find($detalle["producto_id"]);
+        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
 
         if ($producto) {
             $precioCaja =
@@ -532,7 +531,7 @@ class PedidoTable extends Component
         }
 
         // Validar que los paquetes no excedan la cantidad de productos por caja
-        $producto = Producto::find($detalle["producto_id"]);
+        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
         $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
 
         if ($paquetes >= $cantidadProducto) {

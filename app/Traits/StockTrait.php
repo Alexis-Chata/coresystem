@@ -18,7 +18,7 @@ trait StockTrait
         $errores = [];
         $mesaje_error = "";
         $ids_productos = $array_detalles->pluck('producto_id')->toArray();
-        $stock_productos = Producto::with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
+        $stock_productos = Producto::withTrashed()->with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
         //dd($stock_productos, $array_detalles->pluck(['producto_id']));
 
         foreach ($array_detalles as $detalle) {
@@ -57,7 +57,7 @@ trait StockTrait
         $errores = [];
         $mesaje_error = "";
         $ids_productos = $array_detalles->pluck('producto_id')->toArray();
-        $productos = Producto::with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
+        $productos = Producto::withTrashed()->with(['almacenProductos'])->whereIn('id', $ids_productos)->get();
         //dd($productos, $array_detalles);
 
         foreach ($array_detalles as $detalle) {
@@ -143,7 +143,7 @@ trait StockTrait
         $almacenId = Empleado::with(['fSede.almacen'])->find($pedido->vendedor_id)->fSede->almacen->id;
         //dd($almacenId);
         $pedido->pedidoDetalles->each(function ($detalle) use ($almacenId, $anulando) {
-            $producto = Producto::find($detalle->producto_id);
+            $producto = Producto::withTrashed()->find($detalle->producto_id);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $almacenId)->first();
             $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), $anulando);
 
