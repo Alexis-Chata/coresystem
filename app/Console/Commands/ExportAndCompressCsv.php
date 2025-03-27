@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\ExportCsvService;
+use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class ExportAndCompressCsv extends Command
@@ -53,5 +54,25 @@ class ExportAndCompressCsv extends Command
         } else {
             $this->error("Error al crear el ZIP.");
         }
+
+        $this->info("iniciando subida a SFTP...");
+        $remotePath = "data_{$marcaNombre}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+
+        // Verificar si el archivo local existe
+        if (file_exists($zipPath)) {
+            $contenido = file_get_contents($zipPath);
+        } else {
+            $this->info('Error: El archivo no existe en local');
+            return;
+        }
+
+        // Subir el archivo
+        Storage::disk('sftp_prueba')->put($remotePath, $contenido);
+
+        // Verificar si el archivo fue subido
+        $archivos = Storage::disk('sftp_prueba')->files('.');
+        $this->info(implode(', ', $archivos));
+
+        $this->info("Archivo subido correctamente " . $remotePath);
     }
 }
