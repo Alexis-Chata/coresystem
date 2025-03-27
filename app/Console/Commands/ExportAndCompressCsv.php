@@ -90,8 +90,9 @@ class ExportAndCompressCsv extends Command
         $this->info("Ruta completa del archivo en SFTP: $fullPath");
 
         if (Storage::disk($disks)->exists($remotePath)) {
-            $size = Storage::disk($disks)->size($remotePath);
-            $this->info("El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.");
+            $this->info("El archivo se ha subido correctamente: $remotePath");
+            //$size = Storage::disk($disks)->size($remotePath);
+            //$this->info("El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.");
         } else {
             $this->error("Error: El archivo no se encuentra en el SFTP.");
         }
