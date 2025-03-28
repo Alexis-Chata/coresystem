@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\ExportCsvService;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\FilesystemException;
 use ZipArchive;
 
 class ExportAndCompressCsv extends Command
@@ -58,49 +59,44 @@ class ExportAndCompressCsv extends Command
         $this->info("iniciando subida a SFTP...");
 
         $fechaHora = date('Ymd_His'); // Formato: DíaMesAño_HoraMinutoSegundo
-        $marcaNombre = preg_replace('/[^A-Za-z0-9]/', '_', $marcaNombre);
-        $remotePath = "output.zip"; // Ruta en el servidor SFTP con el nombre del archivo
-        //$remotePath = "output_{$marcaNombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+        $marca_nombre = preg_replace('/[^A-Za-z0-9]/', '_', $marcaNombre); // Reemplazar caracteres no alfanuméricos por guiones bajos
+        //$remotePath = "output_{$marca_nombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
 
-        // Verificar si el archivo local existe
-        if (file_exists($zipPath)) {
-            $contenido = file_get_contents($zipPath);
-        } else {
+        if (!file_exists($zipPath)) {
             $this->error('Error: El archivo no existe en local');
             return;
         }
 
+        // Definir el disco según la marca
         $disks = match ((int) $marcaId) {
-            7 => 'sftp_cnch', // sftp_prueba
-            10 => 'sftp_arcor', // sftp_prueba
+            7 => 'sftp_cnch',
+            10 => 'sftp_arcor',
             default => null,
         };
 
-        if ($disks === null) {
+        if (!$disks) {
             $this->error("El disco no está definido para la marca ID: $marcaId");
             return;
         }
+
         $this->info("Usando disco: $disks");
 
-        $this->info("Subiendo archivo a: {$disks}/{$remotePath}");
-        // Subir el archivo
-        Storage::disk($disks)->put($remotePath, $contenido);
+        $remotePath = "output.zip";
 
-        $fullPath = Storage::disk($disks)->path($remotePath);
-        $this->info("Ruta completa del archivo en SFTP: $fullPath");
+        try {
+            // Intentar subir el archivo
+            $resultado = Storage::disk($disks)->putFileAs('', $zipPath, $remotePath);
 
-        // if (Storage::disk($disks)->exists($remotePath)) {
-        //     $this->info("El archivo se ha subido correctamente: $remotePath");
-        //     //$size = Storage::disk($disks)->size($remotePath);
-        //     //$this->info("El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.");
-        // } else {
-        //     $this->error("Error: El archivo no se encuentra en el SFTP.");
-        // }
-
-        // Verificar si el archivo fue subido
-        //$archivos = Storage::disk($disks)->files('.');
-        //$this->info("Archivos en el SFTP: " . implode(', ', $archivos));
-
-        $this->info("Archivo subido correctamente " . $remotePath);
+            if ($resultado) {
+                $size = Storage::disk($disks)->size($remotePath);
+                $this->info("El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.");
+            } else {
+                $this->error("Error: No se pudo subir el archivo.");
+            }
+        } catch (FilesystemException $e) {
+            $this->error("Error de conexión con SFTP: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $this->error("Error inesperado: " . $e->getMessage());
+        }
     }
 }
