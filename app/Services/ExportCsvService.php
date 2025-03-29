@@ -139,7 +139,7 @@ class ExportCsvService
             default => "",
         };
 
-        $stock = AlmacenProducto::whereHas('producto', function ($query) use ($marcaId) {
+        $stock = AlmacenProducto::with(['producto'])->whereHas('producto', function ($query) use ($marcaId) {
             $query->where('marca_id', $marcaId);
         })->get();
         $filePath = "{$exportDir}/stock.csv";
@@ -164,9 +164,9 @@ class ExportCsvService
                 str_pad($item->almacen_id, 8, '0', STR_PAD_LEFT), // CodigoAlmacen (rellenado con ceros)
                 $item->almacen->name ?? '', // NombreAlmacen
                 str_pad($item->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto (rellenado con ceros)
-                '', // Lote (Si se agrega en el futuro)
-                '', // FechaVencimiento (Si se agrega en el futuro)
-                $item->stock_fisico, // StockEnUnidadMinima
+                'N/D', // Lote (Si se agrega en el futuro)
+                '1900-01-01', // FechaVencimiento (Si se agrega en el futuro)
+                convertir_a_paquetes($item->stock_fisico, $item->producto->cantidad), // StockEnUnidadMinima
                 'Unidad', // UnidadDeMedidaMinima
                 number_format($item->stock_fisico, 4, '.', ''), // StockEnUnidadesMaximas
                 'Caja', // UnidadDeMedidaMaxima (Si se agrega en el futuro)
@@ -227,8 +227,8 @@ class ExportCsvService
                 $vendedor->updated_at->format('Y-m-d'), // FechaActualización
                 $fechaProceso, // FechaProceso
                 '0', // Exclusivo (Asignamos "0" por defecto)
-                '', // Codigovisor (Si se agrega en el futuro)
-                '', // NombreSupervisor (Si se agrega en el futuro)
+                'N/D', // Codigovisor (Si se agrega en el futuro)
+                'N/D', // NombreSupervisor (Si se agrega en el futuro)
                 '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
             ]) . PHP_EOL);
         }
@@ -454,7 +454,7 @@ class ExportCsvService
                     $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                     str_pad($pedido->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                     str_pad($pedido->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
-                    '', // Origen (Si se agrega en el futuro)
+                    'Toma Pedidos', // Origen (Si se agrega en el futuro)
                     str_pad($pedido->id, 8, '0', STR_PAD_LEFT), // CodigoPedido
                     carbon_parse($pedido->fecha_emision)->format('Y-m-d'), // FechaPedido
                     'PEND', // EstatusPedido
@@ -462,7 +462,7 @@ class ExportCsvService
                     $tipoDoc, // TipoDocumento
                     $pedido->id, // Documento (Si se agrega en el futuro)
                     $pedido->fecha_reparto ? $pedido->fecha_reparto->format('Y-m-d') : '', // FechaDocumento
-                    '', // EstatusDocumento (Si se agrega en el futuro)
+                    'APRO', // EstatusDocumento (Si se agrega en el futuro)
                     $index + 1, // NumeroItem
                     str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
                     $detalle->tipAfeIgv == '10' ? 'P' : 'B', // TipoProducto
