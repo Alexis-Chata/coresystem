@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\ExportCsvService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\FilesystemException;
 use ZipArchive;
@@ -56,29 +57,31 @@ class ExportAndCompressCsv extends Command
             $this->error("Error al crear el ZIP.");
         }
 
-        $this->info("iniciando subida a SFTP...");
-
-        $fechaHora = date('Ymd_His'); // Formato: DíaMesAño_HoraMinutoSegundo
-        $marca_nombre = preg_replace('/[^A-Za-z0-9]/', '_', $marcaNombre); // Reemplazar caracteres no alfanuméricos por guiones bajos
-        //$remotePath = "output_{$marca_nombre}_{$fechaHora}.zip"; // Ruta en el servidor SFTP con el nombre del archivo
+        Log::channel('respuesta_envio_sftp')->info("Iniciando subida a SFTP...");
+        $this->info("Iniciando subida a SFTP...");
 
         if (!file_exists($zipPath)) {
-            $this->error('Error: El archivo no existe en local');
+            $errorMsg = "Error: El archivo no existe en local";
+            Log::channel('respuesta_envio_sftp')->error($errorMsg);
+            $this->error($errorMsg);
             return;
         }
 
         // Definir el disco según la marca
         $disks = match ((int) $marcaId) {
-            7 => 'sftp_cnch',
-            10 => 'sftp_arcor',
+            7 => 'sftp_prueba', // sftp_prueba
+            10 => 'sftp_prueba', // sftp_prueba
             default => null,
         };
 
         if (!$disks) {
-            $this->error("El disco no está definido para la marca ID: $marcaId");
+            $errorMsg = "El disco no está definido para la marca ID: $marcaId";
+            Log::channel('respuesta_envio_sftp')->error($errorMsg);
+            $this->error($errorMsg);
             return;
         }
 
+        Log::channel('respuesta_envio_sftp')->info("Usando disco: $disks");
         $this->info("Usando disco: $disks");
 
         $remotePath = "output.zip";
@@ -89,14 +92,23 @@ class ExportAndCompressCsv extends Command
 
             if ($resultado) {
                 $size = Storage::disk($disks)->size($remotePath);
-                $this->info("El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.");
+                $successMsg = "El archivo '$remotePath' se ha subido con éxito. Tamaño: $size bytes.";
+                Log::channel('respuesta_envio_sftp')->info($successMsg);
+                $this->info($successMsg);
             } else {
-                $this->error("Error: No se pudo subir el archivo.");
+                $errorMsg = "Error: No se pudo subir el archivo.";
+                Log::channel('respuesta_envio_sftp')->error($errorMsg);
+                $this->error($errorMsg);
             }
         } catch (FilesystemException $e) {
-            $this->error("Error de conexión con SFTP: " . $e->getMessage());
+            $errorMsg = "Error de conexión con SFTP: " . $e->getMessage();
+            Log::channel('respuesta_envio_sftp')->error($errorMsg);
+            $this->error($errorMsg);
         } catch (\Exception $e) {
-            $this->error("Error inesperado: " . $e->getMessage());
+            $errorMsg = "Error inesperado: " . $e->getMessage();
+            Log::channel('respuesta_envio_sftp')->error($errorMsg);
+            $this->error($errorMsg);
         }
+        Log::channel('respuesta_envio_sftp')->info("...");
     }
 }

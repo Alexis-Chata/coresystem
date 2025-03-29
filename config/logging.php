@@ -55,7 +55,13 @@ return [
         'respuesta_envio_sunat' => [
             'driver' => 'daily',
             'path' => storage_path('app/private/logs/respuesta_envio_sunat.log'),
-            'level' => 'debug',
+            'level' => 'info',
+        ],
+
+        'respuesta_envio_sftp' => [
+            'driver' => 'single',
+            'path' => storage_path('app/private/logs/respuesta_envio_sftp.log'),
+            'level' => 'info',
         ],
 
         'stack' => [
