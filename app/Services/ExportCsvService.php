@@ -222,7 +222,7 @@ class ExportCsvService
                 $vendedor->name, // NombreVendedor
                 $vendedor->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $vendedor->numero_documento ?? '', // DI
-                '', // Canal (Si se agrega en el futuro)
+                'N/D', // Canal (Si se agrega en el futuro)
                 $vendedor->created_at->format('Y-m-d'), // FechaIngreso
                 $vendedor->updated_at->format('Y-m-d'), // FechaActualización
                 $fechaProceso, // FechaProceso
@@ -457,7 +457,7 @@ class ExportCsvService
                     'Toma Pedidos', // Origen (Si se agrega en el futuro)
                     str_pad($pedido->id, 8, '0', STR_PAD_LEFT), // CodigoPedido
                     carbon_parse($pedido->fecha_emision)->format('Y-m-d'), // FechaPedido
-                    'PEND', // EstatusPedido
+                    'APRO', // EstatusPedido
                     '', // MotivoCancelación (Si se agrega en el futuro)
                     $tipoDoc, // TipoDocumento
                     $pedido->id, // Documento (Si se agrega en el futuro)
