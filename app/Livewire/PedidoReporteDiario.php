@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Empleado;
 use App\Models\Pedido;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -12,6 +13,7 @@ use App\Traits\CalculosTrait;
 use App\Traits\StockTrait;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 
 class PedidoReporteDiario extends Component
 {
@@ -61,6 +63,7 @@ class PedidoReporteDiario extends Component
                     "listaPrecio",
                     "pedidoDetalles.producto",
                 ])
+                ->orderBy("vendedor_id")
                 ->get()
                 ->groupBy("vendedor_id");
         }
@@ -75,6 +78,7 @@ class PedidoReporteDiario extends Component
     public $pedidoEnEdicion = null;
     public $detallesEdit = [];
     public $comentarios;
+    public $vendedor_id = null;
 
     public function editarPedido($pedidoId)
     {
@@ -84,6 +88,7 @@ class PedidoReporteDiario extends Component
         ])->find($pedidoId);
 
         $this->comentarios = $this->pedidoEnEdicion->comentario;
+        $this->vendedor_id = $this->pedidoEnEdicion->vendedor_id;
 
         foreach ($this->pedidoEnEdicion->pedidoDetalles as $detalle) {
             $this->detallesEdit[$detalle->id] = [
@@ -157,9 +162,11 @@ class PedidoReporteDiario extends Component
         // $this->pedidoEnEdicion,  colecction | Pedido
         // $detalleExistente,       colecction | PedidoDetalle
         // $this->detallesEdit),    array
+
+        $this->resetValidation();
         try {
             DB::beginTransaction();
-
+            Cache::lock('guardar_pedido', 15)->block(10, function () use ($productoId) {
             $producto = Producto::withTrashed()->with([
                 "listaPrecios" => function ($query) {
                     $query->where(
@@ -188,17 +195,42 @@ class PedidoReporteDiario extends Component
                     ? $detalleExistente->cantidad + 1
                     : $detalleExistente->cantidad + 0.01;
 
+                $nuevaCantidad = $this->ajustarCantidadDetalle(
+                    $nuevaCantidad,
+                    $producto->cantidad
+                );
+
                 $nuevoImporte = $this->calcularImporteDetalle(
                     $nuevaCantidad,
                     $precio,
                     $producto->cantidad,
                     $producto->f_tipo_afectacion_id
                 );
-                // Actualizar el detalle existente directamente en bd (mejorar)
+
+                $detail = $detalleExistente;
+                $cant_actual = convertir_a_paquetes(
+                    $detail->cantidad,
+                    $detail->producto_cantidad_caja
+                );
+                $cant_nueva = convertir_a_paquetes(
+                    $nuevaCantidad,
+                    $detail->producto_cantidad_caja
+                );
+                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual),
+                $detail->producto_cantidad_caja);
+                $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
+                $detail->importe = $nuevoImporte;
+                $array_detalles[] = $detail->toArray();
+
+                $this->validar_stock_precio($array_detalles);
+
+                $this->actualizar_stock(array($detalleExistente), true);
+                // Actualizar el detalleExistente existente directamente en bd (mejorar)
                 $detalleExistente->update([
                     "cantidad" => $nuevaCantidad,
                     "importe" => $nuevoImporte,
                 ]);
+                $this->actualizar_stock(array($detalleExistente), false);
 
                 // Actualizar detallesEdit para el producto existente
                 $this->detallesEdit[$detalleExistente->id] = [
@@ -213,21 +245,25 @@ class PedidoReporteDiario extends Component
                     $producto->cantidad == 1
                     ? $precio
                     : $precio / $producto->cantidad;
+
                 if ($producto->f_tipo_afectacion_id == '21') {
                     $importe = 0;
                 }
+
                 // Crear el nuevo detalle directamente en bd (mejorar)
                 $nuevoDetalle = $this->pedidoEnEdicion
-                    ->pedidoDetalles()
-                    ->create([
-                        "producto_id" => $productoId,
-                        "producto_name" => $producto->name,
-                        "producto_precio" => $precio,
-                        "cantidad" => $cantidad,
-                        "importe" => $importe,
-                        "producto_cantidad_caja" => $producto->cantidad,
-                        "lista_precio" => $this->pedidoEnEdicion->lista_precio,
-                    ]);
+                ->pedidoDetalles()
+                ->create([
+                    "producto_id" => $productoId,
+                    "producto_name" => $producto->name,
+                    "producto_precio" => $precio,
+                    "cantidad" => $cantidad,
+                    "importe" => $importe,
+                    "producto_cantidad_caja" => $producto->cantidad,
+                    "lista_precio" => $this->pedidoEnEdicion->lista_precio,
+                ]);
+                $this->validar_stock_precio(array($nuevoDetalle));
+                $this->actualizar_stock(array($nuevoDetalle), false);
 
                 // Agregar el nuevo detalle a detallesEdit
                 $this->detallesEdit[$nuevoDetalle->id] = [
@@ -279,8 +315,10 @@ class PedidoReporteDiario extends Component
                 "message" => "Producto agregado correctamente",
                 "type" => "success",
             ]);
-        } catch (\Exception $e) {
+        });
+        } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
+            $this->addError("error_guardar", $e->getMessage());
             logger("Error al agregar producto:", [
                 "error" => $e->getMessage(),
                 "stack" => $e->getTraceAsString(),
@@ -343,7 +381,8 @@ class PedidoReporteDiario extends Component
             // Guardar el ID del pedido antes de eliminar el detalle
             $pedidoId = $detalle->pedido_id;
 
-            // Eliminar el detalle
+            $this->actualizar_stock(array($detalle), true);
+            // Eliminar el detalle bd (mejorar)
             $detalle->delete();
 
             // Eliminar de detallesEdit si existe
@@ -391,7 +430,7 @@ class PedidoReporteDiario extends Component
                 "message" => "Producto eliminado correctamente",
                 "type" => "success",
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
             logger("Error al eliminar detalle:", [
                 "error" => $e->getMessage(),
@@ -402,6 +441,8 @@ class PedidoReporteDiario extends Component
                 "Error al eliminar el producto: " . $e->getMessage(),
                 "type" => "error",
             ]);
+            $this->dispatch("error-guardando-pedido", "Error " . "<br>" . $e->getMessage());
+            $this->addError("error_guardar", $e->getMessage());
         }
     }
 
@@ -436,16 +477,40 @@ class PedidoReporteDiario extends Component
     public $cambiosTemporales = [];
     public function guardarCambios()
     {
-        //dd($this->cambiosTemporales);
+        $this->resetValidation();
+
         try {
             DB::beginTransaction();
+            Cache::lock('guardar_pedido', 15)->block(10, function () {
+            $array_detalles = [];
+            //dd($this->cambiosTemporales);
+            foreach ($this->cambiosTemporales as $detalleId => $cambio) {
+                $detail = PedidoDetalle::find($detalleId);
+                $cant_actual = convertir_a_paquetes(
+                    $detail->cantidad,
+                    $detail->producto_cantidad_caja
+                );
+                $cant_nueva = convertir_a_paquetes(
+                    $cambio["cantidad"],
+                    $detail->producto_cantidad_caja
+                );
+                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual),
+                    $detail->producto_cantidad_caja);
+                $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
+                $detail->importe = $cambio["importe"];
+                $array_detalles[] = $detail->toArray();
+            }
+            $this->validar_stock_precio($array_detalles);
+
             // Aplicar los cambios temporales
             foreach ($this->cambiosTemporales as $detalleId => $cambio) {
                 $detalle = PedidoDetalle::find($detalleId);
+                $this->actualizar_stock(array($detalle), true);
                 $detalle->update([
                     "cantidad" => $cambio["cantidad"],
                     "importe" => $cambio["importe"],
                 ]);
+                $this->actualizar_stock(array($detalle), false);
             }
 
             // Recalcular totales basados en los detalles actualizados
@@ -494,8 +559,10 @@ class PedidoReporteDiario extends Component
             $this->comentarios = "";
 
             $this->mount();
-        } catch (\Exception $e) {
+            });
+        } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
+            $this->addError("error_guardar", $e->getMessage());
             $this->dispatch("notify", [
                 "message" =>
                 "Error al guardar los cambios: " . $e->getMessage(),
@@ -680,5 +747,29 @@ class PedidoReporteDiario extends Component
                 "type" => "error",
             ]);
         }
+    }
+
+    public function validar_stock_precio($array_detalles)
+    {
+        try {
+            // Validar stock y precio de los detalles
+            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
+            $this->validarStock_arraydetalles($array_detalles, $almacen_id);
+            $this->validarPrecio_arraydetalles($array_detalles, $almacen_id);
+        } catch (Exception | LockTimeoutException $e) {
+            DB::rollback();
+            logger("Error pedido (edicion):", ["error" => $e->getMessage()]);
+            throw $e; // Relanza la excepción si necesitas propagarla
+        }
+    }
+
+    public function actualizar_stock($pedido_detalles, $anulando = false)
+    {
+        Cache::lock('actualizar_stock', 15)->block(10, function () use ($pedido_detalles, $anulando) {
+            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
+            foreach ($pedido_detalles as $detalle) {
+                $this->actualizarStockDetalle($detalle, $almacen_id, $anulando);
+            }
+        });
     }
 }

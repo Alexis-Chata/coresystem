@@ -411,6 +411,9 @@
                     </button>
                 @endif
             </div>
+            @if ($this->getErrorBag()->count())
+                <div class="w-full">@error('error_guardar') {!! $message !!} @enderror</div>
+            @endif
         </div>
     </div>
 </div>

@@ -16,6 +16,7 @@ use App\Traits\StockTrait;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -343,59 +344,59 @@ class PedidoTable extends Component
 
         try {
             DB::beginTransaction();
+            Cache::lock('guardar_pedido', 15)->block(10, function () {
+                $this->importe_total = collect($this->pedido_detalles)->sum(
+                    "importe"
+                );
+                if ($this->importe_total <= 0) {
+                    throw new \Exception("Importe Total no valido<br />");
+                }
 
-            $this->importe_total = collect($this->pedido_detalles)->sum(
-                "importe"
-            );
-            if ($this->importe_total <= 0) {
-                throw new \Exception("Importe Total no valido<br />");
-            }
-
-            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
-            $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
-            $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
-            $pedido = Pedido::create([
-                "ruta_id" => $this->ruta_id,
-                "f_tipo_comprobante_id" => $this->f_tipo_comprobante_id,
-                "vendedor_id" => $this->vendedor_id,
-                "cliente_id" => $this->cliente_id,
-                "fecha_emision" => $this->fecha_emision,
-                "importe_total" => $this->importe_total,
-                "nro_doc_liquidacion" => $this->nro_doc_liquidacion,
-                "lista_precio" => $this->lista_precio,
-                "comentario" => $this->comentarios,
-                "empresa_id" => $this->empresa->id,
-            ]);
-
-            foreach ($this->pedido_detalles as $index => $detalle) {
-                $producto = Producto::withTrashed()->find($detalle["producto_id"]);
-                $precioCaja =
-                    $producto->listaPrecios
-                    ->where("id", $this->lista_precio)
-                    ->first()->pivot->precio ?? 0;
-
-                PedidoDetalle::create([
-                    "pedido_id" => $pedido->id,
-                    "item" => $index + 1,
-                    "producto_id" => $detalle["producto_id"],
-                    "producto_name" => $detalle["nombre"],
-                    "cantidad" => $detalle["cantidad"],
-                    "producto_precio" => $detalle["ref_producto_precio_cajon"],
-                    "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
-                    "importe" => $detalle["importe"],
-                    "lista_precio" => $detalle["ref_producto_lista_precio"],
+                $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
+                $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
+                $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
+                $pedido = Pedido::create([
+                    "ruta_id" => $this->ruta_id,
+                    "f_tipo_comprobante_id" => $this->f_tipo_comprobante_id,
+                    "vendedor_id" => $this->vendedor_id,
+                    "cliente_id" => $this->cliente_id,
+                    "fecha_emision" => $this->fecha_emision,
+                    "importe_total" => $this->importe_total,
+                    "nro_doc_liquidacion" => $this->nro_doc_liquidacion,
+                    "lista_precio" => $this->lista_precio,
+                    "comentario" => $this->comentarios,
+                    "empresa_id" => $this->empresa->id,
                 ]);
-            }
 
-            $this->actualizarStock($pedido);
+                foreach ($this->pedido_detalles as $index => $detalle) {
+                    $producto = Producto::withTrashed()->find($detalle["producto_id"]);
+                    $precioCaja =
+                        $producto->listaPrecios
+                        ->where("id", $this->lista_precio)
+                        ->first()->pivot->precio ?? 0;
 
-            $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
+                    PedidoDetalle::create([
+                        "pedido_id" => $pedido->id,
+                        "item" => $index + 1,
+                        "producto_id" => $detalle["producto_id"],
+                        "producto_name" => $detalle["nombre"],
+                        "cantidad" => $detalle["cantidad"],
+                        "producto_precio" => $detalle["ref_producto_precio_cajon"],
+                        "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
+                        "importe" => $detalle["importe"],
+                        "lista_precio" => $detalle["ref_producto_lista_precio"],
+                    ]);
+                }
 
-            // Actualizar el pedido con el total final (por si acaso)
-            $pedido->update([
-                "importe_total" => $this->importe_total,
-            ]);
+                $this->actualizarStock($pedido);
 
+                $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
+
+                // Actualizar el pedido con el total final (por si acaso)
+                $pedido->update([
+                    "importe_total" => $this->importe_total,
+                ]);
+            });
             DB::commit();
 
             // Limpiar formulario
