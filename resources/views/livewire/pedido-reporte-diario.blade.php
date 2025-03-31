@@ -89,7 +89,6 @@
                                                 Total: S/. {{ number_format($pedido->importe_total, 2) }} |
                                                 Lista: {{ $pedido->listaPrecio->name ?? 'Sin lista' }}
                                             </span>
-                                            @role('admin')
                                             @if($pedido->estado === 'pendiente')
                                             <button
                                                 wire:loading.attr="disabled"
@@ -101,7 +100,6 @@
                                                 </svg>
                                             </button>
                                             @endif
-                                            @endrole
                                             <div wire:loading wire:target="editarPedido">
                                                 Cargando...
                                             </div>
