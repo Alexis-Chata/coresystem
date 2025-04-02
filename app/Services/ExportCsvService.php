@@ -27,7 +27,7 @@ class ExportCsvService
             default => "",
         };
 
-        $clientes = Cliente::with('tipoDocumento')
+        $clientes = Cliente::with(['tipoDocumento', 'listaPrecio'])
             ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
             })
@@ -47,6 +47,13 @@ class ExportCsvService
 
         // Datos
         foreach ($clientes as $cliente) {
+            // Determinar el canal del cliente basado en su lista de precios
+            $canal = match ($cliente->lista_precio_id) {
+                1 => 'Minorista',
+                2 => 'Mayorista',
+                default => 'N/D',
+            };
+
             fwrite($handle, implode('|', [
                 $codigoProveedor, // CódigoProveedor (fijo)
                 $codigoDistribuidor, // CodigoDistribuidor (fijo)
@@ -55,7 +62,7 @@ class ExportCsvService
                 $cliente->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $cliente->numero_documento ?? '', // DI
                 $cliente->direccion ?? '', // Dirección
-                '', '', '', '', '', // Mercado, Módulo, Canal, GiroNegocio, SubGiroNegocio (Opcionales)
+                '', '', $canal, '', '', // Mercado, Módulo, Canal, GiroNegocio, SubGiroNegocio (Opcionales)
                 '', // Ubigeo
                 '', // Distrito (Opcional)
                 'A', // Estatus (Asignamos "A" por defecto)
@@ -196,7 +203,7 @@ class ExportCsvService
             default => "",
         };
 
-        $vendedores = Empleado::with('tipoDocumento')
+        $vendedores = Empleado::with(['tipoDocumento', 'rutas'])
             ->where('tipo_empleado', 'vendedor')
             ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
@@ -215,6 +222,31 @@ class ExportCsvService
 
         // Datos
         foreach ($vendedores as $vendedor) {
+            $listaPrecios = $vendedor->rutas->pluck('lista_precio_id')->countBy();
+            // Inicializar el canal como 'N/D'
+            $canal = 'N/D';
+            if ($listaPrecios->isNotEmpty()) {
+                // Obtener el valor más frecuente
+                $masFrecuente = $listaPrecios->sortDesc()->keys()->first();
+                $maxCount = $listaPrecios->max();
+
+                // Verificar si hay empate
+                $empate = $listaPrecios->filter(function ($count) use ($maxCount) {
+                    return $count == $maxCount;
+                })->count() > 1;
+
+                if ($empate) {
+                    // Si hay empate, asignar '¿?'
+                    $canal = 'Minorista';
+                } else {
+                    // Asignar el canal según el valor más frecuente
+                    $canal = match ($masFrecuente) {
+                        1 => 'Minorista',
+                        2 => 'Mayorista',
+                        default => 'N/D',
+                    };
+                }
+            }
             fwrite($handle, implode('|', [
                 $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
                 $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
@@ -222,7 +254,7 @@ class ExportCsvService
                 $vendedor->name, // NombreVendedor
                 $vendedor->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $vendedor->numero_documento ?? '', // DI
-                'N/D', // Canal (Si se agrega en el futuro)
+                $canal, // Canal (Mayorista o Minorista según análisis de rutas)
                 $vendedor->created_at->format('Y-m-d'), // FechaIngreso
                 $vendedor->updated_at->format('Y-m-d'), // FechaActualización
                 $fechaProceso, // FechaProceso
@@ -342,10 +374,19 @@ class ExportCsvService
             default => "",
         };
 
-        $rutas = Ruta::with(['vendedor', 'clientes'])
-            ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
-                $query->where('marca_id', $marcaId);
-            })->get();
+        // Primero obtenemos todos los clientes válidos que tienen pedidos con productos de la marca especificada
+        $clientesValidos = Cliente::whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            $query->where('marca_id', $marcaId);
+        })->pluck('id')->toArray();
+
+        $rutas = Ruta::with(['vendedor', 'clientes' => function($query) use ($clientesValidos) {
+            // Filtramos para incluir solo los clientes que están en la lista de clientes válidos
+            $query->whereIn('id', $clientesValidos);
+        }])
+        ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            $query->where('marca_id', $marcaId);
+        })->get();
+        
         $filePath = "{$exportDir}/rutas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -360,21 +401,24 @@ class ExportCsvService
 
         // Datos
         foreach ($rutas as $ruta) {
-            foreach ($ruta->clientes as $cliente) {
-                fwrite($handle, implode('|', [
-                    $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
-                    $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
-                    str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
-                    str_pad($ruta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
-                    '', // FuerzaDeVenta (Si se agrega en el futuro)
-                    self::convertirFrecuenciaVisita($ruta->dia_visita ?? 'Lunes'), // FrecuenciaVisita
-                    '', // Zona (Si se agrega en el futuro)
-                    '', // Mesa (Si se agrega en el futuro)
-                    str_pad($ruta->id, 8, '0', STR_PAD_LEFT), // Ruta
-                    '', // Modulo (Si se agrega en el futuro)
-                    $fechaProceso, // FechaProceso
-                    '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-                ]) . PHP_EOL);
+            // Solo procesamos rutas que tienen clientes válidos
+            if ($ruta->clientes->isNotEmpty()) {
+                foreach ($ruta->clientes as $cliente) {
+                    fwrite($handle, implode('|', [
+                        $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                        $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
+                        str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
+                        str_pad($ruta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
+                        '', // FuerzaDeVenta (Si se agrega en el futuro)
+                        self::convertirFrecuenciaVisita($ruta->dia_visita ?? 'Lunes'), // FrecuenciaVisita
+                        '', // Zona (Si se agrega en el futuro)
+                        '', // Mesa (Si se agrega en el futuro)
+                        str_pad($ruta->id, 8, '0', STR_PAD_LEFT), // Ruta
+                        '', // Modulo (Si se agrega en el futuro)
+                        $fechaProceso, // FechaProceso
+                        '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
+                    ]) . PHP_EOL);
+                }
             }
         }
 
@@ -417,7 +461,13 @@ class ExportCsvService
             default => "",
         };
 
-        $pedidos = Pedido::with(['pedidoDetalles', 'cliente', 'vendedor', 'tipoComprobante'])
+        // Primero obtenemos todos los productos válidos de la marca especificada
+        $productosValidos = Producto::where('marca_id', $marcaId)->pluck('id')->toArray();
+
+        $pedidos = Pedido::with(['pedidoDetalles' => function($query) use ($productosValidos) {
+            // Filtramos para incluir solo los productos que están en la lista de productos válidos
+            $query->whereIn('producto_id', $productosValidos);
+        }, 'cliente', 'vendedor', 'tipoComprobante'])
             ->whereHas('pedidoDetalles.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
             })
@@ -441,42 +491,45 @@ class ExportCsvService
 
         // Datos
         foreach ($pedidos as $pedido) {
-            foreach ($pedido->pedidoDetalles as $index => $detalle) {
-                $tipoDoc = match ($pedido->tipoDoc) {
-                    '01' => 'FA',
-                    '03' => 'BO',
-                    '07' => 'NC',
-                    '08' => 'ND',
-                    default => 'BO'
-                };
-                fwrite($handle, implode('|', [
-                    $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
-                    $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
-                    str_pad($pedido->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
-                    str_pad($pedido->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
-                    'Toma Pedidos', // Origen (Si se agrega en el futuro)
-                    str_pad($pedido->id, 8, '0', STR_PAD_LEFT), // CodigoPedido
-                    carbon_parse($pedido->fecha_emision)->format('Y-m-d'), // FechaPedido
-                    'APRO', // EstatusPedido
-                    '', // MotivoCancelación (Si se agrega en el futuro)
-                    $tipoDoc, // TipoDocumento
-                    $pedido->id, // Documento (Si se agrega en el futuro)
-                    $pedido->fecha_reparto ? $pedido->fecha_reparto->format('Y-m-d') : '', // FechaDocumento
-                    'APRO', // EstatusDocumento (Si se agrega en el futuro)
-                    $index + 1, // NumeroItem
-                    str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
-                    $detalle->tipAfeIgv == '10' ? 'P' : 'B', // TipoProducto
-                    '', // CodPromoción (Si se agrega en el futuro)
-                    convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja), // CantidadUnidadMaxima (Si se agrega en el futuro), // CantidadUnidadMinima CALCULAR
-                    'Unidad', // TipoUnidadMinima
-                    $detalle->cantidad, // CantidadUnidadMaxima (Si se agrega en el futuro)
-                    'Caja', // TipoUnidadMaxima (Si se agrega en el futuro)
-                    number_format($detalle->valor_venta, 4, '.', ''), // ImportePedidoNetoSinImpuesto
-                    number_format($detalle->mtoImpVenta, 4, '.', ''), // ImportePedidoNetoConImpuesto
-                    number_format($detalle->descuento ?? 0, 4, '.', ''), // Descuento
-                    now()->format('Y-m-d H:i:s'), // FechaProceso
-                    '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
-                ]) . PHP_EOL);
+            // Solo procesamos pedidos que tienen detalles válidos
+            if ($pedido->pedidoDetalles->isNotEmpty()) {
+                foreach ($pedido->pedidoDetalles as $index => $detalle) {
+                    $tipoDoc = match ($pedido->tipoDoc) {
+                        '01' => 'FA',
+                        '03' => 'BO',
+                        '07' => 'NC',
+                        '08' => 'ND',
+                        default => 'BO'
+                    };
+                    fwrite($handle, implode('|', [
+                        $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
+                        $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
+                        str_pad($pedido->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
+                        str_pad($pedido->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
+                        'Toma Pedidos', // Origen (Si se agrega en el futuro)
+                        str_pad($pedido->id, 8, '0', STR_PAD_LEFT), // CodigoPedido
+                        carbon_parse($pedido->fecha_emision)->format('Y-m-d'), // FechaPedido
+                        'APRO', // EstatusPedido
+                        '', // MotivoCancelación (Si se agrega en el futuro)
+                        $tipoDoc, // TipoDocumento
+                        $pedido->id, // Documento (Si se agrega en el futuro)
+                        $pedido->fecha_reparto ? $pedido->fecha_reparto->format('Y-m-d') : '', // FechaDocumento
+                        'APRO', // EstatusDocumento (Si se agrega en el futuro)
+                        $index + 1, // NumeroItem
+                        str_pad($detalle->producto_id, 8, '0', STR_PAD_LEFT), // CodigoProducto
+                        $detalle->tipAfeIgv == '10' ? 'P' : 'B', // TipoProducto
+                        '', // CodPromoción (Si se agrega en el futuro)
+                        convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja), // CantidadUnidadMaxima (Si se agrega en el futuro), // CantidadUnidadMinima CALCULAR
+                        'Unidad', // TipoUnidadMinima
+                        $detalle->cantidad, // CantidadUnidadMaxima (Si se agrega en el futuro)
+                        'Caja', // TipoUnidadMaxima (Si se agrega en el futuro)
+                        number_format($detalle->valor_venta, 4, '.', ''), // ImportePedidoNetoSinImpuesto
+                        number_format($detalle->mtoImpVenta, 4, '.', ''), // ImportePedidoNetoConImpuesto
+                        number_format($detalle->descuento ?? 0, 4, '.', ''), // Descuento
+                        now()->format('Y-m-d H:i:s'), // FechaProceso
+                        '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
+                    ]) . PHP_EOL);
+                }
             }
         }
 

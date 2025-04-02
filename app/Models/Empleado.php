@@ -46,4 +46,9 @@ class Empleado extends Model
     {
         return $this->hasMany(Pedido::class, 'vendedor_id');
     }
+
+    public function rutas()
+    {
+        return $this->hasMany(Ruta::class, 'vendedor_id');
+    }
 }
