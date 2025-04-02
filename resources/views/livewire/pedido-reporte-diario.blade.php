@@ -89,7 +89,7 @@
                                                 Total: S/. {{ number_format($pedido->importe_total, 2) }} |
                                                 Lista: {{ $pedido->listaPrecio->name ?? 'Sin lista' }}
                                             </span>
-                                            @if($pedido->estado === 'pendiente')
+                                            @if(Auth::user()->hasRole('admin') || $pedido->estado === 'pendiente')
                                             <button
                                                 wire:loading.attr="disabled"
                                                 wire:click="editarPedido({{ $pedido->id }})"
