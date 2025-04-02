@@ -386,7 +386,7 @@ class ExportCsvService
         ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
             $query->where('marca_id', $marcaId);
         })->get();
-        
+
         $filePath = "{$exportDir}/rutas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -471,6 +471,7 @@ class ExportCsvService
             ->whereHas('pedidoDetalles.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
             })
+            ->where('estado', 'facturado')
             ->whereBetween('fecha_emision', [
                 now()->subMonths(1)->startOfMonth(),
                 now()->endOfMonth()
