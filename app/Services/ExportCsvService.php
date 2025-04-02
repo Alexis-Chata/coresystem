@@ -360,7 +360,7 @@ class ExportCsvService
                     default => 'BO'
                 };
 
-                $canal_cliente = match ($venta->pedido->lista_precio) {
+                $canal_cliente = match ((int) $venta->pedido->lista_precio) {
                     1 => 'Minorista',
                     2 => 'Mayorista',
                     default => 'N/D',
