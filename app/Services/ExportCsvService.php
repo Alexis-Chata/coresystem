@@ -118,8 +118,8 @@ class ExportCsvService
                 '', // DUN (Si se agrega en el futuro)
                 $producto->cantidad, // FactorCaja
                 number_format($producto->peso, 4, '.', ''), // Peso con precisión (14,4)
-                $producto->f_tipo_afectacion_id === '21' ? 'B' : 'P', // FlagBonificado
-                $producto->f_tipo_afectacion_id === '21' ? '0' : '1', // Afecto a impuestos (1=Afecto, 0=Exonerado)
+                $producto->f_tipo_afectacion_id == '21' ? 'B' : 'P', // FlagBonificado
+                $producto->f_tipo_afectacion_id == '21' ? '0' : '1', // Afecto a impuestos (1=Afecto, 0=Exonerado)
                 '0.00', // PrecioCompra
                 '0.00', // PrecioSugerido
                 '0.00', // PrecioPromedio
@@ -283,7 +283,16 @@ class ExportCsvService
             default => "",
         };
 
-        $ventas = FComprobanteSunat::with(['detalle', 'cliente', 'vendedor', 'ruta'])
+            $ventas = FComprobanteSunat::with([
+                'detalle' => function ($query) use ($marcaId) {
+                    $query->whereHas('producto', function ($q) use ($marcaId) {
+                        $q->where('marca_id', $marcaId);
+                    });
+                },
+                'cliente',
+                'vendedor',
+                'ruta'
+            ])
             ->whereHas('detalle.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
             })
