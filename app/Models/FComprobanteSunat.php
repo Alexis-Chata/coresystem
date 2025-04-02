@@ -74,6 +74,10 @@ class FComprobanteSunat extends Model
         'empresa_id',
     ];
 
+    public function pedido()
+    {
+        return $this->belongsTo(Pedido::class);
+    }
     public function ruta()
     {
         return $this->belongsTo(Ruta::class);

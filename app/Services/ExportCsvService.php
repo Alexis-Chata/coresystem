@@ -283,25 +283,55 @@ class ExportCsvService
             default => "",
         };
 
-            $ventas = FComprobanteSunat::with([
-                'detalle' => function ($query) use ($marcaId) {
-                    $query->whereHas('producto', function ($q) use ($marcaId) {
-                        $q->where('marca_id', $marcaId);
-                    });
-                },
-                'cliente',
-                'vendedor',
-                'ruta'
-            ])
-            ->whereHas('detalle.producto', function ($query) use ($marcaId) {
-                $query->where('marca_id', $marcaId);
-            })
-            ->whereBetween('fechaEmision', [
-                now()->subMonths(1)->startOfMonth(),
-                now()->endOfMonth()
-            ])
-            ->where('estado_reporte', true)
-            ->get();
+        $vendedores = Empleado::withTrashed()->with('rutas')->where('tipo_empleado', 'vendedor')->get()->map(function ($vendedor) {
+            $listaPrecios = $vendedor->rutas->pluck('lista_precio_id')->countBy();
+
+            // Inicializar el canal como 'N/D'
+            $canal = 'N/D';
+
+            if ($listaPrecios->isNotEmpty()) {
+                $maxCount = $listaPrecios->max();
+                $masFrecuente = $listaPrecios->filter(fn($count) => $count == $maxCount)->keys();
+
+                // Verificar si hay empate
+                if ($masFrecuente->count() > 1) {
+                    $canal = 'Minorista'; // Si hay empate, asignar 'Minorista'
+                } else {
+                    $canal = match ($masFrecuente->first()) {
+                        1 => 'Minorista',
+                        2 => 'Mayorista',
+                        default => 'N/D',
+                    };
+                }
+            }
+
+            // Asignamos el canal al vendedor dentro del mapeo
+            $vendedor->canal = $canal;
+            return $vendedor;
+        })->keyBy('id');
+
+        $ventas = FComprobanteSunat::with([
+            'detalle' => function ($query) use ($marcaId) {
+                $query->whereHas('producto', function ($q) use ($marcaId) {
+                    $q->where('marca_id', $marcaId);
+                });
+            },
+            'cliente',
+            'vendedor',
+            'ruta',
+            'pedido' => function ($query) {
+                $query->select('id', 'lista_precio'); // Asegura que se incluya solo el campo necesario
+            }
+        ])
+        ->whereHas('detalle.producto', function ($query) use ($marcaId) {
+            $query->where('marca_id', $marcaId);
+        })
+        ->whereBetween('fechaEmision', [
+            now()->subMonths(1)->startOfMonth(),
+            now()->endOfMonth()
+        ])
+        ->where('estado_reporte', true)
+        ->get();
 
         $filePath = "{$exportDir}/ventas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
@@ -329,6 +359,13 @@ class ExportCsvService
                     '08' => 'ND',
                     default => 'BO'
                 };
+
+                $canal_cliente = match ($venta->pedido->lista_precio) {
+                    1 => 'Minorista',
+                    2 => 'Mayorista',
+                    default => 'N/D',
+                };
+
                 fwrite($handle, implode('|', [
                     $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
                     $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
@@ -338,10 +375,10 @@ class ExportCsvService
                     '', // MotivoNC (Si aplica)
                     '', // Origen (Si se agrega en el futuro)
                     str_pad($venta->cliente_id, 8, '0', STR_PAD_LEFT), // CodigoCliente
-                    '', // CanalCliente (Si se agrega en el futuro)
+                    $canal_cliente, // CanalCliente (Si se agrega en el futuro)
                     '', // TipoNegocio (Si se agrega en el futuro)
                     str_pad($venta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
-                    '', // CanalVendedor (Si se agrega en el futuro)
+                    $vendedores[$venta->vendedor_id]->canal, // CanalVendedor (Si se agrega en el futuro)
                     str_pad($venta->ruta_id, 8, '0', STR_PAD_LEFT), // Ruta
                     $index + 1, // NumeroItem
                     str_pad($detalle->codProducto, 8, '0', STR_PAD_LEFT), // CodigoProducto
