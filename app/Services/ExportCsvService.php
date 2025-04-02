@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ExportCsvService
 {
+    public static $encabezados = false;
+
     public static function exportClientes($marcaId, $exportDir = 'exports')
     {
         // Definimos valores por defecto según la marca
@@ -36,12 +38,14 @@ class ExportCsvService
         $handle = fopen(storage_path("app/{$filePath}"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'NombreCliente', 'TipoDocumento', 'DI',
             'Dirección', 'Mercado', 'Módulo', 'Canal', 'GiroNegocio', 'SubGiroNegocio', 'Ubigeo', 'Distrito',
             'Estatus', 'X', 'Y', 'CodigoPadre', 'FechaIngreso', 'FechaActualización', 'FechaProceso',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL); // Usando el carácter NUL como enclosure
+    }
 
         $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
@@ -99,11 +103,13 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoProducto', 'NombreProducto', 'EAN', 'DUN',
             'FactorCaja', 'Peso', 'FlagBonificado', 'Afecto', 'PrecioCompra', 'PrecioSugerido', 'PrecioPromedio',
             'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+        }
 
         $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
@@ -153,6 +159,7 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoAlmacen', 'NombreAlmacen', 'CodigoProducto',
             'Lote', 'FechaVencimiento', 'StockEnUnidadMinima', 'UnidadDeMedidaMinima', 'StockEnUnidadesMaximas',
@@ -160,6 +167,7 @@ class ExportCsvService
             'VentasEnUnidadDeConsumo', 'ValorVentas', 'OtrosEnUnidadDeConsumo', 'ValorOtros', 'Periodo',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+        }
 
         $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
@@ -214,11 +222,13 @@ class ExportCsvService
         $fechaProceso = now()->format('Y-m-d H:i:s');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoVendedor', 'NombreVendedor', 'TipoDocumento', 'DI',
             'Canal', 'FechaIngreso', 'FechaActualización', 'FechaProceso', 'Exclusivo',
             'Codigovisor', 'NombreSupervisor', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+    }
 
         // Datos
         foreach ($vendedores as $vendedor) {
@@ -337,6 +347,7 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'TipoDocumento', 'NroDocumento', 'FechaDocumento', 'MotivoNC',
             'Origen', 'CodigoCliente', 'CanalCliente', 'TipoNegocio', 'CodigoVendedor', 'CanalVendedor', 'Ruta',
@@ -346,6 +357,7 @@ class ExportCsvService
             'FechaDocumentoReferencia', 'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7',
             'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+        }
 
         $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
@@ -437,11 +449,13 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'CodigoVendedor', 'FuerzaDeVenta',
             'FrecuenciaVisita', 'Zona', 'Mesa', 'Ruta', 'Modulo', 'FechaProceso',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+        }
 
         $fechaProceso = now()->format('Y-m-d H:i:s');
 
@@ -527,6 +541,7 @@ class ExportCsvService
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
         // Encabezados
+        if (self::$encabezados){
         fwrite($handle, implode('|', [
             'CódigoProveedor', 'CodigoDistribuidor', 'CodigoCliente', 'CodigoVendedor', 'Origen', 'CodigoPedido',
             'FechaPedido', 'EstatusPedido', 'MotivoCancelación', 'TipoDocumento', 'Documento', 'FechaDocumento',
@@ -535,6 +550,7 @@ class ExportCsvService
             'ImportePedidoNetoConImpuesto', 'Descuento', 'FechaProceso', 'REF1', 'REF2', 'REF3', 'REF4', 'REF5',
             'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL);
+        }
 
         // Datos
         foreach ($pedidos as $pedido) {
