@@ -399,8 +399,8 @@ class ExportCsvService
                     convertir_a_cajas($detalle->cantidad, $detalle->ref_producto_cantidad_cajon), // CantidadUnidadMaxima (Si se agrega en el futuro)
                     'Caja', // TipoUnidadMaxima (Si se agrega en el futuro) CALCULAR
                     $venta->tipoMoneda, // Moneda
-                    number_format($detalle->valor_venta, 4, '.', ''), // ImporteNetoSinImpuesto
-                    number_format($detalle->mtoImpVenta, 4, '.', ''), // ImporteNetoConImpuesto
+                    $detalle->tipAfeIgv == '10' ? number_format(($detalle->mtoPrecioUnitario * $detalle->cantidad) - $detalle->totalImpuestos, 4, '.', '') : number_format(0, 4, '.', ''), // ImporteNetoSinImpuesto
+                    $detalle->tipAfeIgv == '10' ? number_format(($detalle->mtoPrecioUnitario * $detalle->cantidad), 4, '.', '') : number_format(0, 4, '.', ''), // ImporteNetoConImpuesto
                     '0', // Descuento
                     $detalle->tipAfeIgv == '10' ? 'P' : 'B',
                     '', // CodCombo (Si se agrega en el futuro)
@@ -463,13 +463,18 @@ class ExportCsvService
         foreach ($rutas as $ruta) {
             // Solo procesamos rutas que tienen clientes válidos
             if ($ruta->clientes->isNotEmpty()) {
+                $canal_ruta = match ((int) $ruta->lista_precio_id) {
+                    1 => 'Minorista',
+                    2 => 'Mayorista',
+                    default => 'N/D',
+                };
                 foreach ($ruta->clientes as $cliente) {
                     fwrite($handle, implode('|', [
                         $codigoProveedor, // CódigoProveedor (asignado por VidaSoftware)
                         $codigoDistribuidor, // CodigoDistribuidor (asignado por ARCOR)
                         str_pad($cliente->id, 8, '0', STR_PAD_LEFT), // CodigoCliente
                         str_pad($ruta->vendedor_id, 8, '0', STR_PAD_LEFT), // CodigoVendedor
-                        '', // FuerzaDeVenta (Si se agrega en el futuro)
+                        $canal_ruta, // FuerzaDeVenta (Si se agrega en el futuro)
                         self::convertirFrecuenciaVisita($ruta->dia_visita ?? 'Lunes'), // FrecuenciaVisita
                         '', // Zona (Si se agrega en el futuro)
                         '', // Mesa (Si se agrega en el futuro)

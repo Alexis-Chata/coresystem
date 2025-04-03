@@ -38,7 +38,7 @@ class ExportAndCompressCsv extends Command
         $vendedoresPath = ExportCsvService::exportVendedores($marcaId, $exportDir);
         $ventasPath = ExportCsvService::exportVentas($marcaId, $exportDir);
         $rutasPath = ExportCsvService::exportRutas($marcaId, $exportDir);
-        $pedidosPath = ExportCsvService::exportPedidos($marcaId, $exportDir);
+        //$pedidosPath = ExportCsvService::exportPedidos($marcaId, $exportDir);
 
         // Crear un archivo ZIP
         $zipPath = storage_path("app/{$exportDir}/data.zip");
@@ -50,7 +50,7 @@ class ExportAndCompressCsv extends Command
             $zip->addFile(storage_path("app/$vendedoresPath"), 'vendedores.csv');
             $zip->addFile(storage_path("app/$ventasPath"), 'ventas.csv');
             $zip->addFile(storage_path("app/$rutasPath"), 'rutas.csv');
-            $zip->addFile(storage_path("app/$pedidosPath"), 'pedidos.csv');
+            //$zip->addFile(storage_path("app/$pedidosPath"), 'pedidos.csv');
             $zip->close();
             $this->info("Archivos CSV comprimidos correctamente en {$exportDir}/data.zip.");
         } else {
