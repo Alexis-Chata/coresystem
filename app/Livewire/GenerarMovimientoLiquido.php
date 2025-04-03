@@ -170,6 +170,8 @@ class GenerarMovimientoLiquido extends Component
 
                     //dd($pedidos_id, $pedidos_detalle, $data_para_movimiento, $data_para_movimiento_detalle);
                     $movimiento = Movimiento::create($data_para_movimiento);
+                    $movimiento->nro_doc_liquidacion = $movimiento->id;
+                    $movimiento->save();
                     $movimiento->movimientoDetalles()->createMany($data_para_movimiento_detalle);
                     $this->actualizarStock($movimiento);
 
