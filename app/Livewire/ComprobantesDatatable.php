@@ -156,7 +156,11 @@ class ComprobantesDatatable extends DataTableComponent
             $zip->close();
         }
         $comprobante->update(['cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
-        return Storage::download($comprobante->cdrxml);
+        if (Storage::exists($comprobante->cdrxml)) {
+            return Storage::download($comprobante->cdrxml);
+        } else {
+            logger("Archivo no existe, verificar path", ['path_cdrxml' => $comprobante->cdrxml]);
+        }
     }
 
     public function pdf($id)
@@ -192,7 +196,12 @@ class ComprobantesDatatable extends DataTableComponent
             }
         }
         if ($comprobante->codigo_sunat === '0') {
-            return Storage::download($comprobante->cdrxml);
+            if (Storage::exists($comprobante->cdrxml)) {
+                return Storage::download($comprobante->cdrxml);
+            } else {
+                Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml. ' . $comprobante->cdrxml]);
+                return;
+            }
         }
         if ($comprobante->tipoDoc === "00") {
             $this->dispatch('sweetalert2-notapedido', $comprobante->serie . "-" . $comprobante->correlativo);
@@ -201,7 +210,11 @@ class ComprobantesDatatable extends DataTableComponent
         $envioSunat = new EnvioSunatService;
         $response = $envioSunat->send($comprobante);
         Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse']);
-        return Storage::download($comprobante->cdrxml);
+        if (Storage::exists($comprobante->cdrxml)) {
+            return Storage::download($comprobante->cdrxml);
+        } else {
+            Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml.' . $comprobante->cdrxml]);
+        }
     }
 
     public function sunatResponse($id)
