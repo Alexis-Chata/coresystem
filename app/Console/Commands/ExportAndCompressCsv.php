@@ -69,9 +69,9 @@ class ExportAndCompressCsv extends Command
 
         // Definir el disco según la marca
         $disks = match ((int) $marcaId) {
-            7 => 'sftp_cnch', // sftp_prueba
-            10 => 'sftp_arcor', // sftp_prueba
-            default => null,
+            7 => 'sftp_cnch',
+            10 => 'sftp_arcor',
+            default => 'sftp_prueba',
         };
 
         if (!$disks) {
