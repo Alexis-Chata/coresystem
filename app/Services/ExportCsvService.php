@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ExportCsvService
 {
-    public static $encabezados = false;
+    public static $encabezados = true;
 
     public static function exportClientes($marcaId, $exportDir = 'exports')
     {
@@ -30,7 +30,10 @@ class ExportCsvService
         };
 
         $clientes = Cliente::with(['tipoDocumento', 'listaPrecio'])
-            ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            // ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            //     $query->where('marca_id', $marcaId);
+            // })
+            ->whereHas('FComprobanteSunats.detalle.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
             })
             ->get();
@@ -45,7 +48,7 @@ class ExportCsvService
             'Estatus', 'X', 'Y', 'CodigoPadre', 'FechaIngreso', 'FechaActualización', 'FechaProceso',
             'REF1', 'REF2', 'REF3', 'REF4', 'REF5', 'REF6', 'REF7', 'REF8', 'REF9', 'REF10'
         ]) . PHP_EOL); // Usando el carácter NUL como enclosure
-    }
+        }
 
         $fechaProceso = now()->format('Y-m-d H:i:s'); // FechaProceso
 
@@ -213,9 +216,13 @@ class ExportCsvService
 
         $vendedores = Empleado::with(['tipoDocumento', 'rutas'])
             ->where('tipo_empleado', 'vendedor')
-            ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            // ->whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+            //     $query->where('marca_id', $marcaId);
+            // })
+            ->whereHas('FComprobanteSunats.detalle.producto', function ($query) use ($marcaId) {
                 $query->where('marca_id', $marcaId);
-            })->get();
+            })
+            ->get();
         $filePath = "{$exportDir}/vendedores.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
@@ -433,17 +440,26 @@ class ExportCsvService
         };
 
         // Primero obtenemos todos los clientes válidos que tienen pedidos con productos de la marca especificada
-        $clientesValidos = Cliente::whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+        $clientesValidos = Cliente::
+        // whereHas('pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+        //     $query->where('marca_id', $marcaId);
+        // })
+        whereHas('FComprobanteSunats.detalle.producto', function ($query) use ($marcaId) {
             $query->where('marca_id', $marcaId);
-        })->pluck('id')->toArray();
+        })
+        ->pluck('id')->toArray();
 
         $rutas = Ruta::with(['vendedor', 'clientes' => function($query) use ($clientesValidos) {
             // Filtramos para incluir solo los clientes que están en la lista de clientes válidos
             $query->whereIn('id', $clientesValidos);
         }])
-        ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+        // ->whereHas('clientes.pedidos.pedidoDetalles.producto', function ($query) use ($marcaId) {
+        //     $query->where('marca_id', $marcaId);
+        // })
+        ->whereHas('clientes.FComprobanteSunats.detalle.producto', function ($query) use ($marcaId) {
             $query->where('marca_id', $marcaId);
-        })->get();
+        })
+        ->get();
 
         $filePath = "{$exportDir}/rutas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');

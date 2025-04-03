@@ -95,4 +95,9 @@ class Cliente extends Model
     {
         return $this->hasMany(Pedido::class);
     }
+
+    public function FComprobanteSunats()
+    {
+        return $this->hasMany(FComprobanteSunat::class);
+    }
 }

@@ -51,4 +51,9 @@ class Empleado extends Model
     {
         return $this->hasMany(Ruta::class, 'vendedor_id');
     }
+
+    public function FComprobanteSunats()
+    {
+        return $this->hasMany(FComprobanteSunat::class, 'vendedor_id');
+    }
 }
