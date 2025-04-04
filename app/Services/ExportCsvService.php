@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ExportCsvService
 {
-    public static $encabezados = true;
+    public static $encabezados = false;
 
     public static function exportClientes($marcaId, $exportDir = 'exports')
     {
