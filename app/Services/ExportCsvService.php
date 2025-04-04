@@ -186,7 +186,7 @@ class ExportCsvService
                 '1900-01-01', // FechaVencimiento (Si se agrega en el futuro)
                 convertir_a_paquetes($item->stock_fisico, $item->producto->cantidad), // StockEnUnidadMinima
                 'Unidad', // UnidadDeMedidaMinima
-                number_format($item->stock_fisico, 4, '.', ''), // StockEnUnidadesMaximas
+                number_format((convertir_a_paquetes($item->stock_fisico, $item->producto->cantidad)/$item->producto->cantidad), 4, '.', ''), // StockEnUnidadesMaximas
                 'Caja', // UnidadDeMedidaMaxima (Si se agrega en el futuro)
                 '0', // ValorStock (Si se necesita calcular)
                 $fechaProceso, // FechaProceso
@@ -403,7 +403,7 @@ class ExportCsvService
                     str_pad($detalle->codProducto, 8, '0', STR_PAD_LEFT), // CodigoProducto
                     $detalle->cantidad, // CantidadUnidadMinima (Negativo si NC)
                     'Unidad', // TipoUnidadMinima
-                    convertir_a_cajas($detalle->cantidad, $detalle->ref_producto_cantidad_cajon), // CantidadUnidadMaxima (Si se agrega en el futuro)
+                    number_format(($detalle->cantidad / $detalle->ref_producto_cantidad_cajon), 4, '.', ''), // CantidadUnidadMaxima (Si se agrega en el futuro)
                     'Caja', // TipoUnidadMaxima (Si se agrega en el futuro) CALCULAR
                     $venta->tipoMoneda, // Moneda
                     $detalle->tipAfeIgv == '10' ? number_format(($detalle->mtoPrecioUnitario * $detalle->cantidad) - $detalle->totalImpuestos, 4, '.', '') : number_format(0, 4, '.', ''), // ImporteNetoSinImpuesto
@@ -414,7 +414,7 @@ class ExportCsvService
                     '', // CodPromoción (Si se agrega en el futuro)
                     $venta->tipDocAfectado ?? '', // TipoDocumentoReferencia
                     $venta->numDocfectado ?? '', // NroDocumentoReferencia
-                    '', // FechaDocumentoReferencia (Si se agrega en el futuro)
+                    '1900-01-01', // FechaDocumentoReferencia (Si se agrega en el futuro)
                     $fechaProceso, // FechaProceso
                     '', '', '', '', '', '', '', '', '', '' // REF1 - REF10
                 ]) . PHP_EOL);
