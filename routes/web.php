@@ -122,7 +122,7 @@ Route::middleware([
 
     Route::get('/movimientos/generar-movimientoliq', function () {
         return view('movimiento');
-    })->middleware('can:view movimiento')->name('movimiento.generar-movimientoliq');
+    })->middleware('can:generar-movimientoliq movimiento')->name('movimiento.generar-movimientoliq');
 
     Route::get('/asignar-pedidos', function () {
         return view('asignar-pedidos');
