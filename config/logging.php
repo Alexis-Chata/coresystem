@@ -56,6 +56,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('app/private/logs/respuesta_envio_sunat.log'),
             'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', null),
         ],
 
         'respuesta_envio_sftp' => [
