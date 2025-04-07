@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Exports\AlmacenProductosExport;
 use App\Models\AlmacenProducto;
 use App\Models\Empresa;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
@@ -30,7 +32,7 @@ final class AlmacenProductoTable extends PowerGridComponent
         $this->empresas = Empresa::all();
 
         return [
-            PowerGrid::header()
+            PowerGrid::header()->includeViewOnTop("components.export-almacen-productos")
                 ->showSearchInput(),
             PowerGrid::footer()
                 ->showPerPage()
@@ -144,4 +146,9 @@ final class AlmacenProductoTable extends PowerGridComponent
         ];
     }
     */
+
+    public function exportar_stock()
+    {
+        return Excel::download(new AlmacenProductosExport, 'Stock.xlsx');
+    }
 }
