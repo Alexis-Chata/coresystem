@@ -161,6 +161,47 @@
             </div>
         @endforelse
     </section>
+
+    @role('admin')
+    <div>
+        <table id="example">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3">Código</th>
+                    <th class="px-6 py-3">Producto</th>
+                    <th class="px-6 py-3">Marca</th>
+                    <th class="px-6 py-3">Bultos</th>
+                    <th class="px-6 py-3">Unidades</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($resumenPorProducto as $producto)
+                <tr>
+                    <td class="px-6 py-4">{{ $producto['producto_id'] }}</td>
+                    <td class="px-6 py-4">{{ $producto['producto_name'] }}</td>
+                    <td class="px-6 py-4">{{ $producto['producto_marca'] ?? 'N/A' }}</td>
+                    <td class="px-6 py-4">{{ $producto['cantidad_bultos'] }}</td>
+                    <td class="px-6 py-4">{{ $producto['cantidad_unidades'] }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    <script>
+        new DataTable('#example');
+    </script>
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+        <!-- DataTables Core -->
+        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+
+        <!-- DataTables TailwindCSS Integration -->
+        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.tailwindcss.js"></script>
+
+        <!-- Estilos de DataTables para Tailwind -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
+    @endrole
 <div x-data="{ open: false }"
      x-show="open"
      @open-modal.window="open = true"

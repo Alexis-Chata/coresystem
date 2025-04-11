@@ -48,7 +48,9 @@ class PedidoReporteDiario extends Component
                     "ruta",
                     "cliente",
                     "listaPrecio",
-                    "pedidoDetalles.producto",
+                    "pedidoDetalles.producto" => function ($query) {
+                        $query->withTrashed();
+                    },
                 ])
                 ->get()
                 ->groupBy("vendedor_id");
@@ -61,15 +63,43 @@ class PedidoReporteDiario extends Component
                     "ruta",
                     "cliente",
                     "listaPrecio",
-                    "pedidoDetalles.producto",
+                    "pedidoDetalles.producto" => function ($query) {
+                        $query->withTrashed();
+                    },
                 ])
                 ->orderBy("vendedor_id")
                 ->get()
                 ->groupBy("vendedor_id");
         }
 
+        $detalles = collect();
+        $detalles = $pedidosPorVendedor->flatten()->flatMap(function ($pedido) {
+            return $pedido->pedidoDetalles->map(function ($detalle) {
+                // Agregar campo personalizado
+                $detalle->total_cantidad_unidades = convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja);
+                return $detalle;
+            });
+        });
+
+        // Agrupamos por producto_id y resumimos la info
+        $resumenPorProducto = $detalles->groupBy('producto_id')->map(function ($detallesProducto, $productoId) {
+            $primerDetalle = $detallesProducto->first(); // Para tomar datos del producto
+
+            return [
+                'producto_id'             => $productoId,
+                'producto_name'           => $primerDetalle->producto_name,
+                'producto_cantidad_caja'  => $primerDetalle->producto_cantidad_caja,
+                'producto_marca'          => $primerDetalle->producto->marca_id,
+                'total_cantidad_unidades' => $detallesProducto->sum('total_cantidad_unidades'),
+                'cantidad_bultos'         => intdiv($detallesProducto->sum('total_cantidad_unidades'), $primerDetalle->producto_cantidad_caja),
+                'cantidad_unidades'       => $detallesProducto->sum('total_cantidad_unidades') % $primerDetalle->producto_cantidad_caja,
+            ];
+        })->sortBy('producto_id')->values(); // ->values() si deseas que el índice sea 0,1,2... en lugar del producto_id
+        //dd($resumenPorProducto, $detalles->first());
+
         return view("livewire.pedido-reporte-diario", [
             "pedidosPorVendedor" => $pedidosPorVendedor,
+            "resumenPorProducto" => $resumenPorProducto,
         ]);
     }
 

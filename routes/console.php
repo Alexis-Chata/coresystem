@@ -9,10 +9,10 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-Schedule::command('csv:export-compress 7')->everyMinute()->onFailure(function () {
+Schedule::command('csv:export-compress 7')->dailyAt('23:00')->onFailure(function () {
     Log::channel('respuesta_envio_sftp')->error("CSV Export 7: Falló la ejecución del comando.");
 });
 
-Schedule::command('csv:export-compress 10')->everyMinute()->onFailure(function () {
+Schedule::command('csv:export-compress 10')->dailyAt('23:00')->onFailure(function () {
     Log::channel('respuesta_envio_sftp')->error("CSV Export 10: Falló la ejecución del comando.");
 });
