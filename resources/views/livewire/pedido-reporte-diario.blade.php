@@ -79,7 +79,7 @@
                                             </span>
                                             <div>
                                                 <span class="font-medium text-gray-800 dark:text-gray-300">
-                                                    #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }}
+                                                    #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }} {{ $pedido->conductor_id ? '( '.$pedido->conductor_id.' )' : '' }}
                                                 </span>
                                                 <span class="block text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $pedido->cliente->direccion }}
@@ -187,273 +187,273 @@
             </tbody>
         </table>
     </div>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <!-- DataTables Core -->
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+
+    <!-- DataTables TailwindCSS Integration -->
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.tailwindcss.js"></script>
+
+    <!-- Estilos de DataTables para Tailwind -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
     <script>
         new DataTable('#example');
     </script>
-        <!-- jQuery -->
-        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-        <!-- DataTables Core -->
-        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
-
-        <!-- DataTables TailwindCSS Integration -->
-        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.tailwindcss.js"></script>
-
-        <!-- Estilos de DataTables para Tailwind -->
-        <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
     @endrole
-<div x-data="{ open: false }"
-     x-show="open"
-     @open-modal.window="open = true"
-     @close-modal.window="open = false"
-     class="overflow-y-auto fixed inset-0 z-50 edit_modal"
-     style="display: none;">
-         <style>
-             .edit_modal {
-                 z-index: 9999999 !important;
-                 &>div{
-                     padding: calc(0px + 0.5vw);
-                     @media (width < 550px){
-                         padding:0;
-                     }
-                 }
-                 .modal_pad{
-                     padding: 0 calc(0px + 0.5vw);
-                     @media (width < 550px){
-                         border-radius:0;
-                     }
-                 }
-                 & :is(th, td) {
-                     padding: calc(2px + 0.5vw);
-                 }
-                 td input{
-                     width: clamp(35px, calc(34px + 4vw), 70px);
-                 }
-                 thead th:last-child{
-                     display: flex;
-                     justify-content: space-around;
-                     align-items: center;
-                 }
+    <div x-data="{ open: false }"
+        x-show="open"
+        @open-modal.window="open = true"
+        @close-modal.window="open = false"
+        class="overflow-y-auto fixed inset-0 z-50 edit_modal"
+        style="display: none;">
+            <style>
+                .edit_modal {
+                    z-index: 9999999 !important;
+                    &>div{
+                        padding: calc(0px + 0.5vw);
+                        @media (width < 550px){
+                            padding:0;
+                        }
+                    }
+                    .modal_pad{
+                        padding: 0 calc(0px + 0.5vw);
+                        @media (width < 550px){
+                            border-radius:0;
+                        }
+                    }
+                    & :is(th, td) {
+                        padding: calc(2px + 0.5vw);
+                    }
+                    td input{
+                        width: clamp(35px, calc(34px + 4vw), 70px);
+                    }
+                    thead th:last-child{
+                        display: flex;
+                        justify-content: space-around;
+                        align-items: center;
+                    }
 
-                 tbody td:last-child{
-                     text-align: center;
-                     display: flex;
-                     justify-content: space-around;
-                     align-items: center;
-                 }
-             }
-         </style>
-    <div class="flex justify-center items-center min-h-screen">
-        <!-- Overlay -->
-        <div class="fixed inset-0 bg-black opacity-50"></div>
+                    tbody td:last-child{
+                        text-align: center;
+                        display: flex;
+                        justify-content: space-around;
+                        align-items: center;
+                    }
+                }
+            </style>
+        <div class="flex justify-center items-center min-h-screen">
+            <!-- Overlay -->
+            <div class="fixed inset-0 bg-black opacity-50"></div>
 
-        <!-- Modal -->
-        <div class="relative w-full max-w-6xl bg-white rounded-lg shadow-xl modal_pad dark:bg-gray-800 sm:px-6">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center py-4 border-b dark:border-gray-700">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Editar Pedido
-                </h3>
-                <button @click="open = false" class="text-gray-400 hover:text-gray-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+            <!-- Modal -->
+            <div class="relative w-full max-w-6xl bg-white rounded-lg shadow-xl modal_pad dark:bg-gray-800 sm:px-6">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center py-4 border-b dark:border-gray-700">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Editar Pedido
+                    </h3>
+                    <button @click="open = false" class="text-gray-400 hover:text-gray-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-            <!-- Modal Content -->
-            <div class="py-6">
-                @if($pedidoEnEdicion)
-                    <!-- Información básica -->
-                    <div class="grid gap-6 mb-4 md:grid-cols-2">
-                        <!-- Cliente -->
-                        <div class="relative">
-                            <input
-                                type="text"
-                                class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                value="#{{ $pedidoEnEdicion->cliente->id }} - {{ $pedidoEnEdicion->cliente->razon_social }}"
-                                disabled
-                            />
-                            <label
-                                class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                            >
-                                Cliente
-                            </label>
-                        </div>
-                        <!-- Fecha -->
-                        <div class="relative">
-                            <input
-                                type="text"
-                                class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                value="{{ $pedidoEnEdicion->fecha_emision }}"
-                                disabled
-                            />
-                            <label
-                                class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                            >
-                                Fecha
-                            </label>
-                        </div>
-                    </div>
-                    <!-- Buscador de Productos -->
-                    <div wire:loading wire:target="search">
-                        Buscando...
-                    </div>
-                            <div class="relative mb-4" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                <!-- Modal Content -->
+                <div class="py-6">
+                    @if($pedidoEnEdicion)
+                        <!-- Información básica -->
+                        <div class="grid gap-6 mb-4 md:grid-cols-2">
+                            <!-- Cliente -->
+                            <div class="relative">
                                 <input
                                     type="text"
-                                    wire:model.live.debounce.300ms="search"
                                     class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                    placeholder=" "
+                                    value="#{{ $pedidoEnEdicion->cliente->id }} - {{ $pedidoEnEdicion->cliente->razon_social }}"
+                                    disabled
                                 />
-                                <label class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
-                                    Buscar por código o nombre del producto
+                                <label
+                                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                >
+                                    Cliente
                                 </label>
-
-                                <!-- Resultados de búsqueda -->
-                                @if(strlen($search) > 0)
-                                    <div class="absolute z-20 mt-1 w-full bg-white rounded-lg shadow-lg dark:bg-gray-700">
-                                        @if($productos && count($productos) > 0)
-                                            @foreach($productos as $producto)
-                                                @php
-                                                    $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
-                                                @endphp
-                                                <div
-                                                    wire:click="agregarProducto({{ $producto->id }})"
-                                                    class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-                                                >
-                                                    <div class="text-sm text-gray-900 dark:text-white">
-                                                        {{ $producto->id }} - {{ $producto->name }}
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                        Marca: {{ $producto->marca->name ?? 'N/A' }} |
-                                                        Precio: S/. {{ number_format($precio, 2) }} |
-                                                        Cantidad: {{ $producto->cantidad }}
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @else
-                                            <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                                                No se encontraron productos que coincidan con la búsqueda
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
                             </div>
+                            <!-- Fecha -->
+                            <div class="relative">
+                                <input
+                                    type="text"
+                                    class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                    value="{{ $pedidoEnEdicion->fecha_emision }}"
+                                    disabled
+                                />
+                                <label
+                                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                >
+                                    Fecha
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Buscador de Productos -->
+                        <div wire:loading wire:target="search">
+                            Buscando...
+                        </div>
+                                <div class="relative mb-4" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                                    <input
+                                        type="text"
+                                        wire:model.live.debounce.300ms="search"
+                                        class="block px-2.5 pt-4 pb-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                        placeholder=" "
+                                    />
+                                    <label class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                                        Buscar por código o nombre del producto
+                                    </label>
 
-                    <!-- Tabla de productos -->
-                    <table class="mt-4 w-full" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th scope="col">Código - Producto</th>
-                                <th scope="col">Cantidad</th>
-                                <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z" fill="currentColor"></path></svg></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($pedidoEnEdicion->pedidoDetalles as $detalle)
-                                <tr>
-                                    <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
-                                    <td>
-                                            @php
-                                                $producto = App\Models\Producto::withTrashed()->find($detalle->producto_id);
-                                                $esPaqueteUnico = $producto->cantidad == 1;
-                                            @endphp
-
-                                            @if($esPaqueteUnico)
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value="{{ $detalle->cantidad }}"
-                                                    wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
-                                                    wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
-                                                    class="px-2 py-1 w-20 text-sm rounded border"
-                                                />
+                                    <!-- Resultados de búsqueda -->
+                                    @if(strlen($search) > 0)
+                                        <div class="absolute z-20 mt-1 w-full bg-white rounded-lg shadow-lg dark:bg-gray-700">
+                                            @if($productos && count($productos) > 0)
+                                                @foreach($productos as $producto)
+                                                    @php
+                                                        $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
+                                                    @endphp
+                                                    <div
+                                                        wire:click="agregarProducto({{ $producto->id }})"
+                                                        class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                    >
+                                                        <div class="text-sm text-gray-900 dark:text-white">
+                                                            {{ $producto->id }} - {{ $producto->name }}
+                                                        </div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                            Marca: {{ $producto->marca->name ?? 'N/A' }} |
+                                                            Precio: S/. {{ number_format($precio, 2) }} |
+                                                            Cantidad: {{ $producto->cantidad }}
+                                                        </div>
+                                                    </div>
+                                                @endforeach
                                             @else
-                                                <input
-                                                    type="number"
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    value="{{ $detalle->cantidad }}"
-                                                    wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
-                                                    wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
-                                                    class="px-2 py-1 w-20 text-sm rounded border"
-                                                />
+                                                <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                                    No se encontraron productos que coincidan con la búsqueda
+                                                </div>
                                             @endif
-                                        </td>
-                                    <td>S/. {{ number_format($detallesEdit[$detalle->id]['importe'] ?? $detalle->importe, 2) }}
-                                        <button
-                                            wire:click="eliminarDetalle({{ $detalle->id }})"
-                                            wire:confirm="¿Estás seguro de eliminar este producto?"
-                                            class="text-red-600 hover:text-red-800"
-                                        >
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <!-- Pie de la tabla con totales y comentarios -->
-                        <tfoot>
-                            <tr class="font-semibold text-gray-900 dark:text-white">
-                                <td class="px-6 py-6" colspan="2" rowspan="3">
-                                    <!-- Textarea para comentarios -->
-                                    <div class="relative">
-                                        <textarea
-                                            rows="4"
-                                            id="comentarios_edit"
-                                            wire:model="comentarios"
-                                            class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Escribe tus comentarios aquí..."
-                                        ></textarea>
-                                        <label
-                                            for="comentarios_edit"
-                                            class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-1 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]"
-                                        >
-                                            Comentarios Adicionales
-                                        </label>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-3 text-right">Subtotal: S/. {{ number_format($totales['valorVenta'], 2) }}</td>
-                            </tr>
-                            <tr class="font-semibold text-gray-900 dark:text-white">
-                                <td class="px-6 py-3 text-right">IGV (18%): S/. {{ number_format($totales['totalImpuestos'], 2) }}</td>
-                            </tr>
-                            <tr class="font-semibold text-gray-900 dark:text-white">
-                                <td class="px-6 py-3 text-right">Total: S/. {{ number_format($totales['subTotal'], 2) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                @endif
-                <div wire:loading wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
-                    Cargando...
-                </div>
-            </div>
+                                        </div>
+                                    @endif
+                                </div>
 
-            <!-- Modal Footer -->
-            <div class="flex gap-3 justify-end py-4 border-t dark:border-gray-700" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
-                @if($pedidoEnEdicion)
-                    <button
-                        wire:click="eliminarPedido"
-                        wire:confirm="¿Está seguro de eliminar este pedido? Esta acción no se puede deshacer."
-                        class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
-                    >
-                        Eliminar Pedido
-                    </button>
-                    <button
-                        wire:click="guardarCambios"
-                        class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
-                    >
-                        Guardar Cambios
-                    </button>
+                        <!-- Tabla de productos -->
+                        <table class="mt-4 w-full" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col">Código - Producto</th>
+                                    <th scope="col">Cantidad</th>
+                                    <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z" fill="currentColor"></path></svg></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pedidoEnEdicion->pedidoDetalles as $detalle)
+                                    <tr>
+                                        <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
+                                        <td>
+                                                @php
+                                                    $producto = App\Models\Producto::withTrashed()->find($detalle->producto_id);
+                                                    $esPaqueteUnico = $producto->cantidad == 1;
+                                                @endphp
+
+                                                @if($esPaqueteUnico)
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value="{{ $detalle->cantidad }}"
+                                                        wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
+                                                        wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
+                                                        class="px-2 py-1 w-20 text-sm rounded border"
+                                                    />
+                                                @else
+                                                    <input
+                                                        type="number"
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        value="{{ $detalle->cantidad }}"
+                                                        wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
+                                                        wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
+                                                        class="px-2 py-1 w-20 text-sm rounded border"
+                                                    />
+                                                @endif
+                                            </td>
+                                        <td>S/. {{ number_format($detallesEdit[$detalle->id]['importe'] ?? $detalle->importe, 2) }}
+                                            <button
+                                                wire:click="eliminarDetalle({{ $detalle->id }})"
+                                                wire:confirm="¿Estás seguro de eliminar este producto?"
+                                                class="text-red-600 hover:text-red-800"
+                                            >
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <!-- Pie de la tabla con totales y comentarios -->
+                            <tfoot>
+                                <tr class="font-semibold text-gray-900 dark:text-white">
+                                    <td class="px-6 py-6" colspan="2" rowspan="3">
+                                        <!-- Textarea para comentarios -->
+                                        <div class="relative">
+                                            <textarea
+                                                rows="4"
+                                                id="comentarios_edit"
+                                                wire:model="comentarios"
+                                                class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                placeholder="Escribe tus comentarios aquí..."
+                                            ></textarea>
+                                            <label
+                                                for="comentarios_edit"
+                                                class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-1 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]"
+                                            >
+                                                Comentarios Adicionales
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-3 text-right">Subtotal: S/. {{ number_format($totales['valorVenta'], 2) }}</td>
+                                </tr>
+                                <tr class="font-semibold text-gray-900 dark:text-white">
+                                    <td class="px-6 py-3 text-right">IGV (18%): S/. {{ number_format($totales['totalImpuestos'], 2) }}</td>
+                                </tr>
+                                <tr class="font-semibold text-gray-900 dark:text-white">
+                                    <td class="px-6 py-3 text-right">Total: S/. {{ number_format($totales['subTotal'], 2) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    @endif
+                    <div wire:loading wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                        Cargando...
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex gap-3 justify-end py-4 border-t dark:border-gray-700" wire:loading.class="hidden" wire:target="guardarCambios, eliminarPedido, actualizarCantidadDetalle, eliminarDetalle, agregarProducto">
+                    @if($pedidoEnEdicion)
+                        <button
+                            wire:click="eliminarPedido"
+                            wire:confirm="¿Está seguro de eliminar este pedido? Esta acción no se puede deshacer."
+                            class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                        >
+                            Eliminar Pedido
+                        </button>
+                        <button
+                            wire:click="guardarCambios"
+                            class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+                        >
+                            Guardar Cambios
+                        </button>
+                    @endif
+                </div>
+                @if ($this->getErrorBag()->count())
+                    <div class="w-full">@error('error_guardar') {!! $message !!} @enderror</div>
                 @endif
             </div>
-            @if ($this->getErrorBag()->count())
-                <div class="w-full">@error('error_guardar') {!! $message !!} @enderror</div>
-            @endif
         </div>
     </div>
-</div>
 </div>
