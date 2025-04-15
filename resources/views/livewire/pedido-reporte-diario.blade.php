@@ -79,7 +79,12 @@
                                             </span>
                                             <div>
                                                 <span class="font-medium text-gray-800 dark:text-gray-300">
-                                                    #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }} {{ $pedido->conductor_id ? '( '.$pedido->conductor_id.' )' : '' }}
+                                                    #{{ $pedido->cliente->id }} - {{ $pedido->cliente->razon_social }} {{ match ((int) $pedido->f_tipo_comprobante_id) {
+                                                        1 => "(NP)",
+                                                        2 => "(F)",
+                                                        3 => "(B)",
+                                                        default => "(NP)",
+                                                    }; }} {{ $pedido->conductor_id ? '( '.$pedido->conductor_id.' )' : '' }}
                                                 </span>
                                                 <span class="block text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $pedido->cliente->direccion }}
