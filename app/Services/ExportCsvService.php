@@ -330,7 +330,7 @@ class ExportCsvService
         $ventas = FComprobanteSunat::with([
             'detalle' => function ($query) use ($marcaId) {
                 $query->whereHas('producto', function ($q) use ($marcaId) {
-                    $q->where('marca_id', $marcaId);
+                    $q->withTrashed()->where('marca_id', $marcaId); // 👈 Asegura productos soft deleted
                 })->with(['producto' => function ($q) {
                     $q->withTrashed(); // 👈 importante
                 }]);
@@ -342,8 +342,10 @@ class ExportCsvService
                 $query->select('id', 'lista_precio'); // Asegura que se incluya solo el campo necesario
             }
         ])
-        ->whereHas('detalle.producto', function ($query) use ($marcaId) {
-            $query->withTrashed()->where('marca_id', $marcaId);
+        ->whereHas('detalle', function ($query) use ($marcaId) {
+            $query->whereHas('producto', function ($q) use ($marcaId) {
+                $q->withTrashed()->where('marca_id', $marcaId); // 👈 este es el cambio importante
+            });
         })
         ->whereBetween('fechaEmision', [
             now()->subMonths(1)->startOfMonth(),
@@ -351,6 +353,8 @@ class ExportCsvService
         ])
         ->where('estado_reporte', true)
         ->get();
+
+        logger("FComprobanteSunat-info", $ventas->toArray());
 
         $filePath = "{$exportDir}/ventas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
