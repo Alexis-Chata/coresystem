@@ -68,7 +68,7 @@ class ExportCsvService
                 $cliente->razon_social ?? '', // NombreCliente
                 $cliente->tipoDocumento->tipo_documento ?? '', // TipoDocumento
                 $cliente->numero_documento ?? '', // DI
-                $cliente->direccion ?? '', // Dirección
+                '', //$cliente->direccion ?? '', // Dirección
                 '', '', $canal, '', '', // Mercado, Módulo, Canal, GiroNegocio, SubGiroNegocio (Opcionales)
                 '', // Ubigeo
                 '', // Distrito (Opcional)
@@ -331,7 +331,9 @@ class ExportCsvService
             'detalle' => function ($query) use ($marcaId) {
                 $query->whereHas('producto', function ($q) use ($marcaId) {
                     $q->where('marca_id', $marcaId);
-                });
+                })->with(['producto' => function ($q) {
+                    $q->withTrashed(); // 👈 importante
+                }]);
             },
             'cliente',
             'vendedor',
@@ -341,7 +343,7 @@ class ExportCsvService
             }
         ])
         ->whereHas('detalle.producto', function ($query) use ($marcaId) {
-            $query->where('marca_id', $marcaId);
+            $query->withTrashed()->where('marca_id', $marcaId);
         })
         ->whereBetween('fechaEmision', [
             now()->subMonths(1)->startOfMonth(),
