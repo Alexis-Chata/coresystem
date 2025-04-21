@@ -117,6 +117,9 @@
                                                 Marca: {{ $producto->marca->name ?? 'N/A' }} |
                                                 Precio: S/. {{ number_format($precio, 2) }} |
                                                 Stock disp.: {{ number_format($producto->almacenProductos->sum("stock_disponible"), 2) }}
+                                                @if ($producto->deleted_at)
+                                                <x-svg_circle_equis />
+                                                @endif
                                             </div>
                                         </div>
                                     @endforeach
