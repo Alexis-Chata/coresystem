@@ -354,7 +354,7 @@ class ExportCsvService
         ->where('estado_reporte', true)
         ->get();
 
-        logger("FComprobanteSunat-info", $ventas->toArray());
+        //logger("FComprobanteSunat-info", $ventas->toArray());
 
         $filePath = "{$exportDir}/ventas.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
