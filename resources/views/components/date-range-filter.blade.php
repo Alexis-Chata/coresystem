@@ -23,7 +23,7 @@
                 class="sm:w-auto px-3 py-2 bg-red-500 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 ease-in-out">
                 Asignando Progamacion Carga PDF
             </button>
-        <button wire:click="cerrar_sessiones"
+        <button wire:click="cerrar_sessiones" wire:confirm="¿Está seguro de Cerrar las sesiones?"
             class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Cerrar
             Sessiones</button>
         <button wire:click="permiso_crear_pedido"
