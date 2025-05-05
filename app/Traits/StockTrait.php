@@ -158,7 +158,7 @@ trait StockTrait
             $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $almacenId, "stock_disponible" => 0, "stock_fisico" => 0]);
         }
         //dd($nuevo_stock_disponible);
-        if ($almacenProducto->stock_disponible < $detalle->cantidad) {
+        if ($almacenProducto->stock_disponible < $detalle->cantidad and !$anulando) {
             throw new \Exception("Stock insuficiente para el producto {$producto->name}. Stock disponible: {$almacenProducto->stock_disponible}. Solicitado {$detalle->cantidad}");
         }
 
