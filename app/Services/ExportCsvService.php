@@ -101,7 +101,7 @@ class ExportCsvService
             default => "",
         };
 
-        $productos = Producto::where('marca_id', $marcaId)->get();
+        $productos = Producto::withTrashed()->where('marca_id', $marcaId)->get();
         $filePath = "{$exportDir}/productos.csv";
         $handle = fopen(storage_path("app/$filePath"), 'w');
 
