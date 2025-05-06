@@ -82,6 +82,11 @@ Route::middleware([
         Route::get('/stock', function () {
             return view('producto.stock');
         })->name('producto.stock');
+
+        Route::get('/precio-lp001', function () {
+            $productos = \App\Models\Producto::withTrashed()->get();
+            return view('producto.precio-lp001', compact('productos'));
+        })->name('producto.precio-lp001');
     });
 
     Route::get('/categoria', function () {
