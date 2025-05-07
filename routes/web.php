@@ -84,8 +84,44 @@ Route::middleware([
         })->name('producto.stock');
 
         Route::get('/precio-lp001', function () {
-            $productos = \App\Models\Producto::withTrashed()->get();
-            return view('producto.precio-lp001', compact('productos'));
+            //$productos = \App\Models\Producto::withTrashed()->get();
+            $datos = \App\Models\ProductoListaPrecio::select(
+                'productos.id',
+                'productos.name',
+                'productos.cantidad',
+                'producto_lista_precios.lista_precio_id',
+                'producto_lista_precios.precio',
+                'marcas.id as marca_id',
+                'marcas.name as marca_name'
+            )
+                ->join('productos', 'producto_lista_precios.producto_id', '=', 'productos.id')
+                ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->get();
+
+            // Listas de precios únicas ordenadas
+            $listasDePrecio = $datos->pluck('lista_precio_id')->unique()->sort()->values();
+
+            // Agrupar por producto id
+            $productos = $datos->groupBy('id')->map(function ($grupo) use ($listasDePrecio) {
+                $producto = $grupo->first();
+
+                // Mapear precios por lista de precio
+                $precios = [];
+                foreach ($listasDePrecio as $listaId) {
+                    $precios[$listaId] = $grupo->firstWhere('lista_precio_id', $listaId)?->precio ?? null;
+                }
+
+                // Retornar objeto
+                return (object) [
+                    'id' => $producto->id,
+                    'name' => $producto->name,
+                    'marca' => $producto->marca_name,
+                    'cantidad' => $producto->cantidad,
+                    'precios' => (object) $precios,
+                ];
+            })->values(); // Convertir a colección indexada
+            //dd($productos->first(), $listasDePrecio);
+            return view('producto.precio-lp001', compact('productos', 'listasDePrecio'));
         })->name('producto.precio-lp001');
     });
 

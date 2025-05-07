@@ -10,23 +10,27 @@
     <table id="example" class="display compact">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Position</th>
-                <th>Office</th>
-                <th>Age</th>
-                <th>Start date</th>
-                <th>Salary</th>
+                <th>Producto id</th>
+                <th>Producto name</th>
+                <th>Precio Unidad B</th>
+                <th>Precio Cj B</th>
+                <th>Marca</th>
+                <th>Cantidad/Cj</th>
+                <th>Precio Cj M</th>
+                <th>Precio Unidad M</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($productos as $producto)
                 <tr>
-                    <td>{{ $producto->id }} - {{ $producto->name }}</td>
-                    <td>System Architect</td>
-                    <td>Edinburgh</td>
-                    <td>61</td>
-                    <td>2011-04-25</td>
-                    <td>$320,800</td>
+                    <td>{{ $producto->id }}</td>
+                    <td>{{ $producto->name }}</td>
+                    <td>{{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
+                    <td>{{ $producto->precios->{1} }}</td>
+                    <td>{{ $producto->marca }}</td>
+                    <td>{{ $producto->cantidad }}</td>
+                    <td>{{ $producto->precios->{2} }}</td>
+                    <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>
