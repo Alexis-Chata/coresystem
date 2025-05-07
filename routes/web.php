@@ -92,7 +92,8 @@ Route::middleware([
                 'producto_lista_precios.lista_precio_id',
                 'producto_lista_precios.precio',
                 'marcas.id as marca_id',
-                'marcas.name as marca_name'
+                'marcas.name as marca_name',
+                'productos.deleted_at',
             )
                 ->join('productos', 'producto_lista_precios.producto_id', '=', 'productos.id')
                 ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
@@ -117,6 +118,7 @@ Route::middleware([
                     'name' => $producto->name,
                     'marca' => $producto->marca_name,
                     'cantidad' => $producto->cantidad,
+                    'deleted_at' => $producto->deleted_at,
                     'precios' => (object) $precios,
                 ];
             })->values(); // Convertir a colección indexada

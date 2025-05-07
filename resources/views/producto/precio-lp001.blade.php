@@ -18,6 +18,7 @@
                 <th>Cantidad/Cj</th>
                 <th>Precio Cj M</th>
                 <th>Precio Unidad M</th>
+                <th>deleted_at</th>
             </tr>
         </thead>
         <tbody>
@@ -31,17 +32,21 @@
                     <td>{{ $producto->cantidad }}</td>
                     <td>{{ $producto->precios->{2} }}</td>
                     <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
+                    <td>{{ $producto->deleted_at }}</td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <th>Name</th>
-                <th>Position</th>
-                <th>Office</th>
-                <th>Age</th>
-                <th>Start date</th>
-                <th>Salary</th>
+                <th>Producto id</th>
+                <th>Producto name</th>
+                <th>Precio Unidad B</th>
+                <th>Precio Cj B</th>
+                <th>Marca</th>
+                <th>Cantidad/Cj</th>
+                <th>Precio Cj M</th>
+                <th>Precio Unidad M</th>
+                <th>deleted_at</th>
             </tr>
         </tfoot>
     </table>
