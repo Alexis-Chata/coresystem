@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .dataTable>tbody>tr.bg-red-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 202 202 / var(--tw-bg-opacity, 1));
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.0/css/dataTables.dataTables.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.3.0/js/dataTables.js"></script>
@@ -19,11 +25,13 @@
                 <th>Precio Cj M</th>
                 <th>Precio Unidad M</th>
                 <th>deleted_at</th>
+                <th>stock_fisico</th>
+                <th>stock_disponible</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($productos as $producto)
-                <tr>
+                <tr class="{{ $producto->deleted_at ? 'bg-red-200' : '' }}">
                     <td>{{ $producto->id }}</td>
                     <td>{{ $producto->name }}</td>
                     <td>{{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
@@ -33,6 +41,8 @@
                     <td>{{ $producto->precios->{2} }}</td>
                     <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
                     <td>{{ $producto->deleted_at }}</td>
+                    <td>{{ $producto->stock_fisico }}</td>
+                    <td>{{ $producto->stock_disponible }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -47,6 +57,8 @@
                 <th>Precio Cj M</th>
                 <th>Precio Unidad M</th>
                 <th>deleted_at</th>
+                <th>stock_fisico</th>
+                <th>stock_disponible</th>
             </tr>
         </tfoot>
     </table>

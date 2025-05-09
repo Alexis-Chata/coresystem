@@ -94,9 +94,12 @@ Route::middleware([
                 'marcas.id as marca_id',
                 'marcas.name as marca_name',
                 'productos.deleted_at',
+                'almacen_productos.stock_fisico',
+                'almacen_productos.stock_disponible',
             )
                 ->join('productos', 'producto_lista_precios.producto_id', '=', 'productos.id')
                 ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->join('almacen_productos', 'almacen_productos.producto_id', '=', 'productos.id')
                 ->get();
 
             // Listas de precios únicas ordenadas
@@ -119,6 +122,8 @@ Route::middleware([
                     'marca' => $producto->marca_name,
                     'cantidad' => $producto->cantidad,
                     'deleted_at' => $producto->deleted_at,
+                    'stock_fisico' => $producto->stock_fisico,
+                    'stock_disponible' => $producto->stock_disponible,
                     'precios' => (object) $precios,
                 ];
             })->values(); // Convertir a colección indexada
