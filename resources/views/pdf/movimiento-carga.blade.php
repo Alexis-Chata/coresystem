@@ -169,7 +169,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($detallesAgrupados as $key => $detalles)
+            @forelse ($detallesAgrupadosOrdenados as $key => $detalles)
                 <tr>
                     <td class="marca" colspan="8" style="border-bottom: 0.5px solid;">MARCA:
                         {{ str_pad($key, 3, '0', STR_PAD_LEFT) }}

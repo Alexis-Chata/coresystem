@@ -218,11 +218,15 @@ class GenerarMovimientoLiquido extends Component
         $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
             return $detalle->producto->marca->id; // Agrupar por nombre de la marca
         });
-        //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
+
+        $detallesAgrupadosOrdenados = $detallesAgrupados->sortBy(function ($grupo, $marcaId) {
+            return optional($grupo->first()->producto->marca)->nro_orden;
+        });
+        //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupadosOrdenados->first()->first()->cantidad_bultos);
         // Generar el PDF
         $pdf = Pdf::loadView(
             "pdf.movimiento-carga",
-            compact("movimiento", "detallesAgrupados", "marca")
+            compact("movimiento", "detallesAgrupadosOrdenados", "marca")
         );
 
         // Guardar el PDF en storage/app/private
