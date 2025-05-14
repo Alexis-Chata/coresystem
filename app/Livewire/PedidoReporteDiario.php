@@ -74,15 +74,19 @@ class PedidoReporteDiario extends Component
 
         $detalles = collect();
         $detalles = $pedidosPorVendedor->flatten()->flatMap(function ($pedido) {
-            return $pedido->pedidoDetalles->map(function ($detalle) {
+            return $pedido->pedidoDetalles->map(function ($detalle) use ($pedido) {
                 // Agregar campo personalizado
                 $detalle->total_cantidad_unidades = convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja);
+                $detalle->cliente_id = $pedido->cliente_id;
+                $detalle->producto_marca_id = $detalle->producto->marca_id;
+                $detalle->producto_marca_name = $detalle->producto->marca->name;
                 return $detalle;
             });
         });
 
         // Agrupamos por producto_id y resumimos la info
-        $resumenPorProducto = $detalles->groupBy('producto_id')->map(function ($detallesProducto, $productoId) {
+        $resumenPorProducto = $detalles->groupBy('producto_id')->map(function ($detallesProducto, $productoId) use ($detalles) {
+            // $detallesProducto - es una collection de PedidoDetalle; detalles agrupados por producto_id
             $primerDetalle = $detallesProducto->first(); // Para tomar datos del producto
 
             return [
@@ -93,8 +97,18 @@ class PedidoReporteDiario extends Component
                 'total_cantidad_unidades' => $detallesProducto->sum('total_cantidad_unidades'),
                 'cantidad_bultos'         => intdiv($detallesProducto->sum('total_cantidad_unidades'), $primerDetalle->producto_cantidad_caja),
                 'cantidad_unidades'       => $detallesProducto->sum('total_cantidad_unidades') % $primerDetalle->producto_cantidad_caja,
+                'suma_importe'            => $detallesProducto->sum('importe'),
             ];
         })->sortBy('producto_id')->values(); // ->values() si deseas que el índice sea 0,1,2... en lugar del producto_id
+
+        $reportePorMarca = $detalles->groupBy('producto_marca_id')->map(function ($grupo) {
+            return [
+                'marca_id' => $grupo->first()->producto_marca_id,
+                'marca_name' => $grupo->first()->producto_marca_name,
+                'clientes_unicos' => $grupo->pluck('cliente_id')->unique()->count(),
+                'importe_total' => $grupo->sum('importe'),
+            ];
+        })->sortKeys();
         //dd($resumenPorProducto, $detalles->first());
 
         return view("livewire.pedido-reporte-diario", [
