@@ -351,7 +351,7 @@ class PedidoReporteDiario extends Component
             $this->addError("error_guardar", $e->getMessage());
             logger("Error al agregar producto:", [
                 "error" => $e->getMessage(),
-                "stack" => $e->getTraceAsString(),
+                //"stack" => $e->getTraceAsString(),
             ]);
             $this->dispatch("notify", [
                 "message" => "Error al agregar producto: " . $e->getMessage(),
