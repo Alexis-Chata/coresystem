@@ -49,7 +49,7 @@ class PedidoReporteDiario extends Component
                     "cliente",
                     "listaPrecio",
                     "pedidoDetalles.producto" => function ($query) {
-                        $query->withTrashed();
+                        $query->withTrashed()->with(["marca"]);
                     },
                 ])
                 ->get()
@@ -64,7 +64,7 @@ class PedidoReporteDiario extends Component
                     "cliente",
                     "listaPrecio",
                     "pedidoDetalles.producto" => function ($query) {
-                        $query->withTrashed();
+                        $query->withTrashed()->with(["marca"]);
                     },
                 ])
                 ->orderBy("vendedor_id")
@@ -72,7 +72,6 @@ class PedidoReporteDiario extends Component
                 ->groupBy("vendedor_id");
         }
 
-        $detalles = collect();
         $detalles = $pedidosPorVendedor->flatten()->flatMap(function ($pedido) {
             return $pedido->pedidoDetalles->map(function ($detalle) use ($pedido) {
                 // Agregar campo personalizado
@@ -88,15 +87,15 @@ class PedidoReporteDiario extends Component
         $resumenPorProducto = $detalles->groupBy('producto_id')->map(function ($detallesProducto, $productoId) use ($detalles) {
             // $detallesProducto - es una collection de PedidoDetalle; detalles agrupados por producto_id
             $primerDetalle = $detallesProducto->first(); // Para tomar datos del producto
-
+            $totalUnidades = $detallesProducto->sum('total_cantidad_unidades');
             return [
                 'producto_id'             => $productoId,
                 'producto_name'           => $primerDetalle->producto_name,
                 'producto_cantidad_caja'  => $primerDetalle->producto_cantidad_caja,
-                'producto_marca'          => $primerDetalle->producto->marca_id,
-                'total_cantidad_unidades' => $detallesProducto->sum('total_cantidad_unidades'),
-                'cantidad_bultos'         => intdiv($detallesProducto->sum('total_cantidad_unidades'), $primerDetalle->producto_cantidad_caja),
-                'cantidad_unidades'       => $detallesProducto->sum('total_cantidad_unidades') % $primerDetalle->producto_cantidad_caja,
+                'producto_marca'          => $primerDetalle->producto_marca_id,
+                'total_cantidad_unidades' => $totalUnidades,
+                'cantidad_bultos'         => intdiv($totalUnidades, $primerDetalle->producto_cantidad_caja),
+                'cantidad_unidades'       => $totalUnidades % $primerDetalle->producto_cantidad_caja,
                 'suma_importe'            => $detallesProducto->sum('importe'),
             ];
         })->sortBy('producto_id')->values(); // ->values() si deseas que el índice sea 0,1,2... en lugar del producto_id
