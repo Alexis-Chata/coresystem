@@ -197,6 +197,7 @@ final class ClienteTable extends PowerGridComponent
         if (empty($this->newCliente['numero_documento'])) {
             $this->newCliente['numero_documento'] = '99999999';
         }
+        $this->newCliente['numero_documento'] = mb_strtoupper(preg_replace('/\s+/', ' ', trim($this->newCliente['numero_documento'])), 'UTF-8');
 
         $messages = [
             'newCliente.razon_social.required' => 'La razón social es obligatoria',
