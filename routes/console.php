@@ -28,3 +28,5 @@ Schedule::call(function () {
         info('El rol vendedor ya tiene el permiso.');
     }
 })->dailyAt('05:00');
+
+Schedule::command('zip:storage-app')->dailyAt('23:00');
