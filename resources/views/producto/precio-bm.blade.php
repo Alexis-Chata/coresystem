@@ -11,7 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.3.0/js/dataTables.js"></script>
 
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Productos BM</h2>
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Productos B/M</h2>
 
     <table id="example" class="display compact">
         <thead>

@@ -128,7 +128,7 @@ Route::middleware([
                 ];
             })->values(); // Convertir a colección indexada
             //dd($productos->first(), $listasDePrecio);
-            return view('producto.precio-bm', compact('productos', 'producto.precio-bm'));
+            return view('producto.precio-bm', compact('productos'));
         })->middleware('can:precio-bm producto')->name('producto.precio-bm');
     });
 
