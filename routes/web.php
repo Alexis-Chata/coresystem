@@ -81,9 +81,9 @@ Route::middleware([
 
         Route::get('/stock', function () {
             return view('producto.stock');
-        })->name('producto.stock');
+        })->middleware('can:stock producto')->name('producto.stock');
 
-        Route::get('/precio-lp001', function () {
+        Route::get('/precio-bm', function () {
             //$productos = \App\Models\Producto::withTrashed()->get();
             $datos = \App\Models\ProductoListaPrecio::select(
                 'productos.id',
@@ -128,8 +128,8 @@ Route::middleware([
                 ];
             })->values(); // Convertir a colección indexada
             //dd($productos->first(), $listasDePrecio);
-            return view('producto.precio-lp001', compact('productos', 'listasDePrecio'));
-        })->name('producto.precio-lp001');
+            return view('producto.precio-bm', compact('productos', 'producto.precio-bm'));
+        })->middleware('can:precio-bm producto')->name('producto.precio-bm');
     });
 
     Route::get('/categoria', function () {

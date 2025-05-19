@@ -12,7 +12,7 @@ class RoleSeeder extends Seeder
     protected $resourcePermissions = [
         'marca' => ['view', 'create', 'edit', 'delete'],
         'cliente' => ['view', 'create', 'edit', 'delete'],
-        'producto' => ['view', 'create', 'edit', 'delete', 'stock'],
+        'producto' => ['view', 'create', 'edit', 'delete', 'stock', 'precio-bm'],
         'categoria' => ['view', 'create', 'edit', 'delete'],
         'proveedor' => ['view', 'create', 'edit', 'delete'],
         'ruta' => ['view', 'create', 'edit', 'delete'],

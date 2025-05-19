@@ -67,6 +67,11 @@
                                 'route' => 'producto.stock',
                                 'name' => 'Stock de Productos',
                             ],
+                            [
+                                'permission' => 'precio-bm producto',
+                                'route' => 'producto.precio-bm',
+                                'name' => 'Precios B/M',
+                            ],
                         ],
                     ],
                     [

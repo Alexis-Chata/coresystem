@@ -349,7 +349,10 @@ class ExportCsvService
         })
         ->whereBetween('fechaEmision', [
             now()->subMonths(1)->startOfMonth(),
-            now()->endOfMonth()
+            match (true) {
+                now()->isMonday() => now()->copy()->subDays(2),
+                default => now()->copy()->subDays(1),
+            }
         ])
         ->where('estado_reporte', true)
         ->get();

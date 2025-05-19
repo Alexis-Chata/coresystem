@@ -110,7 +110,7 @@ final class PadronTable extends PowerGridComponent
                 . '<option value="">Seleccionar</option>'
                 . '@foreach($options as $value => $label)'
                 . '<option value="{{ $value }}" {{ $value == $selected ? \'selected\' : \'\' }}>'
-                . '{{ $label }}'
+                . '{{ $value }} - {{ $label }}'
                 . '</option>'
                 . '@endforeach'
                 . '</select>',
@@ -399,7 +399,12 @@ final class PadronTable extends PowerGridComponent
 
         return [
             Filter::select('ruta_id', 'rutas.id')
-                ->dataSource($query->get())
+                ->dataSource($query->get()->map(function ($ruta) {
+                            return [
+                                "id" => $ruta->id,
+                                "name" => $ruta->id . " - " . $ruta->name,
+                            ];
+                        }))
                 ->optionLabel('name')
                 ->optionValue('id'),
         ];

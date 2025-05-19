@@ -3,12 +3,12 @@
 {{-- @section('title', 'Mi Título Personalizado') --}}
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <livewire:cliente-table/>
+    <livewire:cliente-table />
     <br>
     <br>
     <br>
     <br>
-    <livewire:padron-table/>
+    <livewire:padron-table />
 <script>
     document.addEventListener('livewire:initialized', () => {
         // Eventos de Cliente

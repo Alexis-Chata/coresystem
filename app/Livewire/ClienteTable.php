@@ -134,6 +134,7 @@ final class ClienteTable extends PowerGridComponent
     public function columns(): array
     {
         return [
+            Column::make('ID', 'id')->searchable()->hidden(),
             Column::make('Cod', 'id_formatted'),
             Column::make('Razón social', 'razon_social')
                 ->sortable()
