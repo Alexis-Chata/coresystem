@@ -87,7 +87,7 @@ final class PadronTable extends PowerGridComponent
                 // if ($this->user->can('edit padron')) {
                 //     return $this->selectComponent('cliente_id', $padron->id, $padron->cliente_id, $var_clienteSelectOptions);
                 // }
-                return $padron->cliente_nombre;
+                return $padron->cliente_id.' - '.$padron->cliente_nombre;
             })
             ->add('ruta_id', function ($padron) use ($var_rutaSelectOptions) {
                 return $this->selectComponent('ruta_id', $padron->id, $padron->ruta_id, $var_rutaSelectOptions);
@@ -128,7 +128,8 @@ final class PadronTable extends PowerGridComponent
                 ->searchable()
                 ->editOnClick(),
             Column::make('Cliente', 'cliente_id')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make('Estado', 'estado'),
         ];
 
