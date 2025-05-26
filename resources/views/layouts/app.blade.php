@@ -45,7 +45,7 @@
             @include('layouts.partials.sidebar')
             <!-- ===== Sidebar End ===== -->
 
-            <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            <div class="relative flex flex-1 flex-col overflow-y-auto">
                 <!-- ===== Header Start ===== -->
                 @include('layouts.partials.header')
                 <!-- ===== Header End ===== -->
