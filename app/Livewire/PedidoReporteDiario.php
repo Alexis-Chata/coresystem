@@ -292,7 +292,7 @@ class PedidoReporteDiario extends Component
                 if ($producto->f_tipo_afectacion_id == '21') {
                     $importe = 0;
                 }
-
+                $importe = number_format_punto2($importe);
                 // Crear el nuevo detalle directamente en bd (mejorar)
                 $nuevoDetalle = $this->pedidoEnEdicion
                 ->pedidoDetalles()
