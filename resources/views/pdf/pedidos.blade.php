@@ -20,7 +20,7 @@
         }
         th, td {
             border: 1px solid black;
-            padding: 5px 10px;
+            padding: 4.5px 10px;
             text-align: center;
             white-space: nowrap;
         }
@@ -31,7 +31,7 @@
         .total-row td {
             background-color: #f2f2f2;
             font-weight: bold;
-            padding-top: 10px;
+            padding-top: 9px;
         }
 
         .total-row td.total-label {
