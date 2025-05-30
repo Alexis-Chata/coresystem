@@ -7,7 +7,7 @@
     <title>Tabla de Productos</title>
     <style>
         html {
-            font-size: 12px;
+            font-size: 12.8px;
             /* margin: 5px; */
             /* padding: 0; */
         }
