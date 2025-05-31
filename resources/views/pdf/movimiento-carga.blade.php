@@ -155,7 +155,7 @@
         <thead>
             <tr style="background-color: rgba(211, 211, 211, 0.5);">
                 <th rowspan="2">CÓDIGO</th>
-                <th rowspan="2" style="width: 260px">DESCRIPCIÓN ARTÍCULO</th>
+                <th rowspan="2" style="width: 265px">DESCRIPCIÓN ARTÍCULO</th>
                 <th rowspan="2">PRESENTA.</th>
                 <th colspan="3">CARGA</th>
                 <th colspan="2">DESCARGA</th>
@@ -177,22 +177,22 @@
                 </tr>
                 @foreach ($detalles as $detalle)
                     <tr>
-                        <td class="codigo" style="border-bottom: 0.5px solid; padding: 8px 4px; width: 65px">
+                        <td class="codigo" style="border-bottom: 0.5px solid; padding: 9px 4px; width: 65px">
                             000-{{ str_pad($detalle->producto_id, 4, '0', STR_PAD_LEFT) }}</td>
-                        <td class="descripcion" style="border-bottom: 0.5px solid; padding: 8px 4px; width: 260px">
+                        <td class="descripcion" style="border-bottom: 0.5px solid; padding: 9px 4px; width: 265px">
                             {{ $detalle->producto->name }}</td>
                         <td style="border-bottom: 0.5px solid; padding: 8px 14px; text-align: left">
                             CAJAX{{ $detalle->producto->cantidad }}</td>
                         <td
-                            style="border-bottom: 0.5px solid; padding: 8px 4px; padding-right: 16px; width: 50px; text-align: right; font-weight: bold;">
+                            style="border-bottom: 0.5px solid; padding: 9px 4px; padding-right: 16px; width: 50px; text-align: right; font-weight: bold;">
                             {{ $detalle->cantidad_bultos }}</td>
                         <td
-                            style="border-bottom: 0.5px solid; padding: 8px 4px; padding-left: 16px;width: 30px;text-align: left;">
+                            style="border-bottom: 0.5px solid; padding: 9px 4px; padding-left: 16px;width: 30px;text-align: left;">
                             {{ $detalle->cantidad_unidades }}</td>
-                        <td style="border-bottom: 0.5px solid; padding: 8px 4px; width: 80px">
+                        <td style="border-bottom: 0.5px solid; padding: 9px 4px; width: 80px">
                             {{ $detalle->precio_venta_total }}</td>
-                        <td style="border-bottom: 0.5px solid; padding: 8px 4px; width: 40px"></td>
-                        <td style="border-bottom: 0.5px solid; padding: 8px 4px; width: 40px"></td>
+                        <td style="border-bottom: 0.5px solid; padding: 9px 4px; width: 40px"></td>
+                        <td style="border-bottom: 0.5px solid; padding: 9px 4px; width: 40px"></td>
                     </tr>
                 @endforeach
             @empty
