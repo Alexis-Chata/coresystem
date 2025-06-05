@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
+    private $date_field;
     private $fecha_inicio;
     private $fecha_fin;
     private $ruta_id;
@@ -27,8 +28,9 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
     private $producto;
     private $fecha_emision;
 
-    public function __construct($fecha_inicio, $fecha_fin, $ruta_id = null, $marca = null, $vendedor_id = null, $producto_id = null, $ruta = false, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false)
+    public function __construct($date_field, $fecha_inicio, $fecha_fin, $ruta_id = null, $marca = null, $vendedor_id = null, $producto_id = null, $ruta = false, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false)
     {
+        $this->date_field = $date_field;
         $this->fecha_inicio = $fecha_inicio;
         $this->fecha_fin = $fecha_fin;
         $this->ruta_id = $ruta_id;
@@ -140,7 +142,9 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             ->when(true, function ($query) {
                 return $query->addSelect(DB::raw("CAST(sum(f_comprobante_sunat_detalles.cantidad * f_comprobante_sunat_detalles.mtoPrecioUnitario) AS CHAR)"));
             })
-            ->whereBetween('pedido_fecha_factuacion', [$this->fecha_inicio, $this->fecha_fin])
+            ->when(true, function ($query) { // date_field  ( 1: pedido_fecha_factuacion, 2: fechaEmision )
+                $query->whereBetween($this->date_field, [$this->fecha_inicio, $this->fecha_fin]);
+            })
             ->where("estado_reporte", true)
             ->when(isset($ruta_id), function ($query) use ($ruta_id) {
                 return $query->where('rutas.id', $ruta_id);
@@ -249,7 +253,7 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
 
         $encabezados = [
             ["Reporte de Ventas"],
-            ["Fecha Venta Del : $fecha_inicio AL: $fecha_fin"],
+            ["Fecha Del : $fecha_inicio AL: $fecha_fin"],
             $titulos_array,
         ];
 

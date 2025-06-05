@@ -18,6 +18,7 @@ class Reportes extends Component
         return view('livewire.reportes');
     }
 
+    public $date_field = '1';
     public $fecha_inicio;
     public $fecha_fin;
     public $rutas;
@@ -113,6 +114,10 @@ class Reportes extends Component
         $this->vendedor_id == "NULL" ? $this->vendedor_id = null : $this->vendedor_id;
         $this->producto_id == "NULL" ? $this->producto_id = null : $this->producto_id;
 
+        $date_field = match ((int) $this->date_field) {
+            2 => 'fechaEmision',
+            default => 'pedido_fecha_factuacion',
+        };
         $fecha_inicio = $this->fecha_inicio;
         $fecha_fin = $this->fecha_fin;
         $ruta_id   = $this->ruta_id;
@@ -130,6 +135,6 @@ class Reportes extends Component
         $producto = $this->producto ?? false;
         $fecha_emision = $this->fecha_emision ?? false;
         //dd($marcas_name, $fecha_emision, $ruta);
-        return Excel::download(new ReportesExport($fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision), 'reporte_ventas.xlsx');
+        return Excel::download(new ReportesExport($date_field, $fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision), 'reporte_ventas.xlsx');
     }
 }
