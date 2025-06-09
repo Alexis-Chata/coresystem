@@ -223,6 +223,11 @@ final class ClienteTable extends PowerGridComponent
             'newCliente.ruta_id' => 'required|exists:rutas,id',
         ], $messages);
 
+        $ruta = Ruta::find($this->newCliente['ruta_id']);
+        if($ruta->codigo){
+            $this->newCliente['ubigeo_inei'] = $ruta->codigo;
+        }
+
         Cliente::create($this->newCliente);
 
         $this->reset('newCliente');
@@ -291,7 +296,8 @@ final class ClienteTable extends PowerGridComponent
         $this->setUp();
     }
 
-    public function descargar_clientes(){
+    public function descargar_clientes()
+    {
         return Excel::download(new ClientesExport, 'Clientes.xlsx');
     }
 }
