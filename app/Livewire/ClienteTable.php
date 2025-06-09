@@ -217,7 +217,25 @@ final class ClienteTable extends PowerGridComponent
         $this->validate([
             'newCliente.razon_social' => 'required',
             'newCliente.f_tipo_documento_id' => 'required|exists:f_tipo_documentos,id',
-            'newCliente.numero_documento' => 'required',
+            'newCliente.numero_documento' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $tipo = $this->newCliente['f_tipo_documento_id'];
+                    $longitud = strlen($value);
+
+                    if ($tipo == 1 && $longitud !== 8) {
+                        $fail('El número de documento debe tener exactamente 8 dígitos para DNI.');
+                    }
+
+                    if (in_array($tipo, [2, 3]) && $longitud !== 9) {
+                        $fail('El número de documento debe tener exactamente 9 dígitos para Carnet de Extranjería o Pasaporte.');
+                    }
+
+                    if ($tipo == 4 && $longitud !== 11) {
+                        $fail('El número de documento debe tener exactamente 11 dígitos para RUC.');
+                    }
+                },
+            ],
             'newCliente.empresa_id' => 'required|exists:empresas,id',
             'newCliente.lista_precio_id' => 'required|exists:lista_precios,id',
             'newCliente.ruta_id' => 'required|exists:rutas,id',
