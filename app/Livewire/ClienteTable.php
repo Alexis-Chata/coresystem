@@ -224,15 +224,15 @@ final class ClienteTable extends PowerGridComponent
                     $longitud = strlen($value);
 
                     if ($tipo == 1 && $longitud !== 8) {
-                        $fail('El número de documento debe tener exactamente 8 dígitos para DNI.');
+                        $fail('El número de documento debe tener exactamente 8 dígitos para DNI. Ingresado: ' . $longitud);
                     }
 
                     if (in_array($tipo, [2, 3]) && $longitud !== 9) {
-                        $fail('El número de documento debe tener exactamente 9 dígitos para Carnet de Extranjería o Pasaporte.');
+                        $fail('El número de documento debe tener exactamente 9 dígitos para Carnet de Extranjería o Pasaporte. Ingresado: ' . $longitud);
                     }
 
                     if ($tipo == 4 && $longitud !== 11) {
-                        $fail('El número de documento debe tener exactamente 11 dígitos para RUC.');
+                        $fail('El número de documento debe tener exactamente 11 dígitos para RUC. Ingresado: ' . $longitud);
                     }
                 },
             ],
