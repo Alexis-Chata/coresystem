@@ -24,7 +24,8 @@ class Pedido extends Model
         "comentario",
         "empresa_id",
         "estado",
-        "movimiento_id"
+        "movimiento_id",
+        "user_id",
     ];
 
     protected $casts = [
@@ -79,5 +80,10 @@ class Pedido extends Model
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Empresa::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

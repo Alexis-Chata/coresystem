@@ -366,6 +366,7 @@ class PedidoTable extends Component
                     "lista_precio" => $this->lista_precio,
                     "comentario" => $this->comentarios,
                     "empresa_id" => $this->empresa->id,
+                    "user_id" => $this->user->id,
                 ]);
 
                 foreach ($this->pedido_detalles as $index => $detalle) {
