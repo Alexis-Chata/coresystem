@@ -275,7 +275,7 @@
                     <tr class="font-semibold text-gray-900 dark:text-white">
                         <td class="px-6 py-6" colspan="2" rowspan="3">
                             <!-- Textarea para comentarios -->
-                            <div class="relative">
+                            <div class="hidden relative">
                                 <textarea rows="4" id="comentarios" wire:model="comentarios"
                                     class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="Escribe tus comentarios aquí..."></textarea>

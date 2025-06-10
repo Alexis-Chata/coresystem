@@ -405,7 +405,7 @@
                                 <tr class="font-semibold text-gray-900 dark:text-white">
                                     <td class="px-6 py-6" colspan="2" rowspan="3">
                                         <!-- Textarea para comentarios -->
-                                        <div class="relative">
+                                        <div class="hidden relative">
                                             <textarea
                                                 rows="4"
                                                 id="comentarios_edit"

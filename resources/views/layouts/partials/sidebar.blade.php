@@ -193,7 +193,7 @@
                     ],
                     [
                         'link_descripcion' => 'Liquidaciones', //opcional
-                        'permission' => 'view reporte',
+                        'permission' => 'view liquidacion',
                         'route' => 'liquidacion.view',
                         'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
                         'name' => 'Liquidaciones',
