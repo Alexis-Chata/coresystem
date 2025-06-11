@@ -40,7 +40,7 @@
                     <td>{{ $producto->cantidad }}</td>
                     <td>{{ $producto->precios->{2} }}</td>
                     <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
-                    <td>{{ $producto->deleted_at }}</td>
+                    <td>{{ $producto->deleted_at?->format('d-m-Y | H:i:s') ?? '*' }}</td>
                     <td>{{ $producto->stock_fisico }}</td>
                     <td>{{ $producto->stock_disponible }}</td>
                 </tr>
