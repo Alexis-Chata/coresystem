@@ -26,10 +26,13 @@ class Liquidaciones extends Component
     public $view;
     public $regresa;
     public $por_anular;
+    public $listado_productos = [];
     public $search_productos;
     public $search;
     public $detalles;
     public $almacenes;
+
+    protected $listeners = ['recargar-productos' => 'cargarProductos'];
 
     public function mount()
     {
@@ -46,6 +49,7 @@ class Liquidaciones extends Component
         $this->por_anular = [];
         $this->detalles = [];
         $this->mount_propiedades();
+        $this->cargarProductos();
     }
 
     public function mount_propiedades()
@@ -200,6 +204,42 @@ class Liquidaciones extends Component
     {
         $this->view = 'agregar ingreso';
         $this->regresa = true;
+    }
+
+    public function cargarProductos()
+    {
+        $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
+        $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
+        $lista_precio = 1;
+        if (!$lista_precio) {
+            return;
+        }
+        $this->listado_productos =  Producto::withTrashed()
+            ->with([
+                "marca:id,name", // optimizamos cargando solo 'nombre'
+                "listaPrecios" => function ($query) use ($lista_precio) {
+                    $query->where("lista_precio_id", $lista_precio)->select('producto_id', 'precio');
+                },
+                "almacenProductos" => function ($query) use ($almacenes) {
+                    $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
+                },
+            ])
+            ->get()//;dd($this->listado_productos->first());
+            ->map(function ($producto) {
+                return [
+                    'id' => $producto->id,
+                    'nombre' => $producto->name,
+                    'marca' => $producto->marca->name ?? 'SIN MARCA',
+                    'precio' => optional($producto->listaPrecios->first())->precio ?? 0,
+                    'stock' => optional($producto->almacenProductos->first())->stock ?? 0,
+                    'deleted_at' => $producto->deleted_at,
+                ];
+            })->values()->all();
+    }
+
+    public function actualizarListadoProductos()
+    {
+        $this->lista_productos();
     }
 
     public function updatedSearch()

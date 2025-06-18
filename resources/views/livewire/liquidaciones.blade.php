@@ -174,36 +174,52 @@
             <!-- Tabla -->
             <div>
                 <!-- Buscador de Productos -->
-                <div class="relative">
-                    <input type="text" wire:model.live.debounce.300ms="search"
-                        class="block p-2 w-full text-sm text-white bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                        placeholder="Buscar por código o nombre del producto" />
+                <div x-data="selectProductos(@entangle('listado_productos'))" class="relative w-full max-w-2xl">
 
-                    <!-- Resultados de búsqueda -->
-                    @if (!empty($search_productos))
-                        <div class="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg dark:bg-gray-700">
-                            @foreach ($search_productos as $producto)
-                                @php
-                                    $precio =
-                                        $producto->listaPrecios->where('id', 1)->first()?->pivot
-                                            ?->precio ?? 0;
-                                @endphp
-                                <div wire:click="agregarProducto({{ $producto->id }})"
-                                    class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:rounded-t-md">
-                                    <div class="text-sm text-gray-900 dark:text-white">
-                                        {{ $producto->id }} - {{ $producto->name }}
-                                    </div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        Marca: {{ $producto->marca->name ?? 'N/A' }} |
-                                        Precio: S/. {{ number_format($precio, 2) }} |
-                                        Stock disp.:
-                                        {{ number_format($producto->almacenProductos->sum('stock_disponible'), 2) }}
-                                    </div>
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar por código o nombre del producto" x-model="search"
+                            @focus="open = true" @input="open = true" @keydown.arrow-down.prevent="moverCursor(1)"
+                            @keydown.arrow-up.prevent="moverCursor(-1)"
+                            @keydown.enter.prevent="seleccionarProducto(productosFiltrados[cursor])"
+                            @click.away="open = false"
+                            class="w-full border rounded px-3 py-2 pr-10 bg-white text-black" />
+
+                        <!-- Botón recargar -->
+                        <button type="button" @click="recargarProductos"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                            🔄
+                        </button>
+                    </div>
+
+                    <!-- Lista -->
+                    <ul x-show="open"
+                        class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow max-h-[80vh] overflow-y-auto text-[11px]">
+                        <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
+                            <li @click="seleccionarProducto(producto)"
+                                :class="{
+                                    'bg-gray-300 rounded-md': index === cursor,
+                                    'hover:bg-gray-300 hover:rounded-md': index !== cursor
+                                }"
+                                class="px-3 py-2 cursor-pointer">
+                                <div class="font-semibold" x-text="`${producto.id} - ${producto.nombre}`"></div>
+                                <div>
+                                    <span
+                                        x-text="`Marca: ${producto.marca} | Precio: S/. ${parseFloat(producto.precio).toFixed(2)} | Stock disp.: ${parseFloat(producto.stock).toFixed(2)}`"></span>
+                                    <template x-if="producto.deleted_at">
+                                        <span><x-svg_circle_equis /></span>
+                                    </template>
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
+                            </li>
+                        </template>
+
+                        <li x-show="productosFiltrados.length === 0" class="px-3 py-2 text-gray-500">Sin resultados
+                        </li>
+                    </ul>
+
+                    <input type="hidden" name="producto_id" :value="seleccionado ? seleccionado.id : ''">
+
                 </div>
+
                 <table class="w-full table-auto border-collapse bg-gray-700 rounded-lg overflow-hidden mt-2">
                     <thead>
                         <tr class="bg-gray-500 text-white text-left text-sm">
@@ -250,3 +266,47 @@
         </div>
     @endif
 </div>
+
+@script
+    <script>
+        window.selectProductos = function(productosIniciales) {
+            return {
+                open: false,
+                search: '',
+                seleccionado: null,
+                cursor: 0,
+                productos: productosIniciales,
+
+                seleccionarProducto(producto) {
+                    this.seleccionado = producto;
+                    this.search = '';
+                    this.open = false;
+                    @this.call('agregarProducto', producto.id); // También puedes usar: @this.call()
+                },
+
+                moverCursor(direccion) {
+                    const total = this.productosFiltrados.length;
+                    this.cursor = (this.cursor + direccion + total) % total;
+                },
+
+                recargarProductos() {
+                    Livewire.dispatch('recargar-productos');
+                },
+
+                get productosFiltrados() {
+                    const texto = this.search.trim().toLowerCase();
+                    if (!Array.isArray(this.productos)) return [];
+
+                    const palabras = texto.split(/\s+/).filter(Boolean);
+                    const filtrados = this.productos.filter(p => {
+                        const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
+                        return palabras.every(w => campo.includes(w));
+                    });
+
+                    if (this.cursor >= filtrados.length) this.cursor = 0;
+                    return filtrados.slice(0, 15);
+                }
+            }
+        }
+    </script>
+@endscript
