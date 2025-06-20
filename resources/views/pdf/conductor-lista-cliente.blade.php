@@ -189,7 +189,7 @@
             <tr>
                 <td>ROMANI GOLOMIX</td>
                 <td class="center">*** RELACION DOCUMENTOS POR CHOFER ***</td>
-                <td class="right">Página <span class="pagenum"></span> de <span class="total-pages"></span></td>
+                <td class="right">Página <span class="pagenum"></span> _ <span class="total-pages"></span></td>
             </tr>
             <tr>
                 <td>DIVISION GALLETA</td>
@@ -208,7 +208,7 @@
     </div>
     <div class="footer">
         <span></span>
-        Página <span class="pagenum"></span> de <span class="total-pages"></span>
+        Página <span class="pagenum"></span> _ <span class="total-pages"></span>
     </div>
 
     <table style="width: 100%; border-collapse: collapse">

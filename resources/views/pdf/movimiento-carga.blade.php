@@ -147,7 +147,7 @@
 
     <div class="footer">
         <span></span>
-        Página <span class="pagenum"></span> de <span class="total-pages"></span>
+        Página <span class="pagenum"></span> _ <span class="total-pages"></span>
     </div>
 
     <!-- Contenido dinámico -->

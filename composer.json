@@ -21,6 +21,8 @@
         "mike42/escpos-php": "^4.0",
         "power-components/livewire-powergrid": "^6.0",
         "rappasoft/laravel-livewire-tables": "^3.5",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "spatie/laravel-permission": "^6.14",
         "wireui/wireui": "^2.1"
     },

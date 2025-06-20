@@ -10,6 +10,7 @@ use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Producto;
 use App\Models\TipoMovimiento;
+use App\Services\PdfMergerService;
 use App\Traits\StockTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -91,8 +92,9 @@ class GenerarMovimientoLiquido extends Component
             $this->addError('checkbox_conductor_seleccionados', 'Debe seleccionar al menos un conductor.');
             return;
         }
+        $movimientos_ids_generados = []; // Declarar la variable aquí
         try {
-            Cache::lock('generar_movimiento', 15)->block(10, function () {
+            Cache::lock('generar_movimiento', 15)->block(10, function () use (&$movimientos_ids_generados) {
                 DB::beginTransaction();
                 $fecha_reparto = $this->fecha_reparto;
                 $productos = Producto::withTrashed()->with('marca')->get();
@@ -180,10 +182,14 @@ class GenerarMovimientoLiquido extends Component
                         $pedido->movimiento_id = $movimiento->id;
                         $pedido->save();
                     });
+                    $movimientos_ids_generados[] = $movimiento->id;
                 }
                 $this->checkbox_conductor_seleccionados = [];
                 $this->pedidosAgrupados = $this->pedidos_agrupados();
                 DB::commit();
+                foreach ($movimientos_ids_generados as $movimiento_id) {
+                    $this->exportarMovimientoCargaPDF(Movimiento::find($movimiento_id));
+                }
             });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
@@ -193,13 +199,15 @@ class GenerarMovimientoLiquido extends Component
             $this->addError("error_guardar", $e->getMessage());
         }
         $this->cargas_generadas = $this->movimientos_generados();
+        return $this->unirPDFs($movimientos_ids_generados); // Ahora la variable está definida
     }
 
     public function exportarMovimientoCargaPDF(Movimiento $movimiento)
     {
+        $this->pedidosAgrupados = $this->pedidos_agrupados();
         // Ruta donde esta/guardará el archivo
-        $file_name = 'movimiento_carga_'.$movimiento->id.'.pdf';
-        $filePath = 'cola-pdfs/'.$file_name;
+        $file_name = 'movimiento_carga_' . $movimiento->id . '.pdf';
+        $filePath = 'cola-pdfs/' . $file_name;
 
         if (Storage::disk('local')->exists($filePath)) {
             return response()->download(storage_path("app/private/$filePath"));
@@ -234,7 +242,31 @@ class GenerarMovimientoLiquido extends Component
 
         // Descargar el PDF
         return response()->streamDownload(
-            fn() => print $pdf->output(), $file_name
+            fn() => print $pdf->output(),
+            $file_name
         );
+    }
+
+    public function unirPDFs(array $movimiento_ids)
+    {
+        $merger = app(PdfMergerService::class);
+
+        $archivos = [];
+        $contador = 0;
+        // Recorrer los IDs de los movimientos y agregar las rutas de los archivos PDF
+        foreach ($movimiento_ids as $movimiento_id) {
+            $file_name = 'movimiento_carga_' . $movimiento_id . '.pdf';
+            $filePath = 'cola-pdfs/' . $file_name;
+            if (Storage::disk('local')->exists($filePath)) {
+                $contador++;
+            }
+            $archivos[] = storage_path("app/private/$filePath");
+        }
+
+        $rutaSalida = 'cola-pdfs/movimiento_carga_' . implode("-", $movimiento_ids) . '_' . $contador . '_' . count($archivos) . '.pdf';
+        $rutaCompleta = storage_path("app/private/$rutaSalida");
+
+        $path_file = $merger->merge($archivos, $rutaCompleta);
+        return response()->download($path_file);
     }
 }
