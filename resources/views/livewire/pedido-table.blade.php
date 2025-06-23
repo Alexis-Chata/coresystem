@@ -22,7 +22,7 @@
 
             <!-- Vendedor -->
             <div class="relative">
-                @if ($user->can("admin pedido"))
+                @if ($user->can('admin pedido'))
                     <x-floating-searchable-select :options="$vendedores" :wire-model="'vendedor_id'" :placeholder="'Vendedor'" />
                 @else
                     <input type="text" autocomplete="off"
@@ -48,9 +48,11 @@
                     <option value="">Selecciona un Tipo de Comprobante</option>
                     @foreach ($tipoComprobantes as $tipo)
                         @if (str_starts_with($documento, 'RUC') && $tipo->id == 2)
-                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}</option>
+                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}
+                            </option>
                         @elseif (!str_starts_with($documento, 'RUC') && $tipo->id != 2)
-                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}</option>
+                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}
+                            </option>
                         @endif
                     @endforeach
                 </select>
@@ -134,7 +136,8 @@
     <div class="mb-2" wire:loading wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         Cargando...
     </div>
-    <div class="mt-6" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+    <div class="mt-6" wire:loading.class="hidden"
+        wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         <div wire:loading wire:target="search">
             Buscando...
         </div>
@@ -223,8 +226,8 @@
                     <tr>
                         <th scope="col">Código - Producto</th>
                         <th scope="col">Cantidad</th>
-                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16" class="inline-block"
-                                xmlns="http://www.w3.org/2000/svg">
+                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16"
+                                class="inline-block" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
                                     d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
                                     fill="currentColor"></path>
@@ -304,13 +307,26 @@
             @endif
         </div>
     </div>
-    <button wire:click="guardarPedido" wire:loading.class="hidden" wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto" wire:loading.attr="disabled"
+    <button wire:click="guardarPedido" wire:loading.class="hidden"
+        wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto" wire:loading.attr="disabled"
         class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
         Registrar Pedido
     </button>
     @if ($this->getErrorBag()->count())
-        <div>@error('vendedor_id') {{ $message }} @enderror</div>
-        <div>@error('cliente_id') {{ $message }} @enderror</div>
-        <div>@error('error_guardar') {!! $message !!} @enderror</div>
+        <div>
+            @error('vendedor_id')
+                {{ $message }}
+            @enderror
+        </div>
+        <div>
+            @error('cliente_id')
+                {{ $message }}
+            @enderror
+        </div>
+        <div>
+            @error('error_guardar')
+                {!! $message !!}
+            @enderror
+        </div>
     @endif
 </div>
