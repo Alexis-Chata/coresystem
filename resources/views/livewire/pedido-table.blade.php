@@ -214,7 +214,7 @@
 
             <!-- Lista -->
             <ul x-show="open"
-                class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow max-h-[80vh] overflow-y-auto text-sm">
+                class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm">
                 <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
                     <li @click="seleccionarProducto(producto)"
                         :class="{
