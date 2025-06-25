@@ -89,7 +89,6 @@ class PedidoTable extends Component
         // Cargar datos según el rol
         $this->loadDataByRole();
         $this->loadTipoComprobantes();
-        $this->cargarProductos();
     }
 
     private function initializeDefaultData()
@@ -185,6 +184,7 @@ class PedidoTable extends Component
                 $this->f_tipo_comprobante_id = $facturaComprobante->id;
             }
         }
+        $this->cargarProductos();
     }
 
     public function getRutaNameProperty()
@@ -589,12 +589,12 @@ class PedidoTable extends Component
 
     public function cargarProductos()
     {
-        $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
-        $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
-        $lista_precio = 1;
+        $lista_precio = $this->lista_precio;
         if (!$lista_precio) {
             return;
         }
+        $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
+        $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
         $this->listado_productos =  Producto::
             with([
                 "marca:id,name", // optimizamos cargando solo 'nombre'
