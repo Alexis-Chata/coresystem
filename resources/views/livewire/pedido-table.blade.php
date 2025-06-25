@@ -151,7 +151,7 @@
             </label>
         </div>
         <!-- Buscador de Productos -->
-        <div class="relative">
+        <div class="relative hidden">
             <input type="text" wire:model.live.debounce.500ms="search"
                 class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
                 placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
@@ -191,6 +191,55 @@
             @endif
         </div>
 
+        <!-- Buscador de Productos -->
+        <div x-data="selectProductos(@entangle('listado_productos'))" class="relative">
+
+            <div class="relative">
+                <input type="text" x-model="search" @focus="open = true" @input="open = true"
+                    @keydown.arrow-down.prevent="moverCursor(1)" @keydown.arrow-up.prevent="moverCursor(-1)"
+                    @keydown.enter.prevent="seleccionarProducto(productosFiltrados[cursor])" @click.away="open = false"
+                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
+                    placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
+                <label
+                    class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                    {{ !$cliente_id ? 'Seleccione un Cliente primero' : 'Buscar por código o nombre del producto' }}
+                </label>
+
+                <!-- Botón recargar -->
+                <button type="button" @click="recargarProductos"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                    🔄
+                </button>
+            </div>
+
+            <!-- Lista -->
+            <ul x-show="open"
+                class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow max-h-[80vh] overflow-y-auto text-sm">
+                <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
+                    <li @click="seleccionarProducto(producto)"
+                        :class="{
+                            'bg-gray-300 rounded-md': index === cursor,
+                            'hover:bg-gray-300 hover:rounded-md': index !== cursor
+                        }"
+                        class="px-3 py-2 cursor-pointer">
+                        <div class="font-semibold" x-text="`${producto.id} - ${producto.nombre}`"></div>
+                        <div>
+                            <span
+                                x-text="`Marca: ${producto.marca} | Precio: S/. ${parseFloat(producto.precio).toFixed(2)} | Factor: ${producto.factor}`"></span>
+                            <template x-if="producto.deleted_at">
+                                <span><x-svg_circle_equis /></span>
+                            </template>
+                        </div>
+                    </li>
+                </template>
+
+                <li x-show="productosFiltrados.length === 0" class="px-3 py-2 text-gray-500">Sin resultados
+                </li>
+            </ul>
+
+            <input type="hidden" name="producto_id" :value="seleccionado ? seleccionado.id : ''">
+
+        </div>
         <!-- Tabla de Detalles -->
         <div class="cont_detalles mt-4 relative overflow-x-auto shadow-md sm:rounded-lg">
             <style>
@@ -330,3 +379,47 @@
         </div>
     @endif
 </div>
+
+@script
+    <script>
+        window.selectProductos = function(productosIniciales) {
+            return {
+                open: false,
+                search: '',
+                seleccionado: null,
+                cursor: 0,
+                productos: productosIniciales,
+
+                seleccionarProducto(producto) {
+                    this.seleccionado = producto;
+                    this.search = '';
+                    this.open = false;
+                    @this.call('agregarProducto', producto.id); // También puedes usar: @this.call()
+                },
+
+                moverCursor(direccion) {
+                    const total = this.productosFiltrados.length;
+                    this.cursor = (this.cursor + direccion + total) % total;
+                },
+
+                recargarProductos() {
+                    Livewire.dispatch('recargar-productos');
+                },
+
+                get productosFiltrados() {
+                    const texto = this.search.trim().toLowerCase();
+                    if (!Array.isArray(this.productos)) return [];
+
+                    const palabras = texto.split(/\s+/).filter(Boolean);
+                    const filtrados = this.productos.filter(p => {
+                        const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
+                        return palabras.every(w => campo.includes(w));
+                    });
+
+                    if (this.cursor >= filtrados.length) this.cursor = 0;
+                    return filtrados.slice(0, 15);
+                }
+            }
+        }
+    </script>
+@endscript

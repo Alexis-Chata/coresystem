@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Almacen;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Ruta;
@@ -41,6 +42,7 @@ class PedidoTable extends Component
     public $f_tipo_comprobante_id = "";
     public $tipoComprobantes = [];
     public $comentarios = "";
+    public $listado_productos = [];
     public $totales = [
         "valorVenta" => 0,
         "totalImpuestos" => 0,
@@ -72,6 +74,7 @@ class PedidoTable extends Component
 
     protected $listeners = [
         "cliente-selected" => "handleClienteSelected",
+        'recargar-productos' => 'cargarProductos',
     ];
 
     public function mount()
@@ -86,6 +89,7 @@ class PedidoTable extends Component
         // Cargar datos según el rol
         $this->loadDataByRole();
         $this->loadTipoComprobantes();
+        $this->cargarProductos();
     }
 
     private function initializeDefaultData()
@@ -581,5 +585,37 @@ class PedidoTable extends Component
             $this->resetClienteData();
             $this->cliente_id = null;
         }
+    }
+
+    public function cargarProductos()
+    {
+        $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
+        $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
+        $lista_precio = 1;
+        if (!$lista_precio) {
+            return;
+        }
+        $this->listado_productos =  Producto::
+            with([
+                "marca:id,name", // optimizamos cargando solo 'nombre'
+                "listaPrecios" => function ($query) use ($lista_precio) {
+                    $query->where("lista_precio_id", $lista_precio)->select('producto_id', 'precio');
+                },
+                "almacenProductos" => function ($query) use ($almacenes) {
+                    $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
+                },
+            ])
+            ->get()//;dd($this->listado_productos->first());
+            ->map(function ($producto) {
+                return [
+                    'id' => $producto->id,
+                    'nombre' => $producto->name,
+                    'factor' => $producto->cantidad,
+                    'marca' => $producto->marca->name ?? 'SIN MARCA',
+                    'precio' => optional($producto->listaPrecios->first())->precio ?? 0,
+                    'stock' => optional($producto->almacenProductos->first())->stock ?? 0,
+                    'deleted_at' => $producto->deleted_at,
+                ];
+            })->values()->all();
     }
 }
