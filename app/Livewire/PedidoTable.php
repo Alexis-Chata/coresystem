@@ -36,7 +36,7 @@ class PedidoTable extends Component
     public $documento = "";
     public $search = "";
     public $productos = [];
-    public $pedido_detalles = [];
+    public array $pedido_detalles = [];
     public $importe_total = 0;
     public $nro_doc_liquidacion;
     public $f_tipo_comprobante_id = "";
@@ -244,6 +244,7 @@ class PedidoTable extends Component
 
     public function agregarProducto($producto_id)
     {
+        //dd($this->pedido_detalles);
         if (!$this->lista_precio) {
             // Mostrar mensaje de error o alerta
             return;
@@ -336,6 +337,40 @@ class PedidoTable extends Component
     {
         $this->importe_total = collect($this->pedido_detalles)->sum("importe");
     }
+
+    public function guardar_pedido_items($items)
+    {
+        //dd($items);
+        // Validar que se haya enviado al menos un ítem
+        if (empty($items)) {
+            return response()->json(['error' => 'No se enviaron productos.'], 422);
+        }
+
+        // Verificar cantidades
+        foreach ($items as $item) {
+            if (!isset($item['cantidad']) || floatval($item['cantidad']) <= 0) {
+                return response()->json([
+                    'error' => "El producto {$item['nombre']} tiene una cantidad inválida."
+                ], 422);
+            }
+
+            if (!isset($item['unidades']) || intval($item['unidades']) <= 0) {
+                return response()->json([
+                    'error' => "El producto {$item['nombre']} tiene unidades inválidas."
+                ], 422);
+            }
+        }
+
+        $this->pedido_detalles = [];
+        foreach ($items as $item) {
+            $this->cantidad_ofrecida = $item['cantidad'];
+            $this->agregarProducto($item['id']);
+        }
+        //dd($this->pedido_detalles);
+        $this->guardarPedido();
+        $this->dispatch('pedido-guardado-items');
+    }
+
 
     public function guardarPedido()
     {
@@ -595,18 +630,18 @@ class PedidoTable extends Component
         }
         $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
         $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
-        $this->listado_productos =  Producto::
-            with([
-                "marca:id,name", // optimizamos cargando solo 'nombre'
-                "listaPrecios" => function ($query) use ($lista_precio) {
-                    $query->where("lista_precio_id", $lista_precio)->select('producto_id', 'precio');
-                },
-                "almacenProductos" => function ($query) use ($almacenes) {
-                    $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
-                },
-            ])
-            ->get()//;dd($this->listado_productos->first());
-            ->map(function ($producto) {
+        $this->listado_productos =  Producto::with([
+            'tipoAfectacion',
+            "marca:id,name", // optimizamos cargando solo 'nombre'
+            "listaPrecios" => function ($query) use ($lista_precio) {
+                $query->where("lista_precio_id", $lista_precio)->select('producto_id', 'precio');
+            },
+            "almacenProductos" => function ($query) use ($almacenes) {
+                $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
+            },
+        ])
+            ->get() //;dd($this->listado_productos->first());
+            ->map(function ($producto) use ($lista_precio) {
                 return [
                     'id' => $producto->id,
                     'nombre' => $producto->name,
@@ -615,6 +650,9 @@ class PedidoTable extends Component
                     'precio' => optional($producto->listaPrecios->first())->precio ?? 0,
                     'stock' => optional($producto->almacenProductos->first())->stock ?? 0,
                     'deleted_at' => $producto->deleted_at,
+                    'lista_precio' => $lista_precio,
+                    'f_tipo_afectacion_id' => $producto->f_tipo_afectacion_id,
+                    'f_tipo_afectacion_name' => $producto->tipoAfectacion->name ?? 'null',
                 ];
             })->values()->all();
     }

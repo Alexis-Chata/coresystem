@@ -141,63 +141,25 @@
         <div wire:loading wire:target="search">
             Buscando...
         </div>
-        <div class="mb-4 relative">
-            <input type="number" wire:model.live.debounce.500ms="cantidad_ofrecida" min="0.01" step="0.01"
-                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
-                placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
-            <label
-                class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
-                Cantidad Ofrecida
-            </label>
-        </div>
-        <!-- Buscador de Productos -->
-        <div class="relative hidden">
-            <input type="text" wire:model.live.debounce.500ms="search"
-                class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
-                placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
-            <label
-                class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
-                {{ !$cliente_id ? 'Seleccione un Cliente primero' : 'Buscar por código o nombre del producto' }}
-            </label>
-
-            <!-- Resultados de búsqueda -->
-            @if ($cliente_id && strlen($search) > 0)
-                <div class="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg dark:bg-gray-700">
-                    @if ($productos && count($productos) > 0)
-                        @foreach ($productos as $producto)
-                            @php
-                                $precio =
-                                    $producto->listaPrecios->where('id', $this->lista_precio)->first()?->pivot
-                                        ?->precio ?? 0;
-                            @endphp
-                            <div wire:click="agregarProducto({{ $producto->id }})"
-                                class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
-                                <div class="text-sm text-gray-900 dark:text-white">
-                                    {{ $producto->id }} - {{ $producto->name }}
-                                </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                    Marca: {{ $producto->marca->name ?? 'N/A' }} |
-                                    Precio: S/. {{ number_format($precio, 2) }} |
-                                    Cantidad: {{ $producto->cantidad }}
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            No se encontraron productos que coincidan con la búsqueda
-                        </div>
-                    @endif
-                </div>
-            @endif
-        </div>
 
         <!-- Buscador de Productos -->
         <div x-data="selectProductos(@entangle('listado_productos'))" class="relative">
 
-            <div class="relative">
+            <div class="mb-4 relative">
+                <input type="number" x-model="cantidad_ofrecida" min="0.01" step="0.01"
+                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
+                    placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
+                <label
+                    class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
+                    Cantidad Ofrecida
+                </label>
+            </div>
+
+            <div class="relative" @click.outside="open = false">
                 <input type="text" x-model="search" @focus="open = true" @input="open = true"
                     @keydown.arrow-down.prevent="moverCursor(1)" @keydown.arrow-up.prevent="moverCursor(-1)"
-                    @keydown.enter.prevent="seleccionarProducto(productosFiltrados[cursor])" @click.away="open = false"
+                    @keydown.enter.prevent="agregar_producto_item(productosFiltrados[cursor])"
+                    @keydown.escape="open = false" @click="open = true"
                     class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
                     placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} />
                 <label
@@ -216,7 +178,7 @@
             <ul x-show="open"
                 class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm">
                 <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
-                    <li @click="seleccionarProducto(producto)"
+                    <li @mousedown.prevent @click="agregar_producto_item(producto)"
                         :class="{
                             'bg-gray-300 rounded-md': index === cursor,
                             'hover:bg-gray-300 hover:rounded-md': index !== cursor
@@ -237,130 +199,101 @@
                 </li>
             </ul>
 
-            <input type="hidden" name="producto_id" :value="seleccionado ? seleccionado.id : ''">
-
-        </div>
-        <!-- Tabla de Detalles -->
-        <div class="cont_detalles mt-4 relative overflow-x-auto shadow-md sm:rounded-lg">
-            <style>
-                main> :first-child {
-                    padding: calc(2px + 2vw);
-                }
-
-                .cont_detalles {
-                    & :is(th, td) {
-                        padding: calc(2px + 0.5vw);
+            <!-- Lista temporal de ítems del pedido -->
+            <div class="cont_detalles mt-4 relative overflow-x-auto shadow-md sm:rounded-lg">
+                <style>
+                    main> :first-child {
+                        padding: calc(2px + 2vw);
                     }
 
-                    td input {
-                        width: clamp(35px, calc(34px + 4vw), 70px);
-                    }
+                    .cont_detalles {
+                        & :is(th, td) {
+                            padding: calc(2px + 0.5vw);
+                        }
 
-                    thead th:last-child {
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: center;
-                    }
+                        td input {
+                            width: clamp(35px, calc(34px + 4vw), 70px);
+                        }
 
-                    tbody td:last-child {
-                        text-align: center;
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: center;
-                    }
-                }
-            </style>
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col">Código - Producto</th>
-                        <th scope="col">Cantidad</th>
-                        <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16"
-                                class="inline-block" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
-                                    fill="currentColor"></path>
-                            </svg></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($pedido_detalles as $index => $detalle)
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">
-                                {{ $detalle['codigo'] }} - {{ $detalle['nombre'] }}
-                            </td>
-                            <td class="px-6 py-4">
-                                @php
-                                    $producto = App\Models\Producto::withTrashed()->find($detalle['producto_id']);
-                                    $esPaqueteUnico = $producto->cantidad == 1;
-                                @endphp
+                        thead th:last-child {
+                            display: flex;
+                            justify-content: space-around;
+                            align-items: center;
+                        }
 
-                                @if ($esPaqueteUnico)
-                                    <input type="number" min="1"
-                                        wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
-                                        wire:change="ajustarCantidad({{ $index }})"
-                                        class="w-20 px-2 py-1 text-sm border rounded" />
-                                @else
+                        tbody td:last-child {
+                            text-align: center;
+                            display: flex;
+                            justify-content: space-around;
+                            align-items: center;
+                        }
+                    }
+                </style>
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col">Código - Producto</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16"
+                                    class="inline-block" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
+                                        fill="currentColor"></path>
+                                </svg></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(item, index) in items" :key="item.id">
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="px-6 py-4" x-text="`${item.id} - ${item.nombre}`"></td>
+                                <td class="px-6 py-4">
                                     <input type="number" min="0.01" step="0.01"
-                                        wire:model.lazy="pedido_detalles.{{ $index }}.cantidad"
-                                        wire:change="ajustarCantidad({{ $index }})"
-                                        class="w-20 px-2 py-1 text-sm border rounded" />
-                                @endif
+                                        class="w-20 px-2 py-1 text-sm border rounded" x-model.number="item.cantidad"
+                                        @input="actualizar_importe(index)">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span x-text="`S/. ${item.importe}`"></span>
+                                    <button type="button" @click="eliminar_item(index)"
+                                        class="font-medium text-red-600 dark:text-red-500 hover:underline">
+                                        <svg width="20" height="20" viewBox="0 0 17 17" class="inline-block"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M12.566,8 L15.611,4.956 C16.031,4.535 16.031,3.853 15.611,3.434 L12.566,0.389 C12.146,-0.031 11.464,-0.031 11.043,0.389 L7.999,3.433 L4.955,0.389 C4.534,-0.031 3.852,-0.031 3.432,0.389 L0.388,3.434 C-0.034,3.854 -0.034,4.536 0.387,4.956 L3.431,8 L0.387,11.044 C-0.034,11.465 -0.034,12.147 0.388,12.567 L3.432,15.611 C3.852,16.032 4.534,16.032 4.955,15.611 L7.999,12.567 L11.043,15.611 C11.464,16.032 12.146,16.032 12.566,15.611 L15.611,12.567 C16.031,12.146 16.031,11.464 15.611,11.044 L12.566,8 Z"
+                                                fill="currentColor"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-semibold text-gray-900 dark:text-white">
+                            <td class="px-6 py-6" colspan="2" rowspan="3">
+                                <!-- Comentarios (si deseas mostrar) -->
                             </td>
-                            <td class="px-6 py-4">
-                                S/. {{ number_format($detalle['importe'], 2) }}
-                                <button type="button" wire:click="eliminarDetalle({{ $index }})"
-                                    class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                    <svg width="20 " height="20" viewBox="0 0 17 17" class="inline-block"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M12.566,8 L15.611,4.956 C16.031,4.535 16.031,3.853 15.611,3.434 L12.566,0.389 C12.146,-0.031 11.464,-0.031 11.043,0.389 L7.999,3.433 L4.955,0.389 C4.534,-0.031 3.852,-0.031 3.432,0.389 L0.388,3.434 C-0.034,3.854 -0.034,4.536 0.387,4.956 L3.431,8 L0.387,11.044 C-0.034,11.465 -0.034,12.147 0.388,12.567 L3.432,15.611 C3.852,16.032 4.534,16.032 4.955,15.611 L7.999,12.567 L11.043,15.611 C11.464,16.032 12.146,16.032 12.566,15.611 L15.611,12.567 C16.031,12.146 16.031,11.464 15.611,11.044 L12.566,8 L12.566,8 Z"
-                                            fill="currentColor"></path>
-                                    </svg>
-                                </button>
+                            <td class="px-6 py-3 text-right">Subtotal: <span
+                                    x-text="`S/. ${subtotal.toFixed(2)}`"></span>
                             </td>
                         </tr>
-                    @endforeach
-                </tbody>
-                <!-- Pie de la tabla con totales y comentarios -->
-                <tfoot>
-                    <tr class="font-semibold text-gray-900 dark:text-white">
-                        <td class="px-6 py-6" colspan="2" rowspan="3">
-                            <!-- Textarea para comentarios -->
-                            <div class="hidden relative">
-                                <textarea rows="4" id="comentarios" wire:model="comentarios"
-                                    class="block p-2 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                    placeholder="Escribe tus comentarios aquí..."></textarea>
-                                <label for="comentarios"
-                                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-1 origin-[0] bg-[#f1f5f9] dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 start-1 dark:bg-gradient-to-b from-[#1a222c] to-[#1f2937]">
-                                    Comentarios Adicionales
-                                </label>
-                            </div>
-                        </td>
-                        <td class="px-6 py-3 text-right">Subtotal: S/. {{ number_format($totales['valorVenta'], 2) }}
-                        </td>
-                    </tr>
-                    <tr class="font-semibold text-gray-900 dark:text-white">
-                        <td class="px-6 py-3 text-right">IGV (18%): S/.
-                            {{ number_format($totales['totalImpuestos'], 2) }}</td>
-                    </tr>
-                    <tr class="font-semibold text-gray-900 dark:text-white">
-                        <td class="px-6 py-3 text-right">Total: S/. {{ number_format($totales['subTotal'], 2) }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-            @if (count($pedido_detalles) === 0)
-                @error('pedido_detalles')
-                    <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            @endif
+                        <tr class="font-semibold text-gray-900 dark:text-white">
+                            <td class="px-6 py-3 text-right">IGV (18%): <span x-text="`S/. ${igv.toFixed(2)}`"></span>
+                            </td>
+                        </tr>
+                        <tr class="font-semibold text-gray-900 dark:text-white">
+                            <td class="px-6 py-3 text-right">Total: <span
+                                    x-text="`S/. ${parseFloat(total).toFixed(2)}`"></span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Botón para enviar todo a Livewire -->
+            <button @click="guardar"
+                class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Guardar
+                Pedido</button>
         </div>
     </div>
-    <button wire:click="guardarPedido" wire:loading.class="hidden"
-        wire:target="guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto" wire:loading.attr="disabled"
-        class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-        Registrar Pedido
-    </button>
     @if ($this->getErrorBag()->count())
         <div>
             @error('vendedor_id')
@@ -386,39 +319,187 @@
             return {
                 open: false,
                 search: '',
-                seleccionado: null,
                 cursor: 0,
+                cantidad_ofrecida: '0.01',
                 productos: productosIniciales,
+                items: [],
+                subtotal: 0,
+                igv: 0,
+                total: 0,
 
-                seleccionarProducto(producto) {
-                    this.seleccionado = producto;
-                    this.search = '';
-                    this.open = false;
-                    @this.call('agregarProducto', producto.id); // También puedes usar: @this.call()
+                get productosFiltrados() {
+                    const texto = this.search.trim().toLowerCase();
+                    const palabras = texto.split(/\s+/).filter(Boolean);
+
+                    return this.productos
+                        .filter(p => {
+                            const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
+                            return palabras.every(w => campo.includes(w));
+                        })
+                        .slice(0, 15);
                 },
-
                 moverCursor(direccion) {
                     const total = this.productosFiltrados.length;
+                    if (total === 0) return;
                     this.cursor = (this.cursor + direccion + total) % total;
                 },
 
                 recargarProductos() {
+                    this.open = false;
                     Livewire.dispatch('recargar-productos');
                 },
 
-                get productosFiltrados() {
-                    const texto = this.search.trim().toLowerCase();
-                    if (!Array.isArray(this.productos)) return [];
+                agregar_producto_item(producto) {
+                    let ofrecida = parseFloat(this.cantidad_ofrecida || 0);
+                    if (isNaN(ofrecida) || ofrecida <= 0) return;
 
-                    const palabras = texto.split(/\s+/).filter(Boolean);
-                    const filtrados = this.productos.filter(p => {
-                        const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
-                        return palabras.every(w => campo.includes(w));
+                    const factor = parseFloat(producto.factor || 1);
+                    const precio = parseFloat(producto.precio || 0);
+                    const f_tipo_afectacion_id = producto.f_tipo_afectacion_id || 10;
+
+                    const {
+                        cantidad_convertida,
+                        total_unidades,
+                        importe
+                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
+
+                    const existe = this.items.find(i => i.id === producto.id);
+                    if (!existe) {
+                        this.items.push({
+                            ...producto,
+                            cantidad: cantidad_convertida, // bultos.unidades
+                            unidades: total_unidades,
+                            importe: importe
+                        });
+                        this.calcularTotales();
+                    }
+
+                    this.search = '';
+                    this.cantidad_ofrecida = '0.01';
+                    this.cursor = 0;
+                    this.open = false;
+                },
+                convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id) {
+                    const parte_entera = Math.floor(ofrecida);
+                    const decimal = ofrecida - parte_entera;
+
+                    const unidades_extra = Math.round(decimal * 100);
+                    const total_unidades = parte_entera * factor + unidades_extra;
+
+                    const nuevos_bultos = Math.floor(total_unidades / factor);
+                    const nuevas_unidades = total_unidades % factor;
+
+                    const cantidad_convertida = parseFloat(
+                        `${nuevos_bultos}.${nuevas_unidades.toString().padStart(2, '0')}`
+                    );
+
+                    const importe = parseFloat(((precio * total_unidades) / factor).toFixed(2));
+                    if (f_tipo_afectacion_id === 21) {
+                        // Si es tipo de afectación 21, no se aplica IGV
+                        return {
+                            cantidad_convertida: cantidad_convertida.toFixed(2),
+                            total_unidades: total_unidades.toFixed(2),
+                            importe: parseFloat((0).toFixed(2))
+                        };
+                    }
+                    return {
+                        cantidad_convertida: cantidad_convertida.toFixed(2),
+                        total_unidades: total_unidades.toFixed(2),
+                        importe: importe.toFixed(2)
+                    };
+                },
+
+                eliminar_item(index) {
+                    this.items.splice(index, 1);
+                    this.calcularTotales();
+                },
+
+                actualizar_importe(index) {
+                    const item = this.items[index];
+                    if (!item || isNaN(item.cantidad)) return;
+
+                    const factor = parseFloat(item.factor || 1);
+                    const precio = parseFloat(item.precio || 0);
+                    const cantidad = item.cantidad.toFixed(2);
+                    const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
+
+                    const [bultosStr, unidadesStr] = cantidad.split('.');
+                    const ofrecida = (parseInt(bultosStr) || 0) + (parseInt(unidadesStr || '0') / 100);
+
+                    const {
+                        cantidad_convertida,
+                        total_unidades,
+                        importe
+                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
+
+                    item.cantidad = cantidad_convertida;
+                    item.unidades = total_unidades;
+                    item.importe = importe;
+
+                    this.calcularTotales();
+                },
+
+                calcularTotales() {
+                    this.total = this.items.reduce((sum, i) => {
+                        const importe = parseFloat(i.importe);
+                        return sum + (isNaN(importe) ? 0 : importe);
+                    }, 0);
+
+                    if (this.total > 0) {
+                        this.subtotal = parseFloat((this.total / 1.18).toFixed(2));
+                        this.igv = parseFloat((this.total - this.subtotal).toFixed(2));
+                    } else {
+                        this.subtotal = 0;
+                        this.igv = 0;
+                    }
+                },
+
+                guardar() {
+                    if (this.items.length === 0) {
+                        alert("No hay productos agregados al pedido.");
+                        return;
+                    }
+
+                    const errores = this.items.filter(item => {
+                        const cantidadValida = item.cantidad && !isNaN(item.cantidad) && parseFloat(item
+                            .cantidad) > 0;
+                        const unidadesValidas = item.unidades && !isNaN(item.unidades) && parseInt(item
+                            .unidades) > 0;
+                        const importeValido = item.f_tipo_afectacion_id == 21 ?
+                            true :
+                            (item.importe && !isNaN(item.importe) && parseFloat(item.importe) > 0);
+
+                        return !(cantidadValida && unidadesValidas && importeValido);
                     });
 
-                    if (this.cursor >= filtrados.length) this.cursor = 0;
-                    return filtrados.slice(0, 15);
-                }
+                    if (errores.length > 0) {
+                        alert(
+                            "Hay productos con datos inválidos (cantidades, unidades o importes). Corrige antes de guardar."
+                        );
+                        return;
+                    }
+
+                    if (isNaN(this.total) || this.total <= 0) {
+                        alert("El total del pedido debe ser mayor a cero.");
+                        return;
+                    }
+
+                    $wire.guardar_pedido_items(this.items);
+                },
+                init() {
+                    Livewire.on('pedido-guardado', () => {
+                        this.limpiarFormulario();
+                    });
+                },
+                limpiarFormulario() {
+                    this.items = [];
+                    this.search = '';
+                    this.cantidad_ofrecida = '0.01';
+                    this.subtotal = 0;
+                    this.igv = 0;
+                    this.total = 0;
+                },
+
             }
         }
     </script>
