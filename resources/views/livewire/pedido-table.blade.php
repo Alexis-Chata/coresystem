@@ -248,8 +248,8 @@
                                 <td class="px-6 py-4" x-text="`${item.id} - ${item.nombre}`"></td>
                                 <td class="px-6 py-4">
                                     <input type="number" min="0.01" step="0.01"
-                                        class="w-20 px-2 py-1 text-sm border rounded" x-model.number="item.cantidad"
-                                        @input="actualizar_importe(index)">
+                                        class="w-20 px-2 py-1 text-sm border rounded" x-model="item.cantidad"
+                                        @input="actualizar_importe(index)" @change="actualizar_importe_items(index)">
                                 </td>
                                 <td class="px-6 py-4">
                                     <span x-text="`S/. ${item.importe}`"></span>
@@ -397,13 +397,13 @@
                     if (f_tipo_afectacion_id === 21) {
                         // Si es tipo de afectación 21, no se aplica IGV
                         return {
-                            cantidad_convertida: cantidad_convertida.toFixed(2),
+                            cantidad_convertida: cantidad_convertida,
                             total_unidades: total_unidades.toFixed(2),
                             importe: parseFloat((0).toFixed(2))
                         };
                     }
                     return {
-                        cantidad_convertida: cantidad_convertida.toFixed(2),
+                        cantidad_convertida: cantidad_convertida,
                         total_unidades: total_unidades.toFixed(2),
                         importe: importe.toFixed(2)
                     };
@@ -413,14 +413,21 @@
                     this.items.splice(index, 1);
                     this.calcularTotales();
                 },
-
-                actualizar_importe(index) {
+                actualizar_importe_items(index) {
                     const item = this.items[index];
-                    if (!item || isNaN(item.cantidad)) return;
+                    item.cantidad = parseFloat(item.cantidad).toFixed(2);
+                },
+                actualizar_importe(index) {
+                    console.log(this.items);
+                    const item = this.items[index];
+                    if (item.cantidad == '0.0' || item.cantidad == '0.' || parseFloat(item.cantidad) == 0 || !item || item.cantidad === '' || isNaN(parseFloat(item.cantidad))) {
+                        console.log(item.cantidad);
+                        return 10;
+                    };
 
                     const factor = parseFloat(item.factor || 1);
                     const precio = parseFloat(item.precio || 0);
-                    const cantidad = item.cantidad.toFixed(2);
+                    const cantidad = parseFloat(item.cantidad).toFixed(2);
                     const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
 
                     const [bultosStr, unidadesStr] = cantidad.split('.');
