@@ -176,26 +176,41 @@
 
             <!-- Lista -->
             <ul x-show="open"
-                class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm">
+                class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm pb-3">
                 <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
-                    <li @mousedown.prevent @click="agregar_producto_item(producto)"
+                    <li @mousedown.prevent
                         :class="{
                             'bg-gray-300 rounded-md': index === cursor,
                             'hover:bg-gray-300 hover:rounded-md': index !== cursor
                         }"
-                        class="px-3 py-2 cursor-pointer">
-                        <div class="font-semibold" x-text="`${producto.id} - ${producto.nombre}`"></div>
-                        <div>
-                            <span
-                                x-text="`Marca: ${producto.marca} | Precio: S/. ${parseFloat(producto.precio).toFixed(2)} | Factor: ${producto.factor}`"></span>
-                            <template x-if="producto.deleted_at">
-                                <span><x-svg_circle_equis /></span>
-                            </template>
+                        class="flex items-start gap-2 px-3 py-2 cursor-pointer">
+
+                        <!-- Checkbox -->
+                        <input type="checkbox" class="w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            :value="producto.id" x-model.number="seleccionados" @click.stop />
+
+                        <!-- Contenido del producto -->
+                        <div @click="agregar_producto_item(producto)" class="flex-1">
+                            <div class="font-semibold" x-text="`${producto.id} - ${producto.nombre}`"></div>
+                            <div>
+                                <span
+                                    x-text="`Marca: ${producto.marca} | Precio: S/. ${parseFloat(producto.precio).toFixed(2)} | Factor: ${producto.factor}`"></span>
+                                <template x-if="producto.deleted_at">
+                                    <span><x-svg_circle_equis /></span>
+                                </template>
+                            </div>
                         </div>
                     </li>
                 </template>
 
                 <li x-show="productosFiltrados.length === 0" class="px-3 py-2 text-gray-500">Sin resultados
+                </li>
+                <!-- Botón centrado -->
+                <li class="px-3 py-2 text-center">
+                    <button type="button" @click="agregar_seleccionados()"
+                        class="px-4 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                        Agregar productos seleccionados
+                    </button>
                 </li>
             </ul>
 
@@ -244,18 +259,18 @@
                     </thead>
                     <tbody>
                         <template x-for="(item, index) in items" :key="item.id">
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td class="px-6 py-4" x-text="`${item.id} - ${item.nombre}`"></td>
-                                <td class="px-6 py-4">
+                            <tr class="text-xs bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="p-2 sm:px-6 sm:py-4" x-text="`${item.id} - ${item.nombre}`"></td>
+                                <td class="p-2 sm:px-6 sm:py-4">
                                     <input type="number" min="0.01" step="0.01"
                                         class="w-20 px-2 py-1 text-sm border rounded" x-model="item.cantidad"
                                         @input="actualizar_importe(index)" @change="actualizar_importe_items(index)">
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="p-2 sm:px-6 sm:py-4">
                                     <span x-text="`S/. ${item.importe}`"></span>
                                     <button type="button" @click="eliminar_item(index)"
                                         class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                        <svg width="20" height="20" viewBox="0 0 17 17" class="inline-block"
+                                        <svg width="20" height="20" viewBox="0 0 17 17" class="inline-block w-4"
                                             xmlns="http://www.w3.org/2000/svg">
                                             <path
                                                 d="M12.566,8 L15.611,4.956 C16.031,4.535 16.031,3.853 15.611,3.434 L12.566,0.389 C12.146,-0.031 11.464,-0.031 11.043,0.389 L7.999,3.433 L4.955,0.389 C4.534,-0.031 3.852,-0.031 3.432,0.389 L0.388,3.434 C-0.034,3.854 -0.034,4.536 0.387,4.956 L3.431,8 L0.387,11.044 C-0.034,11.465 -0.034,12.147 0.388,12.567 L3.432,15.611 C3.852,16.032 4.534,16.032 4.955,15.611 L7.999,12.567 L11.043,15.611 C11.464,16.032 12.146,16.032 12.566,15.611 L15.611,12.567 C16.031,12.146 16.031,11.464 15.611,11.044 L12.566,8 Z"
@@ -322,6 +337,7 @@
                 cursor: 0,
                 cantidad_ofrecida: '0.01',
                 productos: productosIniciales,
+                seleccionados: [],
                 items: [],
                 subtotal: 0,
                 igv: 0,
@@ -517,6 +533,21 @@
                     this.igv = 0;
                     this.total = 0;
                 },
+                agregar_seleccionados() {
+                    const seleccionados_ids = this.seleccionados;
+                    const seleccionados_productos = this.productosFiltrados.filter(p => seleccionados_ids.includes(p
+                        .id));
+                    console.log("seleccionados:", this.seleccionados); // qué valores tienes
+                    console.log("tipos:", this.seleccionados.map(s => typeof s));
+                    console.log("producto ids:", this.productosFiltrados.map(p => p.id));
+                    const ofrecida = this.cantidad_ofrecida;
+                    seleccionados_productos.forEach(producto => {
+                        this.cantidad_ofrecida = ofrecida;
+                        this.agregar_producto_item(producto);
+                    });
+                    this.seleccionados = []; // limpiar selección
+                    this.open = false;
+                }
 
             }
         }
