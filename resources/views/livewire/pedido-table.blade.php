@@ -415,15 +415,26 @@
                 },
                 actualizar_importe_items(index) {
                     const item = this.items[index];
-                    item.cantidad = parseFloat(item.cantidad).toFixed(2);
+                    cant = this.actualizar_importe(index)
+                    if (cant !== undefined && !isNaN(parseFloat(cant))) {
+                        item.cantidad = parseFloat(cant).toFixed(2);
+                    }
+                    console.log("actualizar_importe_items");
                 },
                 actualizar_importe(index) {
-                    console.log(this.items);
                     const item = this.items[index];
-                    if (item.cantidad == '0.0' || item.cantidad == '0.' || parseFloat(item.cantidad) == 0 || !item || item.cantidad === '' || isNaN(parseFloat(item.cantidad))) {
-                        console.log(item.cantidad);
-                        return 10;
-                    };
+                    const cantidadStr = item.cantidad?.toString() || '';
+
+                    if (
+                        cantidadStr.endsWith('.') ||
+                        cantidadStr.endsWith('.0') ||
+                        cantidadStr.endsWith('.00') ||
+                        cantidadStr === '' ||
+                        isNaN(parseFloat(cantidadStr)) ||
+                        parseFloat(cantidadStr) === 0
+                    ) {
+                        return;
+                    }
 
                     const factor = parseFloat(item.factor || 1);
                     const precio = parseFloat(item.precio || 0);
@@ -439,11 +450,11 @@
                         importe
                     } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
 
-                    item.cantidad = cantidad_convertida;
                     item.unidades = total_unidades;
                     item.importe = importe;
 
                     this.calcularTotales();
+                    return cantidad_convertida;
                 },
 
                 calcularTotales() {
