@@ -156,9 +156,10 @@ class ComprobantesDatatable extends DataTableComponent
             $zip->close();
         }
         $comprobante->update(['cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
-        if (Storage::exists($comprobante->cdrxml)) {
+        if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
             return Storage::download($comprobante->cdrxml);
         } else {
+            Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe o cdrxml es null.', 'cdrxml' => $comprobante->cdrxml]);
             logger("Archivo no existe, verificar path", ['path_cdrxml' => $comprobante->cdrxml]);
         }
     }
