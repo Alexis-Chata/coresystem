@@ -242,48 +242,34 @@ class PedidoTable extends Component
         }
     }
 
-    public function agregarProducto($producto_id)
+    public function agregarProducto($array_productos)
     {
-        //dd($this->pedido_detalles);
+        // Obtener productos en una sola consulta
+        $productos = Producto::withTrashed()
+            ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio)])
+            ->whereIn('id', array_column($array_productos, 'id'))
+            ->get()
+            ->keyBy('id');
+
         if (!$this->lista_precio) {
-            // Mostrar mensaje de error o alerta
+            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "No se ha definido una lista de precios. No se puede procesar, vuelva a ingresar el pedido.");
             return;
         }
 
-        $producto = Producto::withTrashed()->with([
-            "listaPrecios" => function ($query) {
-                $query->where("lista_precio_id", $this->lista_precio);
-            },
-        ])->find($producto_id);
+        foreach ($array_productos as $item) {
+            $producto_id = $item['id'];
+            $producto = $productos[$item['id']] ?? null;
 
-        if (!$producto) {
-            return;
-        }
-        // Verificar si el producto ya existe en el detalle
-        $existe = collect($this->pedido_detalles)->first(function (
-            $detalle
-        ) use ($producto_id) {
-            return $detalle["producto_id"] === $producto_id;
-        });
+            if (!$producto) {
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto con ID {$item['id']} no existe o fue eliminado. Por favor, vuelva a agregarlo.");
+                return;
+            }
 
-        $cantidad = $producto->cantidad == 1 ? 1 : 0.01; // <-- Nueva lógica
-        if ($this->cantidad_ofrecida > 0) {
-            $cantidad = number_format_punto2($this->cantidad_ofrecida);
-        }
+            $existe = collect($this->pedido_detalles)->first(fn($detalle) => $detalle["producto_id"] === $producto_id);
+            if ($existe) continue;
 
-        if (!$existe) {
-            // Agregar el producto al detalle
-            $this->pedido_detalles[] = [
-                "producto_id" => $producto->id,
-                "codigo" => $producto->id,
-                "nombre" => $producto->name,
-                "cantidad" => $cantidad,
-                "importe" => 0, // Se calculará en el siguiente paso
-                "marca_id" => $producto->marca_id,
-            ];
-
-            // Calcular el importe usando el método existente
-            $this->calcularImporte(count($this->pedido_detalles) - 1);
+            $this->pedido_detalles[] = $this->formatearDetalle($producto, $item['cantidad']);
+            $this->calcularImporte(count($this->pedido_detalles) - 1, $producto);
         }
         //dd($this->pedido_detalles);
         // Limpiar búsqueda
@@ -299,6 +285,27 @@ class PedidoTable extends Component
         });
     }
 
+    protected function formatearDetalle($producto, $cantidad_ofrecida)
+    {
+        $cantidad = floatval($cantidad_ofrecida);
+        $cantidad = $cantidad > 0 ? number_format_punto2($cantidad) : 0.01;
+        $paquetes = convertir_a_paquetes($cantidad, $producto->cantidad);
+        $cantidad = convertir_a_cajas($paquetes, $producto->cantidad);
+
+        $detalle = [
+            "producto_id" => $producto->id,
+            "codigo"      => $producto->id,
+            "nombre"      => $producto->name,
+            "cantidad"    => $cantidad,
+            "importe" => 0, // Se calculará en el siguiente paso
+            "marca_id"    => $producto->marca_id,
+        ];
+
+        //$detalle['importe'] = $this->calcularImporteIndividual($producto, $cantidad);
+
+        return $detalle;
+    }
+
     private function actualizarTotales()
     {
         $totalesTemp = $this->setSubTotalesIgv($this->pedido_detalles);
@@ -310,14 +317,14 @@ class PedidoTable extends Component
         ];
     }
 
-    public function eliminarDetalle($index)
+    public function eliminarDetalle($index) // sin uso
     {
         unset($this->pedido_detalles[$index]);
         $this->pedido_detalles = array_values($this->pedido_detalles);
         $this->actualizarTotales();
     }
 
-    public function actualizarCantidad($index)
+    public function actualizarCantidad($index) // sin uso
     {
         $detalle = $this->pedido_detalles[$index];
         $producto = Producto::withTrashed()->find($detalle["producto_id"]);
@@ -340,35 +347,29 @@ class PedidoTable extends Component
 
     public function guardar_pedido_items($items)
     {
-        //dd($items);
-        // Validar que se haya enviado al menos un ítem
         if (empty($items)) {
             return response()->json(['error' => 'No se enviaron productos.'], 422);
         }
 
-        // Verificar cantidades
+        // Validar todos los ítems antes de hacer nada más
         foreach ($items as $item) {
-            if (!isset($item['cantidad']) || floatval($item['cantidad']) <= 0) {
-                return response()->json([
-                    'error' => "El producto {$item['nombre']} tiene una cantidad inválida."
-                ], 422);
+            if (empty($item['cantidad']) || floatval($item['cantidad']) <= 0) {
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene una cantidad inválida.");
             }
 
             if (!isset($item['unidades']) || intval($item['unidades']) <= 0) {
-                return response()->json([
-                    'error' => "El producto {$item['nombre']} tiene unidades inválidas."
-                ], 422);
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene unidades inválidas.");
             }
         }
 
         $this->pedido_detalles = [];
+        $this->agregarProducto($items);
+
         foreach ($items as $item) {
             $this->cantidad_ofrecida = $item['cantidad'];
-            $this->agregarProducto($item['id']);
         }
         //dd($this->pedido_detalles);
         $this->guardarPedido();
-        $this->dispatch('pedido-guardado-items');
     }
 
 
@@ -376,10 +377,6 @@ class PedidoTable extends Component
     {
         $this->resetValidation();
         $this->validate();
-
-        // foreach ($this->pedido_detalles as $index => $item_detalle) {
-        //     $this->actualizarCantidad($index);
-        // }
 
         try {
             DB::beginTransaction();
@@ -480,79 +477,70 @@ class PedidoTable extends Component
         return view("livewire.pedido-table");
     }
 
-    public function calcularImporte($index)
+    public function calcularImporte($index, Producto $producto = null)
     {
-        $detalle = $this->pedido_detalles[$index];
-        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
-
-        if ($producto) {
-            $precioCaja =
-                $producto->listaPrecios
-                ->where("id", $this->lista_precio)
-                ->first()->pivot->precio ?? 0;
-            $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
-
-            // Validar que la cantidad del producto no sea cero
-            if ($cantidadProducto <= 0) {
-                logger(
-                    "Error: La cantidad del producto es cero o negativa para el producto:",
-                    [
-                        "producto_id" => $producto->id,
-                        "precioCaja" => $precioCaja,
-                        "cantidadProducto" => $cantidadProducto,
-                    ]
-                );
-                $this->pedido_detalles[$index]["importe"] = 0;
-                return;
-            }
-
-            // Calcular precio por paquete
-            $precioPorPaquete = $precioCaja / $cantidadProducto; // 108.00 / 36 = 3.00
-            if ($producto->f_tipo_afectacion_id == '21') {
-                $precioPorPaquete = 0;
-            }
-
-            // Interpretar la cantidad ingresada
-            $cantidad = $detalle["cantidad"]; // Cantidad ingresada en cajas y paquetes
-
-            // Separar la cantidad en cajas y paquetes
-            $cajas = floor($cantidad); // Parte entera representa las cajas
-            $paquetes = round(($cantidad - $cajas) * 100); // Parte decimal convertida a paquetes
-
-            // Validar que los paquetes no excedan la cantidad de productos por caja
-            if ($paquetes >= $cantidadProducto) {
-                $this->ajustarCantidad($index);
-            }
-
-            // Calcular cantidad total de paquetes
-            $cantidadPaquetes = $cajas * $cantidadProducto + $paquetes; // Total de paquetes
-
-            // Calcular importe total
-            $importe = number_format_punto2($cantidadPaquetes * $precioPorPaquete); // Total de paquetes * precio por paquete
-
-            // Actualizar el importe en el detalle
-            $this->pedido_detalles[$index]["importe"] = $importe;
-            $this->pedido_detalles[$index]["ref_producto_lista_precio"] = $this->lista_precio;
-            $this->pedido_detalles[$index]["ref_producto_precio_cajon"] = $precioCaja;
-            $this->pedido_detalles[$index]["ref_producto_cantidad_cajon"] = $cantidadProducto;
-            $this->pedido_detalles[$index]["ref_producto_cant_vendida"] = $cantidad;
-
-            // Log para verificar el cálculo
-            logger("Cálculo de importe:", [
-                "producto_id" => $producto->id,
-                "precioCaja" => $precioCaja,
-                "cantidadProducto" => $cantidadProducto,
-                "cantidadIngresada" => $cantidad,
-                "cajas" => $cajas,
-                "paquetes" => $paquetes,
-                "cantidadPaquetes" => $cantidadPaquetes,
-                "precioPorPaquete" => $precioPorPaquete,
-                "importeCalculado" => $importe,
-            ]);
+        if (!isset($this->pedido_detalles[$index]) || !$this->lista_precio) {
+            return;
         }
+
+        $detalle = $this->pedido_detalles[$index];
+
+        $producto = $producto ?? Producto::withTrashed()
+            ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio)])
+            ->find($detalle["producto_id"]);
+
+        if (!$producto) {
+            $this->pedido_detalles[$index]["importe"] = 0;
+            return;
+        }
+
+        $precioCaja = $producto->listaPrecios->first()?->pivot->precio ?? 0;
+        $cantidadPorCaja = $producto->cantidad;
+
+        if ($cantidadPorCaja <= 0) {
+            logger("Cantidad del producto inválida", [
+                "producto_id" => $producto->id,
+                "cantidad" => $cantidadPorCaja
+            ]);
+            $this->pedido_detalles[$index]["importe"] = 0;
+            return;
+        }
+
+        $cantidad = (float) $detalle["cantidad"];
+        $cantidadPaquetes = convertir_a_paquetes($cantidad, $cantidadPorCaja);
+        $cantidad = convertir_a_cajas($cantidadPaquetes, $cantidadPorCaja);
+        list($cajas, $paquetes) = explode('.', $cantidad);
+
+        $precioCaja = $producto->f_tipo_afectacion_id === '21' ? 0 : $precioCaja;
+
+        $importe = number_format_punto2(($cantidadPaquetes * $precioCaja) / $cantidadPorCaja);
+
+        // Guardar referencias
+        $this->pedido_detalles[$index] = array_merge(
+            $this->pedido_detalles[$index],
+            [
+                "importe" => $importe,
+                "ref_producto_lista_precio" => $this->lista_precio,
+                "ref_producto_precio_cajon" => $precioCaja,
+                "ref_producto_cantidad_cajon" => $cantidadPorCaja,
+                "ref_producto_cant_vendida" => $cantidad,
+            ]
+        );
+
+        logger("Cálculo de importe:", [
+            "producto_id" => $producto->id,
+            "precioCaja" => $precioCaja,
+            "cantidadProducto" => $cantidadPorCaja,
+            "cantidadIngresada" => $cantidad,
+            "cajas" => $cajas,
+            "paquetes" => $paquetes,
+            "cantidadPaquetes" => $cantidadPaquetes,
+            "precioPorPaquete" => $precioCaja / $cantidadPorCaja,
+            "importeCalculado" => $importe,
+        ]);
     }
 
-    public function ajustarCantidad($index)
+    public function ajustarCantidad($index) // sin uso
     {
         // Convierte el valor en número
         $cantidad = $this->pedido_detalles[$index]['cantidad'] == "" ? 0 : $this->pedido_detalles[$index]['cantidad'];
@@ -594,7 +582,7 @@ class PedidoTable extends Component
         $this->actualizarTotales();
     }
 
-    public function calcularSubtotal()
+    public function calcularSubtotal() // sin uso
     {
         return array_sum(array_column($this->pedido_detalles, "importe"));
     }

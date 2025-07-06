@@ -133,7 +133,8 @@
     </div>
 
     <!-- Nueva sección de búsqueda y detalles -->
-    <div class="mb-2" wire:loading wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+    <div class="mb-2" wire:loading
+        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
         Cargando...
     </div>
     <div class="mt-6" wire:loading.class="hidden"
@@ -520,7 +521,10 @@
                     }
                     this.cargando = true;
 
-                    $wire.guardar_pedido_items(this.items);
+                    $wire.call('guardar_pedido_items', this.items).catch(error => {
+                        alert(error.message); // O mostrar en tu interfaz personalizada
+                    });
+                    //$wire.guardar_pedido_items(this.items);
                 },
                 init() {
                     Livewire.on('pedido-guardado', () => {
