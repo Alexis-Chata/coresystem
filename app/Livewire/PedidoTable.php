@@ -317,27 +317,11 @@ class PedidoTable extends Component
         ];
     }
 
-    public function eliminarDetalle($index) // sin uso
+    public function eliminarDetalle($index)
     {
         unset($this->pedido_detalles[$index]);
         $this->pedido_detalles = array_values($this->pedido_detalles);
         $this->actualizarTotales();
-    }
-
-    public function actualizarCantidad($index) // sin uso
-    {
-        $detalle = $this->pedido_detalles[$index];
-        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
-
-        $precio =
-            $producto
-            ->listaPrecios()
-            ->where("lista_precio_id", $this->lista_precio)
-            ->first()->pivot->precio ?? 0;
-
-        $this->pedido_detalles[$index]["importe"] =
-            $precio * $this->pedido_detalles[$index]["cantidad"];
-        $this->calcularTotal();
     }
 
     private function calcularTotal()
@@ -538,53 +522,6 @@ class PedidoTable extends Component
             "precioPorPaquete" => $precioCaja / $cantidadPorCaja,
             "importeCalculado" => $importe,
         ]);
-    }
-
-    public function ajustarCantidad($index) // sin uso
-    {
-        // Convierte el valor en número
-        $cantidad = $this->pedido_detalles[$index]['cantidad'] == "" ? 0 : $this->pedido_detalles[$index]['cantidad'];
-        $this->pedido_detalles[$index]['cantidad'] = number_format_punto2($cantidad <= 0 ? 0.01 : $cantidad);
-
-        $detalle = $this->pedido_detalles[$index];
-        $cantidad = number_format_punto2($detalle["cantidad"]);
-
-        // Separar la cantidad ingresada en cajas y paquetes
-        if (strpos($cantidad, ".") !== false) {
-            list($cajas, $paquetes) = explode(".", $cantidad);
-            $cajas = $cajas; // Convertir a entero
-            $paquetes = str_pad($paquetes, 2, "0"); // Mantener formato de dos dígitos
-        } else {
-            $cajas = $cantidad;
-            $paquetes = "00";
-        }
-
-        // Validar que los paquetes no excedan la cantidad de productos por caja
-        $producto = Producto::withTrashed()->find($detalle["producto_id"]);
-        $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
-
-        if ($paquetes >= $cantidadProducto) {
-            // Ajustar la cantidad si los paquetes son iguales o mayores que la cantidad de productos por caja
-            $cajas += floor($paquetes / $cantidadProducto);
-            $paquetes = str_pad(
-                $paquetes % $cantidadProducto,
-                2,
-                "0",
-                STR_PAD_LEFT
-            ); // Mantener formato de dos dígitos
-        }
-
-        // Actualizar la cantidad en el detalle
-        $this->pedido_detalles[$index]["cantidad"] = $cajas . "." . $paquetes;
-
-        // Recalcular el importe
-        $this->calcularImporte($index);
-        $this->actualizarTotales();
-    }
-
-    public function calcularSubtotal() // sin uso
-    {
-        return array_sum(array_column($this->pedido_detalles, "importe"));
     }
 
     // Método que se ejecuta cuando cambia el vendedor_id
