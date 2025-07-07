@@ -390,11 +390,6 @@ class PedidoTable extends Component
                 ]);
 
                 foreach ($this->pedido_detalles as $index => $detalle) {
-                    $producto = Producto::withTrashed()->find($detalle["producto_id"]);
-                    $precioCaja =
-                        $producto->listaPrecios
-                        ->where("id", $this->lista_precio)
-                        ->first()->pivot->precio ?? 0;
 
                     PedidoDetalle::create([
                         "pedido_id" => $pedido->id,
