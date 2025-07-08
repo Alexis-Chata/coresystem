@@ -54,7 +54,7 @@ class Liquidaciones extends Component
 
     public function mount_propiedades()
     {
-        $this->movimientos = Movimiento::whereBetween('fecha_liquidacion', [$this->fecha_fin, $this->fecha_fin])->whereIn('estado', ['Por liquidar', 'liquidado'])->get();
+        $this->movimientos = Movimiento::with('pedidos')->whereBetween('fecha_liquidacion', [$this->fecha_fin, $this->fecha_fin])->whereIn('estado', ['Por liquidar', 'liquidado'])->get();
     }
 
     public function updatedFechaFin()

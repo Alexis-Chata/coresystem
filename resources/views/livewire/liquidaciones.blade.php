@@ -14,6 +14,7 @@
                     <th class="px-2 sm:px-4 py-2 text-left border-b">ID</th>
                     <th class="px-2 sm:px-4 py-2 text-left border-b">Fecha</th>
                     <th class="px-2 sm:px-4 py-2 text-left border-b">Conductor</th>
+                    <th class="px-2 sm:px-4 py-2 text-left border-b">Monto</th>
                     <th class="px-2 sm:px-4 py-2 text-left border-b">Acciones</th>
                 </tr>
             </thead>
@@ -25,6 +26,8 @@
                             {{ carbon_parse($liquidacion->fecha_liquidacion)->format('d-m-Y') }}</td>
                         <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->conductor_id }} -
                             {{ $liquidacion->conductor->name }}</td>
+                        <td class="px-2 sm:px-4 py-2 border-b">
+                            {{ number_format($liquidacion->pedidos->sum('importe_total'), 2) }}</td>
                         <td class="px-2 sm:px-4 py-2 border-b">
                             @if ($liquidacion->estado == 'por liquidar')
                                 <button wire:click="liquidar({{ $liquidacion->id }})"
