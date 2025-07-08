@@ -197,7 +197,7 @@ class ComprobantesDatatable extends DataTableComponent
             }
         }
         if ($comprobante->codigo_sunat === '0') {
-            if (Storage::exists($comprobante->cdrxml)) {
+            if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
                 return Storage::download($comprobante->cdrxml);
             } else {
                 Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml. ' . $comprobante->cdrxml]);
@@ -211,7 +211,7 @@ class ComprobantesDatatable extends DataTableComponent
         $envioSunat = new EnvioSunatService;
         $response = $envioSunat->send($comprobante);
         Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse']);
-        if (Storage::exists($comprobante->cdrxml)) {
+        if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
             return Storage::download($comprobante->cdrxml);
         } else {
             Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml.' . $comprobante->cdrxml]);
