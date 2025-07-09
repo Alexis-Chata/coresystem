@@ -6,8 +6,10 @@ use App\Models\FComprobanteSunat;
 use App\Models\FGuiaSunat;
 use App\Models\FSerie;
 use App\Models\Movimiento;
+use App\Models\MovimientoDetalle;
 use App\Models\Vehiculo;
 use App\Traits\CalculosTrait;
+use App\Traits\StockTrait;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
@@ -27,6 +29,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 final class GenerarComprobantesTable extends PowerGridComponent
 {
     use CalculosTrait;
+    use StockTrait;
     public string $tableName = 'generar-comprobantes-table-gnkwmv-table';
     public $fecha_reparto;
     public $user;
@@ -153,6 +156,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
             Column::make('Creado por', 'empleado_id'),
             Column::make('Created at', 'created_at_formatted', 'created_at')
                 ->sortable(),
+            Column::action('Action'),
 
             //Column::action('Action')
         ];
@@ -305,7 +309,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
 
                             $invoice = FComprobanteSunat::create($datos_comprobante);
                             $invoice->detalle()->createMany($detalles->toArray());
-                            if($invoice->tipoDoc == '00'){
+                            if ($invoice->tipoDoc == '00') {
                                 $invoice->estado_cpe_sunat = 'aceptado';
                                 $invoice->save();
                             }
@@ -373,7 +377,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                         'descripcion' => $detalle->descripcion,
                                         'codigo' => $detalle->codProducto,
                                     ];
-                                    $datos_guia_detalle []= $guia_detalle;
+                                    $datos_guia_detalle[] = $guia_detalle;
                                 }
                                 $guia->detalle()->createMany($datos_guia_detalle);
                             }
@@ -405,5 +409,55 @@ final class GenerarComprobantesTable extends PowerGridComponent
     public function updatedFechaReparto(): void
     {
         $this->dispatch("actualizar_fecha_reparto", $this->fecha_reparto)->to(MovimientoComprobanteGeneradosTable::class);
+    }
+
+    public function actions(Movimiento $row): array
+    {
+        return [
+            Button::add('eliminar_movimiento')
+                ->slot('Eliminar: ' . $row->id)
+                ->id()
+                ->class('bg-red-500 duration-200 ease-in-out hover:bg-red-700 px-4 py-2 rounded-lg text-white transition-colors')
+                ->dispatch('eliminar_movimiento', ['movimiento_id' => $row->id])
+        ];
+    }
+
+    #[\Livewire\Attributes\On('eliminar_movimiento')]
+    public function eliminarMovimiento($movimiento_id)
+    {
+        // Lógica para eliminar el movimiento
+        try {
+            Cache::lock('eliminar_movimiento', 15)->block(10, function () use ($movimiento_id) {
+                DB::beginTransaction();
+
+                $movimiento = Movimiento::with(['comprobantes', 'movimientoDetalles'])->find($movimiento_id);
+
+                if (!$movimiento) {
+                    // No existe
+                    $this->dispatch('sweetalert2', ['title' => 'Error', 'text' => 'Movimiento no encontrado.', 'icon' => 'error']);
+                    return;
+                }
+
+                if ($movimiento->comprobantes->isNotEmpty()) {
+                    // Tiene comprobantes, no se elimina
+                    $this->dispatch('sweetalert2', ['title' => 'No permitido', 'text' => 'Este movimiento tiene comprobantes asociados.', 'icon' => 'warning']);
+                    return;
+                }
+
+                $this->actualizarStock($movimiento, true); // Actualiza el stock anulando el movimiento
+                // Se puede eliminar
+                MovimientoDetalle::where('movimiento_id', $movimiento->id)->delete();
+                $movimiento->delete();
+                $this->dispatch('sweetalert2', ['title' => 'Eliminado', 'text' => 'Movimiento eliminado correctamente.', 'icon' => 'success']);
+
+                DB::commit();
+            });
+        } catch (Exception | LockTimeoutException $e) {
+            DB::rollback();
+            logger("Error al eliminar movimiento:", ["error" => $e->getMessage()]);
+            //throw $e; // Relanza la excepción si necesitas propagarla
+            $this->dispatch("error-guardando-movimiento", "Error al eliminar movimiento" . "<br>" . $e->getMessage());
+            $this->addError("error_guardar", $e->getMessage());
+        }
     }
 }

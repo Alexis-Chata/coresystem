@@ -110,6 +110,10 @@ trait StockTrait
             };
         }
 
+        if (!$movimiento->relationLoaded('movimientoDetalles')) {
+            $movimiento->load('movimientoDetalles');
+        }
+
         $movimiento->movimientoDetalles->each(function ($detalle) use ($movimiento, $tipo_movimiento, $codigo_movimiento) {
             $producto = Producto::withTrashed()->find($detalle->producto_id);
             logger("movimientoStock:", ["producto_id" => $detalle->producto_id]);
@@ -142,6 +146,10 @@ trait StockTrait
     public function pedidoStock(Pedido $pedido, $anulando = false)
     {
         $almacenId = Empleado::with(['fSede.almacen'])->find($pedido->vendedor_id)->fSede->almacen->id;
+
+        if (!$pedido->relationLoaded('pedidoDetalles')) {
+            $pedido->load('pedidoDetalles');
+        }
 
         $pedido->pedidoDetalles->each(function ($detalle) use ($almacenId, $anulando) {
             $this->actualizarStockDetalle($detalle, $almacenId, $anulando);
