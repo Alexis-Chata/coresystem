@@ -12,16 +12,21 @@ use Maatwebsite\Excel\Facades\Excel;
 
 // Rutas públicas (si las hay)
 // ...
-Route::get('html', function () {
-    $movimiento = Movimiento::find(1);
+Route::get('html/{id}', function ($id) {
+    $movimiento = Movimiento::findOrFail($id); // Usar findOrFail para evitar null
     $marca = Marca::all();
     $movimiento->load(['movimientoDetalles.producto.marca', 'tipoMovimiento', 'conductor.fSede', 'almacen', 'vehiculo']);
     $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
         return $detalle->producto->marca->id; // Agrupar por nombre de la marca
     });
-    //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
 
-    return view("pdf.movimiento-carga", compact("movimiento", "detallesAgrupados", "marca"));
+    // Ordenar por nro_orden de la marca
+    $detallesAgrupadosOrdenados = $detallesAgrupados->sortBy(function ($grupo, $marcaId) {
+        return optional($grupo->first()->producto->marca)->nro_orden;
+    });
+
+    //dd($movimiento->movimientoDetalles->toArray(), $detallesAgrupados->first()->first()->cantidad_bultos);
+    return view("pdf.movimiento-carga", compact("movimiento", "detallesAgrupadosOrdenados", "marca"));
 });
 
 Route::get('/test-email', function () {
@@ -230,21 +235,21 @@ Route::middleware([
         // Si el archivo no existe, devolver un error 404
         return abort(404, 'Archivo no encontrado');
     })->where('anyPath', '.*')->name('storage_file.view');
+
+    Route::get('/pedido_detalles_report', function () {
+        return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_' . now() . '.xlsx');
+    })->name('report.pedido_detalle');
+
+    Route::get('/zip', function () {
+        // Ubicado en la carpeta storage/app
+        // zip -r app.zip .
+        $path = storage_path('app/app.zip');
+        return response()->download($path);
+    })->name('download.zip');
 });
 
 Route::get('/', function () {
     return redirect(route('dashboard'));
 })->name('index');
-
-Route::get('/pedido_detalles_report', function () {
-    return Excel::download(new PedidoDetallesExport, 'pedido_detalles_report_' . now() . '.xlsx');
-})->name('report.pedido_detalle');
-
-Route::get('/zip', function () {
-    // Ubicado en la carpeta storage/app
-    // zip -r app.zip .
-    $path = storage_path('app/app.zip');
-    return response()->download($path);
-})->name('download.zip');
 
 // ... código existente ...
