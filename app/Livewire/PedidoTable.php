@@ -244,17 +244,20 @@ class PedidoTable extends Component
 
     public function agregarProducto($array_productos)
     {
+        if (!$this->lista_precio) {
+            $cliente = Cliente::find($this->cliente_id);
+            $this->lista_precio = $cliente->lista_precio_id;
+        }
+        if (!$this->lista_precio) {
+            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "No se ha definido una lista de precios. No se puede procesar, vuelva a ingresar el pedido.");
+            return;
+        }
         // Obtener productos en una sola consulta
         $productos = Producto::withTrashed()
             ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio)])
             ->whereIn('id', array_column($array_productos, 'id'))
             ->get()
             ->keyBy('id');
-
-        if (!$this->lista_precio) {
-            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "No se ha definido una lista de precios. No se puede procesar, vuelva a ingresar el pedido.");
-            return;
-        }
 
         foreach ($array_productos as $item) {
             $producto_id = $item['id'];
