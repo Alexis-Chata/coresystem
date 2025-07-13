@@ -114,7 +114,7 @@ trait StockTrait
             $movimiento->load('movimientoDetalles');
         }
 
-        $movimiento->movimientoDetalles->each(function ($detalle) use ($movimiento, $tipo_movimiento, $codigo_movimiento) {
+        $movimiento->movimientoDetalles->each(function ($detalle) use ($movimiento, $tipo_movimiento, $codigo_movimiento, $anulando) {
             $producto = Producto::withTrashed()->find($detalle->producto_id);
             logger("movimientoStock:", ["producto_id" => $detalle->producto_id]);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $movimiento->almacen_id)->first();
@@ -126,7 +126,15 @@ trait StockTrait
             if ($tipo_movimiento == 'ingreso') {
                 $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), true);
                 $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), true);
-                $almacenProducto->update(["stock_disponible" => $nuevo_stock_disponible, "stock_fisico" => $nuevo_stock_fisico]);
+                if ($anulando) {
+                    $new_stock = ["stock_fisico" => $nuevo_stock_fisico];
+                } else {
+                    $new_stock = [
+                        "stock_disponible" => $nuevo_stock_disponible,
+                        "stock_fisico" => $nuevo_stock_fisico
+                    ];
+                }
+                $almacenProducto->update($new_stock);
             }
             if ($tipo_movimiento == 'salida') {
                 if ($almacenProducto->stock_disponible < $detalle->cantidad && $codigo_movimiento != '201') {

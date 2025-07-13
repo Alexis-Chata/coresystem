@@ -398,7 +398,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
             DB::rollback();
             logger("Error al generar comprobante:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-movimiento", "Error al generar comprobante" . "<br>" . $e->getMessage());
+            $this->dispatch("sweetalert2", "Error al generar comprobante" . "<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());
         }
 
@@ -459,7 +459,11 @@ final class GenerarComprobantesTable extends PowerGridComponent
             DB::rollback();
             logger("Error al eliminar movimiento:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-movimiento", "Error al eliminar movimiento" . "<br>" . $e->getMessage());
+            $this->dispatch("sweetalert2", [
+                'title' => 'Error',
+                'text' => 'Error al eliminar movimiento. ' . "<br>" . $e->getMessage(),
+                'icon' => 'error'
+            ]);
             $this->addError("error_guardar", $e->getMessage());
         }
     }
