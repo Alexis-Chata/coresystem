@@ -7,6 +7,7 @@ use App\Models\FGuiaSunat;
 use App\Models\FSerie;
 use App\Models\Movimiento;
 use App\Models\MovimientoDetalle;
+use App\Models\Pedido;
 use App\Models\Vehiculo;
 use App\Traits\CalculosTrait;
 use App\Traits\StockTrait;
@@ -446,7 +447,9 @@ final class GenerarComprobantesTable extends PowerGridComponent
 
                 $this->actualizarStock($movimiento, true); // Actualiza el stock anulando el movimiento
                 // Se puede eliminar
-                MovimientoDetalle::where('movimiento_id', $movimiento->id)->delete();
+                $movimiento->movimientoDetalles()->delete();
+                $movimiento->pedidos()->update(['estado' => 'asignado', 'movimiento_id' => null]);
+                // Eliminar el movimiento
                 $movimiento->delete();
                 $this->dispatch('sweetalert2', ['title' => 'Eliminado', 'text' => 'Movimiento eliminado correctamente.', 'icon' => 'success']);
 
