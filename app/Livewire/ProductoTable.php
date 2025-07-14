@@ -111,7 +111,13 @@ final class ProductoTable extends PowerGridComponent
                 return $this->selectComponent('f_tipo_afectacion_id', $producto->id, $producto->f_tipo_afectacion_id, $tipoAfectacionOptions);
             })
             ->add('porcentaje_igv')
-            ->add('created_at_formatted', fn(Producto $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+            ->add('created_at_formatted', fn(Producto $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
+            ->add('tipo', function ($producto) {
+                return $this->selectComponent('tipo', $producto->id, $producto->tipo, collect([
+                    'estandar' => 'Estandar',
+                    'compuesto' => 'Compuesto',
+                ]));
+            });
     }
 
     private function selectComponent($field, $productoId, $selected, $options)
@@ -158,8 +164,7 @@ final class ProductoTable extends PowerGridComponent
                 ->editOnClick(),
             Column::make('Tipo', 'tipo')
                 ->sortable()
-                ->searchable()
-                ->editOnClick(),
+                ->searchable(),
             Column::make('Tipo Unidad', 'tipo_unidad')
                 ->sortable()
                 ->searchable()
@@ -170,9 +175,15 @@ final class ProductoTable extends PowerGridComponent
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
-        Producto::query()->withTrashed()->find($id)->update([
+        $update_data = [
             $field => strtoupper($value),
-        ]);
+        ];
+        if ($field == 'tipo') {
+            $update_data = [
+                $field => strtolower($value),
+            ];
+        }
+        Producto::query()->withTrashed()->find($id)->update($update_data);
         $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
     }
 
