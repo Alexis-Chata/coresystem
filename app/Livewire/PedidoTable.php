@@ -493,9 +493,9 @@ class PedidoTable extends Component
         $cantidad = convertir_a_cajas($cantidadPaquetes, $cantidadPorCaja);
         list($cajas, $paquetes) = explode('.', $cantidad);
 
-        $precioCaja = $producto->f_tipo_afectacion_id == '21' ? 0 : $precioCaja;
+        $precioImporte = $producto->f_tipo_afectacion_id == '21' ? 0 : $precioCaja;
 
-        $importe = number_format_punto2(($cantidadPaquetes * $precioCaja) / $cantidadPorCaja);
+        $importe = number_format_punto2(($cantidadPaquetes * $precioImporte) / $cantidadPorCaja);
 
         // Guardar referencias
         $this->pedido_detalles[$index] = array_merge(

@@ -116,7 +116,7 @@ trait StockTrait
 
         $movimiento->movimientoDetalles->each(function ($detalle) use ($movimiento, $tipo_movimiento, $codigo_movimiento, $anulando) {
             $producto = Producto::withTrashed()->find($detalle->producto_id);
-            logger("movimientoStock:", ["producto_id" => $detalle->producto_id]);
+            //logger("movimientoStock:", ["producto_id" => $detalle->producto_id]);
             $almacenProducto = $producto->almacenProductos()->where("almacen_id", $movimiento->almacen_id)->first();
 
             if (!$almacenProducto) {
