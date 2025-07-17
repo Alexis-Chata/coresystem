@@ -1,14 +1,14 @@
 <div class="text-xs sm:text-sm">
     @if ($view == 'liquidaciones')
         <div>
-            <span>
-                Liquidaciones
-            </span>
-            <input type="date" wire:model.live="fecha_fin"
-                class="px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
+            <h2 class="text-lg font-semibold mb-4">Liquidaciones</h2>
+            <label>Fecha reparto:
+                <input type="date" wire:model.live="fecha_fin"
+                    class="px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
+            </label>
         </div>
         <br />
-        <table class="min-w-full border border-gray-300 shadow-md rounded-lg">
+        <table class="min-w-full border border-gray-300 shadow-md rounded-lg" id="dataTable_example">
             <thead class="bg-gray-200 text-gray-700">
                 <tr>
                     <th class="px-2 sm:px-4 py-2 text-left border-b">ID</th>
@@ -19,7 +19,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-300">
-                @forelse ($movimientos as $liquidacion)
+                @foreach ($movimientos as $liquidacion)
                     <tr class="hover:bg-gray-100">
                         <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->id }}</td>
                         <td class="px-2 sm:px-4 py-2 border-b">
@@ -38,12 +38,7 @@
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="100%" class="px-2 sm:px-4 py-2 text-center text-gray-500">No hay registros
-                            disponibles</td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     @elseif ($view == 'liquidacion comprobantes')
@@ -113,7 +108,7 @@
                         class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
                     <button wire:click="diferencias"
                         class="px-3 py-1 md:text-sm text-white bg-yellow-600 rounded-md">Diferencias</button>
-                    <button wire:click="diferencias"
+                    <button wire:click="agregar_salida"
                         class="px-3 py-1 md:text-sm text-white bg-red-600 rounded-md">Add.Salida</button>
                     <button wire:click="agregar_ingreso"
                         class="px-3 py-1 md:text-sm text-white bg-green-600 rounded-md">Add.Ingreso</button>
@@ -163,13 +158,13 @@
                 </tbody>
             </table>
         </div>
-    @elseif ($view == 'agregar ingreso')
+    @elseif ($view == 'agregar ingreso/salida')
         @if ($regresa)
             <div class="flex justify-between">
                 <button wire:click="regresar"
                     class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
-                <button wire:click="guardar_anulados"
-                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Guardar Anulados</button>
+                <button wire:click="guardarMovimiento"
+                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Guardar</button>
             </div>
         @endif
         <br />
@@ -266,6 +261,20 @@
                     </tbody>
                 </table>
             </div>
+            <div class="mt-6 flex justify-between items-center">
+                <div class="text-sm">
+                </div>
+                <div>
+
+                    <button wire:click="guardarMovimiento"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold shadow-md">
+                        Guardar
+                    </button>
+                    @error('detalles')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
         </div>
     @endif
 </div>
@@ -311,5 +320,17 @@
                 }
             }
         }
+
+        $wire.on('DataTable-initialize', () => {
+            requestAnimationFrame(() => {
+                const table = document.querySelector('#dataTable_example');
+                if (table) {
+                    console.log("✅ DataTable ready to initialize");
+                    new DataTable('#dataTable_example');
+                } else {
+                    console.warn("❌ Tabla no encontrada al momento de inicializar");
+                }
+            });
+        });
     </script>
 @endscript

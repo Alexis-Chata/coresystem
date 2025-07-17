@@ -7,16 +7,26 @@ use App\Models\FComprobanteSunat;
 use App\Models\Movimiento;
 use App\Models\MovimientoDetalle;
 use App\Models\Producto;
+use App\Models\TipoMovimiento;
+use App\Traits\StockTrait;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use ParseError;
 
 class Liquidaciones extends Component
 {
     public function render()
     {
+        $this->dispatch('DataTable-initialize');
         return view('livewire.liquidaciones');
     }
+
+    use StockTrait;
 
     public $fecha_fin;
     public $movimientos;
@@ -31,6 +41,8 @@ class Liquidaciones extends Component
     public $search;
     public $detalles;
     public $almacenes;
+    public $tipo_movimiento_id;
+    public $tipo_movimiento_name;
 
     protected $listeners = ['recargar-productos' => 'cargarProductos'];
 
@@ -69,7 +81,12 @@ class Liquidaciones extends Component
 
         // Obtener detalles del movimiento
         $movimiento_detalles = MovimientoDetalle::where("movimiento_id", $movimiento_id)->get();
+        $movimientos_extras = Movimiento::with(['conductor'])->where("nro_doc_liquidacion", $movimiento_id)->whereNotIn('id', [$movimiento_id])->get();
+        //dd($movimientos_extras->pluck('id'));
+        $movimiento_detalles_extras = MovimientoDetalle::whereIn("movimiento_id", $movimientos_extras->pluck('id'))->get();
+        //dd($movimiento_detalles_extras);
         $md_producto_ids = $movimiento_detalles->pluck('producto_id')->unique();
+        $md_producto_ids_extras = $movimiento_detalles_extras->pluck('producto_id')->unique();
 
         // Obtener detalles del comprobante
         $comprobante_detalles = DB::table('f_comprobante_sunat_detalles')
@@ -89,6 +106,7 @@ class Liquidaciones extends Component
 
         // Unir IDs de productos únicos
         $producto_ids = $cd_producto_ids->merge($md_producto_ids)->unique();
+        $producto_ids = $producto_ids->merge($md_producto_ids_extras)->unique();
 
         // Obtener productos con datos mínimos
         $productos = DB::table('productos')->whereIn('id', $producto_ids)->get(['id', 'name', 'cantidad']);
@@ -97,9 +115,10 @@ class Liquidaciones extends Component
         $movimientoMap = $movimiento_detalles->pluck('cantidad', 'producto_id');
         $cd_cantidad_comprobantesMap = $comprobante_detalles->pluck('cantidad_comprobantes', 'codProducto');
         $cd_total_cantidadMap = $comprobante_detalles->pluck('total_cantidad', 'codProducto');
+        $movimientoMap_extras = $movimiento_detalles_extras->pluck('cantidad', 'producto_id');
 
         // Transformar productos agregando datos
-        $this->productos = $productos->map(function ($producto) use ($movimientoMap, $cd_cantidad_comprobantesMap, $cd_total_cantidadMap) {
+        $this->productos = $productos->map(function ($producto) use ($movimientoMap, $cd_cantidad_comprobantesMap, $cd_total_cantidadMap, $movimientoMap_extras) {
             $movimientoCantidad = $movimientoMap[$producto->id] ?? 0;
             $totalComprobantesCantidad = $cd_total_cantidadMap[$producto->id] ?? 0;
 
@@ -202,8 +221,20 @@ class Liquidaciones extends Component
 
     public function agregar_ingreso()
     {
-        $this->view = 'agregar ingreso';
+        $this->view = 'agregar ingreso/salida';
         $this->regresa = true;
+        $tipo_movimiento = TipoMovimiento::where("codigo", 101)->first();
+        $this->tipo_movimiento_id = $tipo_movimiento->id;
+        $this->tipo_movimiento_name = $tipo_movimiento->name;
+    }
+
+    public function agregar_salida()
+    {
+        $this->view = 'agregar ingreso/salida';
+        $this->regresa = true;
+        $tipo_movimiento = TipoMovimiento::where("codigo", 201)->first();
+        $this->tipo_movimiento_id = $tipo_movimiento->id;
+        $this->tipo_movimiento_name = $tipo_movimiento->name;
     }
 
     public function cargarProductos()
@@ -224,22 +255,18 @@ class Liquidaciones extends Component
                     $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
                 },
             ])
-            ->get()//;dd($this->listado_productos->first());
+            ->get() //;dd($this->listado_productos->first());
             ->map(function ($producto) {
                 return [
                     'id' => $producto->id,
                     'nombre' => $producto->name,
+                    'factor' => $producto->cantidad,
                     'marca' => $producto->marca->name ?? 'SIN MARCA',
                     'precio' => optional($producto->listaPrecios->first())->precio ?? 0,
                     'stock' => optional($producto->almacenProductos->first())->stock ?? 0,
                     'deleted_at' => $producto->deleted_at,
                 ];
             })->values()->all();
-    }
-
-    public function actualizarListadoProductos()
-    {
-        $this->lista_productos();
     }
 
     public function updatedSearch()
@@ -328,5 +355,154 @@ class Liquidaciones extends Component
     {
         unset($this->detalles[$index]);
         $this->detalles = array_values($this->detalles);
+    }
+
+    public function guardarMovimiento()
+    {
+        $movimiento = Movimiento::find($this->movimiento_id);
+        $datos_movimiento = [
+            "almacen_id" => $movimiento->almacen_id,
+            "tipo_movimiento_id" => $this->tipo_movimiento_id,
+            "fecha_movimiento" => $movimiento->fecha_movimiento,
+            "conductor_id" => $movimiento->conductor_id,
+            "vehiculo_id" => $movimiento->vehiculo_id,
+            "fecha_liquidacion" => $movimiento->fecha_liquidacion,
+            "nro_doc_liquidacion" => $movimiento->nro_doc_liquidacion,
+            "fecha_liquidacion" => $movimiento->fecha_liquidacion,
+            "tipo_movimiento_name" => $this->tipo_movimiento_name,
+            "empleado_id" => auth_user()->user_empleado->empleado_id,
+            "estado" => "liquido",
+        ];
+        $array_validate = [
+            "detalles" => "required",
+        ];
+        $this->validate($array_validate);
+
+        try {
+            Cache::lock('guardar_movimiento', 15)->block(10, function () use ($datos_movimiento) {
+                DB::transaction(function () use ($datos_movimiento) {
+                    $movimiento = Movimiento::create($datos_movimiento);
+                    $movimiento->movimientoDetalles()->createMany($this->detalles);
+
+                    $this->actualizarStock($movimiento);
+                    $this->reset();
+                    $this->mount();
+                });
+            });
+        } catch (LockTimeoutException $e) {
+            // Si no se pudo adquirir el bloqueo dentro del tiempo de espera, se lanzará una excepción.
+            // Maneja la excepción según tu lógica de negocio.
+            Log::error("No se pudo adquirir el bloqueo: " . $e->getMessage());
+            throw new Exception("No se pudo adquirir el bloqueo: " . $e->getMessage());
+        } catch (ParseError $e) {
+            // Manejo de la excepción ParseError
+            Log::error($e->getMessage() . "Monto maximo 999 999 999");
+            throw new Exception($e->getMessage() . "Monto maximo 999 999 999");
+        } catch (Exception $e) {
+            // Manejar la excepción
+            Log::error("No se pudo generar movimiento" . $e->getMessage());
+            throw new Exception("No se pudo generar movimiento" . $e->getMessage());
+        }
+    }
+
+    public function ajustarCantidad($index)
+    {
+        $detalle = $this->detalles[$index];
+        $cantidad = number_format($detalle['cantidad'], 2, '.', '');
+
+        // Separar la cantidad ingresada en cajas y paquetes
+        if (strpos($cantidad, '.') !== false) {
+            list($cajas, $paquetes) = explode('.', $cantidad);
+            $cajas = (int)$cajas; // Convertir a entero
+            $paquetes = (int)$paquetes; // Convertir a entero
+        } else {
+            $cajas = (int)$cantidad;
+            $paquetes = 0;
+        }
+
+        // Validar que los paquetes no excedan la cantidad de productos por caja
+        $producto = Producto::withTrashed()->find($detalle['producto_id']);
+        $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
+
+        if ($paquetes >= $cantidadProducto) {
+            // Ajustar la cantidad si los paquetes son iguales o mayores que la cantidad de productos por caja
+            $cajas += floor($paquetes / $cantidadProducto);
+            $paquetes = $paquetes % $cantidadProducto; // Obtener el resto de paquetes
+        }
+
+        // Actualizar la cantidad en el detalle
+        $this->detalles[$index]['cantidad'] = number_format($cajas + ($paquetes / 100), 2, '.', ''); // Convertir de nuevo a formato X.Y
+
+        // Recalcular el importe
+        $this->calcularImporte($index);
+    }
+
+    public function calcularImporte($index)
+    {
+        $detalle = $this->detalles[$index];
+        $lista_precio = 1; // Asignar el ID de la lista de precios
+        $producto = Producto::withTrashed()->find($detalle['producto_id']);
+
+        if ($producto) {
+            $precioCaja = $producto->listaPrecios->where('id', $lista_precio)->first()->pivot->precio ?? 0;
+            $cantidadProducto = $producto->cantidad; // Cantidad de productos por caja
+
+            // Validar que la cantidad del producto no sea cero
+            if ($cantidadProducto <= 0) {
+                //logger("Error: La cantidad del producto es cero o negativa para el producto:", [
+                //    "producto_id" => $producto->id,
+                //    "precioCaja" => $precioCaja,
+                //    "cantidadProducto" => $cantidadProducto,
+                //]);
+                $this->detalles[$index]['precio_venta_total'] = 0;
+                $this->detalles[$index]['costo_total'] = 0;
+                return;
+            }
+
+            // Calcular precio por paquete
+            $precioPorPaquete = $precioCaja / $cantidadProducto; // 108.00 / 36 = 3.00
+
+            // Interpretar la cantidad ingresada
+            $cantidad = $detalle['cantidad']; // Cantidad ingresada en cajas y paquetes
+
+            // Separar la cantidad en cajas y paquetes
+            $cajas = floor($cantidad); // Parte entera representa las cajas
+            $paquetes = round(($cantidad - $cajas) * 100); // Parte decimal convertida a paquetes
+
+            // Validar que los paquetes no excedan la cantidad de productos por caja
+            if ($paquetes >= $cantidadProducto) {
+                //logger("Error: La cantidad de paquetes no puede ser mayor o igual a la cantidad de productos por caja.", [
+                //    "cantidadIngresada" => $cantidad,
+                //    "paquetes" => $paquetes,
+                //    "cantidadProducto" => $cantidadProducto,
+                //]);
+                $this->detalles[$index]['precio_venta_total'] = 0; // O puedes lanzar un mensaje de error
+                $this->detalles[$index]['costo_total'] = 0;
+                return;
+            }
+
+            // Calcular cantidad total de paquetes
+            $cantidadPaquetes = ($cajas * $cantidadProducto) + $paquetes; // Total de paquetes
+
+            // Calcular importe total
+            $importe = $cantidadPaquetes * $precioPorPaquete; // Total de paquetes * precio por paquete
+
+            // Actualizar el importe en el detalle
+            $this->detalles[$index]['precio_venta_total'] = $importe;
+            $this->detalles[$index]['costo_total'] = $importe;
+
+            // Log para verificar el cálculo
+            //logger("Cálculo de importe:", [
+            //    "producto_id" => $producto->id,
+            //    "precioCaja" => $precioCaja,
+            //    "cantidadProducto" => $cantidadProducto,
+            //    "cantidadIngresada" => $cantidad,
+            //    "cajas" => $cajas,
+            //    "paquetes" => $paquetes,
+            //    "cantidadPaquetes" => $cantidadPaquetes,
+            //    "precioPorPaquete" => $precioPorPaquete,
+            //    "importeCalculado" => $importe,
+            //]);
+        }
     }
 }
