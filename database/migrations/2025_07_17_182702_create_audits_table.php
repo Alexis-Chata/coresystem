@@ -21,6 +21,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string($morphPrefix . '_type')->nullable();
             $table->unsignedBigInteger($morphPrefix . '_id')->nullable();
+            $table->string('empleado_id')->nullable();
             $table->string('event');
             $table->morphs('auditable');
             $table->text('old_values')->nullable();
@@ -28,6 +29,10 @@ return new class extends Migration
             $table->text('url')->nullable();
             $table->ipAddress('ip_address')->nullable();
             $table->string('user_agent', 1023)->nullable();
+            $table->json('user_roles')->nullable();
+            $table->json('user_permissions')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->string('tags')->nullable();
             $table->timestamps();
 

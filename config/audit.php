@@ -45,6 +45,9 @@ return [
         'ip_address' => OwenIt\Auditing\Resolvers\IpAddressResolver::class,
         'user_agent' => OwenIt\Auditing\Resolvers\UserAgentResolver::class,
         'url' => OwenIt\Auditing\Resolvers\UrlResolver::class,
+        'empleado_id' => \App\AuditResolvers\EmpleadoIdResolver::class,
+        'user_roles' => \App\AuditResolvers\UserRolesResolver::class,
+        'user_permissions' => \App\AuditResolvers\UserPermissionsResolver::class,
     ],
 
     /*

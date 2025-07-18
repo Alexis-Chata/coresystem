@@ -10,14 +10,19 @@ if (!function_exists('format_date')) {
 if (!function_exists('auth_id')) {
     function auth_id()
     {
-        return auth()->id();
+        return \Illuminate\Support\Facades\Auth::id();
     }
 }
 
 if (!function_exists('auth_user')) {
+    /**
+     * Retorna el usuario autenticado.
+     *
+     * @return \App\Models\User|null
+     */
     function auth_user()
     {
-        return auth()->user();
+        return \Illuminate\Support\Facades\Auth::user();
     }
 }
 

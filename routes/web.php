@@ -226,7 +226,9 @@ Route::middleware([
         if (Storage::disk('local')->exists($anyPath)) {
             // Obtener el archivo y su tipo MIME
             $file = Storage::disk('local')->get($anyPath);
-            $mimeType = Storage::disk('local')->mimeType($anyPath);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+            $disk = Storage::disk('local');
+            $mimeType = $disk->mimeType($anyPath);
 
             // Devolver el archivo con el tipo MIME adecuado
             return response($file, 200)->header('Content-Type', $mimeType);

@@ -74,6 +74,11 @@ class User extends Authenticatable
         return $this->belongsTo(FSede::class, 'f_sede_id');
     }
 
+    public function user_empleado_main()
+    {
+        return $this->hasOne(UserEmpleado::class)->where('tipo', 'main');
+    }
+
     public function user_empleado()
     {
         return $this->hasOne(UserEmpleado::class);
