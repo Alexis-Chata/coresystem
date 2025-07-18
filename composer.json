@@ -10,7 +10,7 @@
         "greenter/htmltopdf": "^5.1",
         "greenter/lite": "^5.1",
         "greenter/report": "^5.1",
-        "laravel/framework": "^11.9",
+        "laravel/framework": "^11.44.1",
         "laravel/jetstream": "^5.2",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
