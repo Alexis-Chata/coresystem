@@ -38,11 +38,11 @@
             @csrf
             <div class="mb-6">
                 <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Correo electrónico</label>
-                <input type="email" name="email" id="email" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required autofocus>
+                <input type="email" name="email" id="email" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required autofocus autocomplete="username">
             </div>
             <div class="mb-6">
                 <label for="password" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña</label>
-                <input type="password" name="password" id="password" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <input type="password" name="password" id="password" class="shadow-sm appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required autocomplete="current-password">
             </div>
             <div class="flex items-center justify-between mb-6">
                 <label class="flex items-center">

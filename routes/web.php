@@ -40,6 +40,7 @@ Route::get('/test-email', function () {
 
 // Grupo de rutas protegidas por autenticación
 Route::middleware([
+    \App\Http\Middleware\StoreRouteName::class,
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
@@ -248,6 +249,19 @@ Route::middleware([
         $path = storage_path('app/app.zip');
         return response()->download($path);
     })->name('download.zip');
+});
+
+Route::middleware([
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::post('/guardar-ubicacion', function (\Illuminate\Http\Request $request) {
+        session([
+            'latitud' => $request->latitud,
+            'longitud' => $request->longitud,
+        ]);
+        return response()->json(['success' => true]);
+    })->name('guardar.ubicacion');
 });
 
 Route::get('/', function () {

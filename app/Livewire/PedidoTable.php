@@ -252,9 +252,12 @@ class PedidoTable extends Component
             $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "No se ha definido una lista de precios. No se puede procesar, vuelva a ingresar el pedido.");
             return;
         }
+        $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
         // Obtener productos en una sola consulta
         $productos = Producto::withTrashed()
-            ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio)])
+            ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio),
+                    'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
+            ])
             ->whereIn('id', array_column($array_productos, 'id'))
             ->get()
             ->keyBy('id');
@@ -265,6 +268,10 @@ class PedidoTable extends Component
 
             if (!$producto) {
                 $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto con ID {$item['id']} no existe o fue eliminado. Por favor, vuelva a agregarlo.");
+                return;
+            }
+            if (!$producto->almacenProductos->first()) {
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto ({$item['id']} - {$producto->name}) aún no ha sido ingresado en almacén. Sin Stock Disponible.");
                 return;
             }
 
@@ -302,6 +309,7 @@ class PedidoTable extends Component
             "cantidad"    => $cantidad,
             "importe" => 0, // Se calculará en el siguiente paso
             "marca_id"    => $producto->marca_id,
+            "almacen_producto_id" => $producto->almacenProductos->first()->id,
         ];
 
         //$detalle['importe'] = $this->calcularImporteIndividual($producto, $cantidad);
@@ -352,9 +360,6 @@ class PedidoTable extends Component
         $this->pedido_detalles = [];
         $this->agregarProducto($items);
 
-        foreach ($items as $item) {
-            $this->cantidad_ofrecida = $item['cantidad'];
-        }
         //dd($this->pedido_detalles);
         $this->guardarPedido();
     }
@@ -404,6 +409,7 @@ class PedidoTable extends Component
                         "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
                         "importe" => $detalle["importe"],
                         "lista_precio" => $detalle["ref_producto_lista_precio"],
+                        "almacen_producto_id" => $detalle["almacen_producto_id"],
                     ]);
                 }
 

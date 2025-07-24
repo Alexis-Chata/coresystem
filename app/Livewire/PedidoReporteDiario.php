@@ -210,6 +210,7 @@ class PedidoReporteDiario extends Component
         try {
             DB::beginTransaction();
             Cache::lock('guardar_pedido', 15)->block(10, function () use ($productoId) {
+            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->pedidoEnEdicion->vendedor_id)->fSede->almacen->id;
             $producto = Producto::withTrashed()->with([
                 "listaPrecios" => function ($query) {
                     $query->where(
@@ -217,10 +218,14 @@ class PedidoReporteDiario extends Component
                         $this->pedidoEnEdicion->lista_precio
                     );
                 },
+                'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
             ])->find($productoId);
 
             if (!$producto) {
                 throw new \Exception("Producto no encontrado");
+            }
+            if (!$producto->almacenProductos->first()) {
+                throw new \Exception("Este producto aún no ha sido ingresado en almacén. Sin Stock Disponible.");
             }
 
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
@@ -304,6 +309,7 @@ class PedidoReporteDiario extends Component
                     "importe" => $importe,
                     "producto_cantidad_caja" => $producto->cantidad,
                     "lista_precio" => $this->pedidoEnEdicion->lista_precio,
+                    "almacen_producto_id" => $producto->almacenProductos->first()->id,
                 ]);
                 $this->validar_stock_precio(array($nuevoDetalle));
                 $this->actualizar_stock(array($nuevoDetalle), false);
@@ -763,7 +769,9 @@ class PedidoReporteDiario extends Component
             $this->actualizarStock($this->pedidoEnEdicion, true);
 
             // Eliminamos los detalles del pedido
-            $this->pedidoEnEdicion->pedidoDetalles()->delete();
+            $this->pedidoEnEdicion->pedidoDetalles()->each(function ($detalle) {
+                $detalle->delete(); // Esto sí audita
+            });
 
             // Luego eliminamos el pedido
             $this->pedidoEnEdicion->delete();
@@ -785,6 +793,7 @@ class PedidoReporteDiario extends Component
             $this->mount();
         } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
+            logger("Error pedido (eliminado):", ["error" => $e->getMessage()]);
             $this->dispatch("notify", [
                 "message" => "Error al eliminar el pedido: " . $e->getMessage(),
                 "type" => "error",

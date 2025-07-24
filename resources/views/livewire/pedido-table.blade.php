@@ -527,7 +527,7 @@
                     //$wire.guardar_pedido_items(this.items);
                 },
                 init() {
-                    Livewire.on('pedido-guardado', () => {
+                    $wire.on('pedido-guardado', () => {
                         this.limpiarFormulario();
                     });
                 },

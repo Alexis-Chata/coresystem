@@ -479,9 +479,11 @@
                     @endif
                 </div>
                 @if ($this->getErrorBag()->count())
-                    <div class="w-full">
+                    <div class="w-full mb-3">
                         @error('error_guardar')
-                            {!! $message !!}
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm font-semibold shadow">
+                                {!! $message !!}
+                            </div>
                         @enderror
                     </div>
                 @endif

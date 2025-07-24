@@ -48,6 +48,10 @@ return [
         'empleado_id' => \App\AuditResolvers\EmpleadoIdResolver::class,
         'user_roles' => \App\AuditResolvers\UserRolesResolver::class,
         'user_permissions' => \App\AuditResolvers\UserPermissionsResolver::class,
+        'full_url' => \App\AuditResolvers\FullUrlResolver::class,
+        'route_name' => \App\AuditResolvers\RouteNameResolver::class,
+        'latitude' => \App\AuditResolvers\LatitudeResolver::class,
+        'longitude' => \App\AuditResolvers\LongitudeResolver::class,
     ],
 
     /*

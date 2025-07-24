@@ -24,11 +24,58 @@
         @livewireStyles
         {{-- <link href="style.css" rel="stylesheet"> --}}
     </head>
-    <body class="font-sans antialiased"
-        x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': true, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
-        x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
-        $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
-        :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }">
+    <body
+        class="font-sans antialiased"
+        x-data="{
+            page: 'ecommerce',
+            loaded: true,
+            darkMode: true,
+            stickyMenu: false,
+            sidebarToggle: false,
+            scrollTop: false,
+            solicitarUbicacion() {
+            if (!navigator.geolocation) {
+                alert('Tu navegador no soporta geolocalización.');
+            return;
+            }
+
+            navigator.geolocation.getCurrentPosition(pos => {
+            const latitud = pos.coords.latitude;
+            const longitud = pos.coords.longitude;
+            console.log('Ubicación obtenida:', pos.coords.latitude, pos.coords.longitude);
+
+            fetch('{{ route("guardar.ubicacion") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ latitud, longitud })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Ubicación guardada exitosamente:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar ubicación:', error);
+            });
+
+            }, error => {
+                alert('Error obteniendo ubicación: ' + error.message);
+            });
+
+            }
+        }"
+        x-init="
+            darkMode = JSON.parse(localStorage.getItem('darkMode'));
+            $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+        "
+        :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }"
+        @click="solicitarUbicacion"
+        @keydown="solicitarUbicacion"
+    >
         <x-banner />
 
         <!-- ===== Preloader Start ===== -->

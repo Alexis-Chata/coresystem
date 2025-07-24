@@ -20,7 +20,8 @@ class PedidoDetalle extends Model implements Auditable
         'producto_precio',
         'producto_cantidad_caja',
         'lista_precio',
-        'importe'
+        'importe',
+        'almacen_producto_id',
     ];
 
     public function pedido()
