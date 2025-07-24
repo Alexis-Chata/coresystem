@@ -33,11 +33,22 @@
             stickyMenu: false,
             sidebarToggle: false,
             scrollTop: false,
+            ultimaUbicacion: 0, // timestamp en milisegundos
             solicitarUbicacion() {
+            const ahora = Date.now();
+            const diferencia = ahora - this.ultimaUbicacion;
+
+            if (diferencia < 20000) { // menos de 20 segundos
+                console.log('Ya se solicitó ubicación recientemente.');
+                return;
+            }
+
             if (!navigator.geolocation) {
                 alert('Tu navegador no soporta geolocalización.');
             return;
             }
+
+            this.ultimaUbicacion = ahora;
 
             navigator.geolocation.getCurrentPosition(pos => {
             const latitud = pos.coords.latitude;
