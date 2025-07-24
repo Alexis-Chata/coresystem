@@ -8,7 +8,7 @@
             </label>
         </div>
         <br />
-        <table class="min-w-full border border-gray-300 shadow-md rounded-lg" id="dataTable_example">
+        <table class="min-w-full border border-gray-300 shadow-md rounded-lg" id="dataTable_example" x-data="{ liquidar(id) { $wire.call('liquidar', id) } }">
             <thead class="bg-gray-200 text-gray-700">
                 <tr>
                     <th class="px-2 sm:px-4 py-2 text-left border-b">ID</th>
@@ -30,7 +30,7 @@
                             {{ number_format($liquidacion->pedidos->sum('importe_total'), 2) }}</td>
                         <td class="px-2 sm:px-4 py-2 border-b">
                             @if ($liquidacion->estado == 'por liquidar')
-                                <button wire:click="liquidar({{ $liquidacion->id }})"
+                                <button @click="liquidar({{ $liquidacion->id }})"
                                     class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">Liquidar</button>
                             @else
                                 <button wire:click="ver_liquidacion({{ $liquidacion->id }})"
@@ -53,7 +53,7 @@
         <br />
         <br />
         <div>
-            <p>Fecha Liquidacion: {{ $movimientos->first()->fecha_liquidacion }}</p>
+            <p>Fecha Reparto: {{ $movimientos->first()->fecha_liquidacion }}</p>
             <p>Conductor: {{ $movimientos->first()->conductor_id }} - {{ $movimientos->first()->conductor->name }}</p>
         </div>
         <br />
@@ -121,7 +121,7 @@
         @endif
         <br />
         <div>
-            <p>Fecha Liquidacion: {{ $movimientos->first()->fecha_liquidacion }}</p>
+            <p>Fecha Reparto: {{ $movimientos->first()->fecha_liquidacion }}</p>
             <p>Conductor: {{ $movimientos->first()->conductor_id }} - {{ $movimientos->first()->conductor->name }}</p>
         </div>
         <br />
@@ -327,6 +327,10 @@
                 if (table) {
                     console.log("✅ DataTable ready to initialize");
                     new DataTable('#dataTable_example');
+
+                    queueMicrotask(() => {
+                        Alpine.initTree(document.getElementById('dataTable_example'));
+                    });
                 } else {
                     console.warn("❌ Tabla no encontrada al momento de inicializar");
                 }
