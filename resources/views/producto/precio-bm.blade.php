@@ -6,6 +6,11 @@
             --tw-bg-opacity: 1;
             background-color: rgb(254 202 202 / var(--tw-bg-opacity, 1));
         }
+
+        .dark .dataTable>tbody>tr.bg-red-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(127 29 29 / var(--tw-bg-opacity, 1));
+        }
     </style>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.0/css/dataTables.dataTables.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
