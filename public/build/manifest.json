@@ -1,11 +1,11 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BN5k5JgR.css",
+    "file": "assets/app-DLxtPRgx.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-p2rMN9FD.css",
+    "file": "assets/tailadmin-B3wJoxQp.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true
   },
@@ -138,18 +138,18 @@
     "src": "resources/images/icon/icon-calendar.svg"
   },
   "resources/js/app.js": {
-    "file": "assets/app-z-Rg4TxU.js",
+    "file": "assets/app-DJj6WLi5.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
   },
   "resources/js/tailadmin.js": {
-    "file": "assets/tailadmin-DJJioLWB.js",
+    "file": "assets/tailadmin-DKr6qDAp.js",
     "name": "tailadmin",
     "src": "resources/js/tailadmin.js",
     "isEntry": true,
     "css": [
-      "assets/tailadmin-AFyFuWHm.css"
+      "assets/tailadmin-ehFyFt0y.css"
     ]
   }
 }
