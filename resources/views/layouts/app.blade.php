@@ -33,7 +33,7 @@
             stickyMenu: false,
             sidebarToggle: false,
             scrollTop: false,
-            ultimaUbicacion: 0, // timestamp en milisegundos
+            ultimaUbicacion: Number(localStorage.getItem('ultimaUbicacion')) || 0,
             solicitarUbicacion() {
             const ahora = Date.now();
             const diferencia = ahora - this.ultimaUbicacion;
@@ -45,15 +45,16 @@
 
             if (!navigator.geolocation) {
                 alert('Tu navegador no soporta geolocalización.');
-            return;
+                return;
             }
 
             this.ultimaUbicacion = ahora;
+            localStorage.setItem('ultimaUbicacion', ahora);
 
             navigator.geolocation.getCurrentPosition(pos => {
             const latitud = pos.coords.latitude;
             const longitud = pos.coords.longitude;
-            console.log('Ubicación obtenida:', pos.coords.latitude, pos.coords.longitude);
+            console.log('Ubicación obtenida:', latitud, longitud);
 
             fetch('{{ route("guardar.ubicacion") }}', {
                 method: 'POST',
