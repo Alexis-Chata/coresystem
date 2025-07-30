@@ -202,9 +202,9 @@ class PedidoReporteDiario extends Component
 
     public function agregarProducto($productoId)
     {
-        // $this->pedidoEnEdicion,  colecction | Pedido
-        // $detalleExistente,       colecction | PedidoDetalle
-        // $this->detallesEdit),    array
+        // $this->pedidoEnEdicion,  collection | Pedido
+        // $detalleExistente,       collection | PedidoDetalle
+        // $this->detallesEdit,    array
 
         $this->resetValidation();
         try {
@@ -255,7 +255,7 @@ class PedidoReporteDiario extends Component
                     $producto->f_tipo_afectacion_id
                 );
 
-                $detail = $detalleExistente;
+                $detail = is_object($detalleExistente) ? clone $detalleExistente : $detalleExistente;
                 $cant_actual = convertir_a_paquetes(
                     $detail->cantidad,
                     $detail->producto_cantidad_caja
@@ -264,8 +264,7 @@ class PedidoReporteDiario extends Component
                     $nuevaCantidad,
                     $detail->producto_cantidad_caja
                 );
-                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual),
-                $detail->producto_cantidad_caja);
+                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual), $detail->producto_cantidad_caja);
                 $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
                 $detail->importe = $nuevoImporte;
                 $array_detalles[] = $detail->toArray();
