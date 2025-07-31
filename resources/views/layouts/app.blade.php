@@ -39,7 +39,7 @@
             const diferencia = ahora - this.ultimaUbicacion;
 
             if (diferencia < 20000) { // menos de 20 segundos
-                console.log('Ya se solicitó ubicación recientemente.');
+                console.log('Ya se solicitó ubicación recientemente.', 'hace:', diferencia, 'ms');
                 return;
             }
 
@@ -82,7 +82,14 @@
         }"
         x-init="
             darkMode = JSON.parse(localStorage.getItem('darkMode'));
-            $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))
+            $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
+
+            // Escuchar cambios en otras pestañas
+            window.addEventListener('storage', event => {
+                if (event.key === 'ultimaUbicacion') {
+                    ultimaUbicacion = Number(event.newValue);
+                }
+            });
         "
         :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }"
         @click="solicitarUbicacion"
