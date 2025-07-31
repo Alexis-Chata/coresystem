@@ -265,7 +265,7 @@
                                 <td class="p-2 sm:px-6 sm:py-4">
                                     <input type="number" min="0.01" step="0.01"
                                         class="w-20 px-2 py-1 text-sm border rounded" x-model="item.cantidad"
-                                        @input="actualizar_importe(index)" @change="actualizar_importe_items(index)">
+                                        @input="actualizar_importe(index)" @blur="actualizar_importe_items(index)">
                                 </td>
                                 <td class="p-2 sm:px-6 sm:py-4">
                                     <span x-text="`S/. ${item.importe}`"></span>
@@ -440,6 +440,7 @@
                     console.log("actualizar_importe_items");
                 },
                 actualizar_importe(index) {
+                    console.log("actualizar_importe");
                     const item = this.items[index];
                     const cantidadStr = item.cantidad?.toString() || '';
 
