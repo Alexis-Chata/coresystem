@@ -33,6 +33,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
     use StockTrait;
     public string $tableName = 'generar-comprobantes-table-gnkwmv-table';
     public $fecha_reparto;
+    public $fecha_proceso;
     public $user;
     public $series;
     public $serie_facturas, $serie_factura_seleccionada;
@@ -43,6 +44,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
     {
         $this->showCheckBox();
         $this->fecha_reparto = Carbon::now();
+        $this->fecha_proceso = Carbon::now()->format("Y-m-d");
 
         if ($this->fecha_reparto->isSaturday()) {
             $this->fecha_reparto = $this->fecha_reparto->addDays(2); // Agregar 2 días si es sábado
@@ -250,7 +252,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 'movimiento_id' => $pedido->movimiento_id,
                                 'pedido_id' => $pedido->id,
                                 'pedido_obs' => $pedido->comentario,
-                                'pedido_fecha_factuacion' => now(),
+                                'pedido_fecha_factuacion' => $this->fecha_proceso,
                                 'sede_id' => $sede->id,
                                 'ublVersion' => '2.1',
                                 'tipoDoc' => $pedido->tipoComprobante->tipo_comprobante,
