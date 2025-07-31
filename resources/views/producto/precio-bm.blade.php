@@ -39,15 +39,15 @@
                 <tr class="{{ $producto->deleted_at ? 'bg-red-200' : '' }}">
                     <td>{{ $producto->id }}</td>
                     <td>{{ $producto->name }}</td>
-                    <td>{{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
+                    <td class="font-extrabold text-blue-400">{{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
                     <td>{{ $producto->precios->{1} }}</td>
                     <td>{{ $producto->marca }}</td>
                     <td>{{ $producto->cantidad }}</td>
                     <td>{{ $producto->precios->{2} }}</td>
                     <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
                     <td>{{ $producto->deleted_at?->format('d-m-Y | H:i:s') ?? '*' }}</td>
-                    <td>{{ $producto->stock_fisico }}</td>
-                    <td>{{ $producto->stock_disponible }}</td>
+                    <td>{{ number_format($producto->stock_fisico, 2) }}</td>
+                    <td>{{ number_format($producto->stock_disponible, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -73,4 +73,38 @@
             new DataTable('#example');
         });
     </script>
+<div x-data="{
+    valor: 0.01,
+    factor: 20,
+
+    onInput(e) {
+        let val = parseFloat(e.target.value);
+        if (isNaN(val)) return;
+
+        this.valor = val;
+    },
+
+    onBlur() {
+        let entero = Math.floor(this.valor);
+        let decimales = Math.round((this.valor - entero) * 100);
+
+        if (decimales >= this.factor) {
+            entero += 1;
+            decimales = 0;
+        }
+
+        this.valor = parseFloat(`${entero}.${decimales.toString().padStart(2, '0')}`);
+    }
+}">
+    <input
+        type="number"
+        step="0.01"
+        min="0.01"
+        x-model="valor"
+        @input="onInput"
+        @blur="onBlur"
+        class="border rounded p-2 w-24 text-center"
+    />
+</div>
+
 @endsection
