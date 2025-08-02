@@ -116,10 +116,22 @@
                 @include('layouts.partials.header')
                 <!-- ===== Header End ===== -->
 
+                <!-- Page Heading -->
+                @if (isset($header))
+                    <header class="bg-white dark:bg-gray-800 shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endif
+
                 <!-- ===== Main Content Start ===== -->
                 <main>
                     <div class="mx-auto p-4 md:p-6 2xl:p-10">
                         @yield('content')
+                        @if (isset($slot))
+                            {{ $slot }}
+                        @endif
                     </div>
                 </main>
                 <!-- ===== Main Content End ===== -->
@@ -129,6 +141,7 @@
         @stack('modals')
 
         @livewireScripts
+        @wireUiScripts
         {{-- <script defer src="bundle.js"></script> --}}
         <style>
             span.absolute.inset-y-0.left-0.flex.items-center.pl-1 {
