@@ -1,13 +1,19 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DLxtPRgx.css",
+    "file": "assets/app-Bx84Judr.css",
     "src": "resources/css/app.css",
-    "isEntry": true
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-B3wJoxQp.css",
+    "file": "assets/tailadmin-C2XIy0ME.css",
     "src": "resources/css/tailadmin.css",
-    "isEntry": true
+    "isEntry": true,
+    "names": [
+      "tailadmin.css"
+    ]
   },
   "resources/fonts/Satoshi-Black.ttf": {
     "file": "assets/Satoshi-Black-CizHyRqb.ttf",
@@ -138,13 +144,13 @@
     "src": "resources/images/icon/icon-calendar.svg"
   },
   "resources/js/app.js": {
-    "file": "assets/app-DJj6WLi5.js",
+    "file": "assets/app-C0G0cght.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
   },
   "resources/js/tailadmin.js": {
-    "file": "assets/tailadmin-DKr6qDAp.js",
+    "file": "assets/tailadmin-Bc9oPxFY.js",
     "name": "tailadmin",
     "src": "resources/js/tailadmin.js",
     "isEntry": true,
