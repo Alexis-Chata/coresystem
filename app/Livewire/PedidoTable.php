@@ -245,8 +245,13 @@ class PedidoTable extends Component
     public function agregarProducto($array_productos)
     {
         if (!$this->lista_precio) {
+            logger("Error PedidoTable: lista_precio no definida", ["lista_precio" => $this->lista_precio, "cliente_id"   => $this->cliente_id,]);
             $cliente = Cliente::find($this->cliente_id);
-            $this->lista_precio = $cliente->lista_precio_id;
+            if ($cliente) {
+                $this->lista_precio = $cliente->lista_precio_id;
+            } else {
+                logger("Error PedidoTable: cliente no encontrado", ["cliente_id" => $this->cliente_id]);
+            }
         }
         if (!$this->lista_precio) {
             $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "No se ha definido una lista de precios. No se puede procesar, vuelva a ingresar el pedido.");
