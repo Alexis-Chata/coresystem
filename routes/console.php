@@ -30,3 +30,7 @@ Schedule::call(function () {
 })->dailyAt('05:00');
 
 Schedule::command('zip:storage-app')->dailyAt('23:00');
+// Limpiar backups viejos después
+Schedule::command('backup:clean')->dailyAt('23:30');
+// Crear backup diario
+Schedule::command('backup:run --only-db')->dailyAt('00:10');

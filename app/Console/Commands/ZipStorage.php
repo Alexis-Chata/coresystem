@@ -25,11 +25,13 @@ class ZipStorage extends Command
      */
     public function handle()
     {
+        // Obtiene el nombre del sistema desde .env o config
+        $appName = config('app.name'); // o env('APP_NAME', 'default')
         $storagePath = storage_path('app');
         $zipName = 'app.zip';
 
         // Comando para crear el archivo ZIP
-        $command = "cd {$storagePath} && zip -r {$zipName} .";
+        $command = "cd {$storagePath} && zip -r {$zipName} . -x \"private/{$appName}/*\"";
 
         // Ejecuta el comando
         exec($command, $output, $returnVar);

@@ -6,6 +6,7 @@ use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\MarcaController;
 use App\Models\Marca;
 use App\Models\Movimiento;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -249,6 +250,16 @@ Route::middleware([
         $path = storage_path('app/app.zip');
         return response()->download($path);
     })->name('download.zip');
+    Route::get('/bdzip', function () {
+        $files = collect(File::files(storage_path('app/private/coresystem')))->sortByDesc(fn($file) => $file->getMTime());
+
+        if ($files->isEmpty()) {
+            abort(404, "No hay backups disponibles");
+        }
+        $latest = $files->first();
+
+        return response()->download($latest->getPathname());
+    })->name('download.bdzip');
 });
 
 Route::middleware([
