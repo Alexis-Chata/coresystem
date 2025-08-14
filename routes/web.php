@@ -251,7 +251,9 @@ Route::middleware([
         return response()->download($path);
     })->name('download.zip');
     Route::get('/bdzip', function () {
-        $files = collect(File::files(storage_path('app/private/coresystem')))->sortByDesc(fn($file) => $file->getMTime());
+        $appName = config('app.name'); // o env('APP_NAME', 'default')
+        $folderPath = storage_path("app/private/{$appName}");
+        $files = collect(File::files($folderPath))->sortByDesc(fn($file) => $file->getMTime());
 
         if ($files->isEmpty()) {
             abort(404, "No hay backups disponibles");
