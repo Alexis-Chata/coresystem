@@ -33,4 +33,10 @@ Schedule::command('zip:storage-app')->dailyAt('23:00');
 // Limpiar backups viejos después
 Schedule::command('backup:clean')->dailyAt('23:30');
 // Crear backup diario
-Schedule::command('backup:run --only-db')->dailyAt('00:10');
+Schedule::command('backup:run --only-db')->dailyAt('00:00')
+    ->then(function () {
+        $appName = config('app.name');
+        $path = storage_path("app/private/{$appName}");
+        exec("chown -R www-data:www-data {$path}");
+        exec("chmod -R 755 {$path}");
+    });
