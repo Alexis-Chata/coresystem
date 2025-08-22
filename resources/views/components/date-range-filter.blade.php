@@ -19,10 +19,10 @@
                 Fecha Fin
             </label>
         </div>
-            <button wire:click="exportarPedidosPDF"
-                class="sm:w-auto px-3 py-2 bg-red-500 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 ease-in-out">
-                Asignando Progamacion Carga PDF
-            </button>
+        <button wire:click="exportarPedidosPDF"
+            class="sm:w-auto px-3 py-2 bg-red-500 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 ease-in-out">
+            Progamacion Carga PDF
+        </button>
         <button wire:click="cerrar_sessiones" wire:confirm="¿Está seguro de Cerrar las sesiones?"
             class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 ease-in-out">Cerrar
             Sessiones</button>
@@ -64,6 +64,18 @@
                     </svg> Asignar
                 </span>
             </button>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($pedidosFueraRango as $fuera)
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        {{ $fuera->fecha }}
+                        <span
+                            class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                            {{ $fuera->total }}
+                        </span>
+                    </span>
+                @endforeach
+            </div>
         </div>
     </div>
 </div>

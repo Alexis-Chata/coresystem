@@ -18,6 +18,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
@@ -33,21 +34,30 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public $startDate = null;
     public $endDate = null;
+    public $pedidosFueraRango = [];
+    public $pedidosUltimoMes = [];
+
     protected function initProperties(): void
     {
         //$this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
         $this->startDate = Carbon::now()->format("Y-m-d");
         $this->endDate = Carbon::now()->format("Y-m-d");
-        $this->fecha_reparto = Carbon::now();
+        $this->fecha_reparto = $this->init_fecha_reparto();
+    }
 
-        if ($this->fecha_reparto->isSaturday()) {
-            $this->fecha_reparto = $this->fecha_reparto->addDays(2); // Agregar 2 días si es sábado
+    public function init_fecha_reparto()
+    {
+        $fecha = Carbon::now();
+
+        if ($fecha->isSaturday()) {
+            $fecha = $fecha->addDays(2); // Agregar 2 días si es sábado
         } else {
-            $this->fecha_reparto = $this->fecha_reparto->addDay(); // Agregar 1 día en otros casos
+            $fecha = $fecha->addDay(); // Agregar 1 día en otros casos
         }
 
-        $this->fecha_reparto = $this->fecha_reparto->format("Y-m-d");
+        return $fecha->format("Y-m-d");
     }
+
 
     public function updatedStartDate($value)
     {
@@ -116,9 +126,75 @@ final class AsignarConductorTable extends PowerGridComponent
                 "clientes.razon_social as cliente_nombre",
                 "pedidos.ruta_id"
             );
-            //dd($pedidos->get()[0]);
+        //dd($pedidos->get()[0]);
 
-            //$this->rutas_agrupadas = $pedidos->get()->groupBy("ruta_id");
+        //$this->rutas_agrupadas = $pedidos->get()->groupBy("ruta_id");
+        $this->pedidosFueraRango = Pedido::query()
+            ->whereIn('estado', ['pendiente', 'asignado'])
+            ->when($this->startDate && $this->endDate, function ($query) {
+                return $query->where(function ($q) {
+                    $q->where("pedidos.fecha_emision", "<", $this->startDate . " 00:00:00")
+                        ->orWhere("pedidos.fecha_emision", ">", $this->endDate . " 23:59:59");
+                });
+            })
+            ->selectRaw('DATE(fecha_emision) as fecha, COUNT(*) as total')
+            ->groupBy('fecha')
+            ->orderBy('fecha')
+            ->get();
+
+        $rutaIds = $pedidos->pluck('ruta_id')->unique();
+
+        $gruposPorDia = Pedido::query()
+            ->whereNotIn('estado', ['pendiente', 'asignado'])
+            ->whereBetween('fecha_reparto', [
+                now()->subMonth()->startOfDay(),
+                now()->endOfDay()
+            ])
+            ->whereIn('pedidos.ruta_id', $rutaIds)
+            ->selectRaw('DAYNAME(fecha_reparto) as dia_semana, DAYOFWEEK(fecha_reparto) as orden_semana, COUNT(DISTINCT CONCAT(ruta_id, "-", vendedor_id, "-", conductor_id)) as total_grupos')
+            ->groupBy('dia_semana', 'orden_semana')
+            ->orderByDesc('total_grupos')
+            ->first();
+
+        // Antes de la consulta (para traducir nombres de días a español)
+        DB::statement("SET lc_time_names = 'es_ES'");
+
+        $this->pedidosUltimoMes = Pedido::query()
+            ->whereNotIn('estado', ['pendiente', 'asignado'])
+            ->whereBetween('fecha_reparto', [
+                now()->subMonth()->startOfDay(),
+                now()->endOfDay()
+            ])
+            ->whereIn('pedidos.ruta_id', $rutaIds)
+            ->when($gruposPorDia?->orden_semana, function ($query) use ($gruposPorDia) {
+                $query->whereRaw('DAYOFWEEK(fecha_reparto) = ?', [$gruposPorDia->orden_semana]);
+            })
+            ->join('rutas', 'pedidos.ruta_id', '=', 'rutas.id')
+            ->join('empleados as vendedores', 'pedidos.vendedor_id', '=', 'vendedores.id')
+            ->join('empleados as conductores', 'pedidos.conductor_id', '=', 'conductores.id')
+            ->selectRaw('
+                DAYNAME(pedidos.fecha_reparto) as dia_semana,
+                rutas.id as ruta_id,
+                rutas.name as ruta_nombre,
+                conductores.id as conductor_id,
+                conductores.name as conductor_nombre,
+                vendedores.id as vendedor_id,
+                vendedores.name as vendedor_nombre
+            ')
+            ->groupBy(
+                'dia_semana',
+                'rutas.id',
+                'ruta_nombre',
+                'conductores.id',
+                'conductores.name',
+                'vendedores.id',
+                'vendedores.name'
+            )
+            ->orderBy('conductor_id')
+            ->orderBy('vendedor_id')
+            ->orderBy('ruta_id')
+            ->get();
+
         return $pedidos;
     }
 
@@ -163,7 +239,7 @@ final class AsignarConductorTable extends PowerGridComponent
         string $field,
         string $value
     ): void {
-        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : now()->format("Y-m-d");
+        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : $this->init_fecha_reparto();
         // Verificar si existe un conductor con ese ID
         $conductor = Empleado::where("id", $value)
             ->where("tipo_empleado", "conductor")
@@ -206,7 +282,7 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public function asignarConductorASeleccionados(): void
     {
-        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : now()->format("Y-m-d");
+        $this->fecha_reparto = !empty($this->fecha_reparto) ? $this->fecha_reparto : $this->init_fecha_reparto();
 
         if (empty($this->selectedConductor)) {
             $this->dispatch("pg:notification", [
@@ -333,14 +409,15 @@ final class AsignarConductorTable extends PowerGridComponent
 
         // Ruta donde esta/guardará el archivo
         $file_name = "pedidos_" . $this->startDate . "_a_" . $this->endDate . "-created-" . now()->format('d-m-Y_H-i-s') . ".pdf";
-        $filePath = 'cola-pdfs/'.$file_name;
+        $filePath = 'cola-pdfs/' . $file_name;
 
         // Guardar el PDF en storage/app/private
         Storage::disk('local')->put($filePath, $pdf->output());
 
         // Descargar el PDF
         return response()->streamDownload(
-            fn () => print $pdf->output(), $file_name
+            fn() => print $pdf->output(),
+            $file_name
         );
     }
 
@@ -373,5 +450,69 @@ final class AsignarConductorTable extends PowerGridComponent
 
         // 2️⃣ Asignarle el permiso "create pedido"
         $role->givePermissionTo('create pedido');
+    }
+
+    public function asignacion_sugerida($conductor_id, $ruta_id)
+    {
+        // Validar entradas obligatorias
+        $data = [
+            'conductor_id'  => $conductor_id,
+            'ruta_id'       => $ruta_id,
+            'fecha_reparto' => $this->fecha_reparto,
+        ];
+
+        $rules = [
+            'conductor_id'  => 'required',
+            'ruta_id'       => 'required',
+            'fecha_reparto' => 'required|date',
+        ];
+
+        $messages = [
+            'conductor_id.required'  => 'El conductor es obligatorio.',
+            'ruta_id.required'       => 'La ruta es obligatoria.',
+            'fecha_reparto.required' => 'Debe definir la fecha de reparto.',
+        ];
+
+        $validator = Validator::make($data, $rules, $messages);
+
+        if ($validator->fails()) {
+            $this->setErrorBag($validator->getMessageBag()); // manda errores al @error
+            return;
+        }
+
+        // 👉 si pasa validación limpio los errores
+        $this->resetErrorBag();
+
+        // Construir query
+        $query = Pedido::query()
+            ->whereIn('estado', ['pendiente', 'asignado'])
+            ->where('ruta_id', $ruta_id)
+            ->when($this->startDate && $this->endDate, function ($q) {
+                return $q->whereBetween("fecha_emision", [
+                    $this->startDate . " 00:00:00",
+                    $this->endDate . " 23:59:59",
+                ]);
+            });
+
+        // Actualizar pedidos
+        $actualizados = $query->update([
+            "conductor_id" => $conductor_id,
+            "fecha_reparto" => $this->fecha_reparto,
+            "estado" => "asignado",
+        ]);
+
+        return $actualizados; // cantidad de registros afectados
+    }
+
+    public function asignacion_rapida()
+    {
+        if (empty($this->fecha_reparto)) {
+            $this->fecha_reparto = $this->init_fecha_reparto();
+        }
+        $this->datasource();
+
+        foreach ($this->pedidosUltimoMes as $pedido) {
+            $this->asignacion_sugerida($pedido->conductor_id, $pedido->ruta_id);
+        }
     }
 }
