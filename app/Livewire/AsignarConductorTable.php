@@ -147,7 +147,7 @@ final class AsignarConductorTable extends PowerGridComponent
         $gruposPorDia = Pedido::query()
             ->whereNotIn('estado', ['pendiente', 'asignado'])
             ->whereBetween('fecha_reparto', [
-                now()->subMonth()->startOfDay(),
+                now()->subWeeks(2)->startOfDay(),
                 now()->endOfDay()
             ])
             ->whereIn('pedidos.ruta_id', $rutaIds)
@@ -162,7 +162,7 @@ final class AsignarConductorTable extends PowerGridComponent
         $this->pedidosUltimoMes = Pedido::query()
             ->whereNotIn('estado', ['pendiente', 'asignado'])
             ->whereBetween('fecha_reparto', [
-                now()->subMonth()->startOfDay(),
+                now()->subWeeks(2)->startOfDay(),
                 now()->endOfDay()
             ])
             ->whereIn('pedidos.ruta_id', $rutaIds)
