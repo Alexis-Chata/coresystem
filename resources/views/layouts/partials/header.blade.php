@@ -29,7 +29,8 @@
             </button>
             <!-- Hamburger Toggle BTN -->
             <a class="block flex-shrink-0 lg:hidden" href="/dashboard">
-                <img src="{{ asset('src/images/logo/logo-icon.svg') }}" alt="Logo" />
+                <img src="{{ asset(app()->environment('local') ? 'src/images/logo/logo-icon-local.svg' : 'src/images/logo/logo-icon.svg') }}"
+                    alt="Logo" />
             </a>
         </div>
         <div class="hidden sm:block">

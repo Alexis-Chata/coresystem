@@ -2,9 +2,10 @@
     class="absolute left-0 top-0 z-40 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0"
     @click.outside="sidebarToggle = false">
     <!-- SIDEBAR HEADER -->
-    <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+    <div class="flex items-center justify-between gap-2 px-6 py-6 lg:py-6.5">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('src/images/logo/logo.svg') }}" alt="Logo" />
+            <img src="{{ asset(app()->environment('local') ? 'src/images/logo/logo-local.svg' : 'src/images/logo/logo.svg') }}"
+                alt="Logo" />
         </a>
 
         <button class="block lg:hidden" @click.stop="sidebarToggle = !sidebarToggle">
@@ -236,11 +237,11 @@
                 ],
             ],
         ];
-    @endphp;
+    @endphp
 
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <!-- Sidebar Menu -->
-        <nav class="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+        <nav class="mt-2 px-4 py-4 lg:px-6">
             @foreach ($grupos_links as $grupo_link)
                 <!-- Grupo {{ $grupo_link['grupo_descripcion'] ?? '' }} -->
                 <div>
