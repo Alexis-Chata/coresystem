@@ -20,7 +20,7 @@
         }
         th, td {
             border: 1px solid black;
-            padding: 4px 10px;
+            padding: 3.75px 10px;
             text-align: center;
             white-space: nowrap;
         }
