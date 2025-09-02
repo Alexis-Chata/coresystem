@@ -13,7 +13,7 @@
             @endif
         </title>
 
-        @if(app()->environment('local'))
+        @if (app()->environment('local'))
         <link rel="icon" href="{{ asset('src/images/logo/logo-icon-local.svg') }}" sizes="any">
         @endif
 
@@ -56,45 +56,44 @@
             localStorage.setItem('ultimaUbicacion', ahora);
 
             navigator.geolocation.getCurrentPosition(pos => {
-            const latitud = pos.coords.latitude;
-            const longitud = pos.coords.longitude;
-            console.log('Ubicación obtenida:', latitud, longitud);
+                const latitud = pos.coords.latitude;
+                const longitud = pos.coords.longitude;
+                console.log('Ubicación obtenida:', latitud, longitud);
 
-            fetch('{{ route("guardar.ubicacion") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ latitud, longitud })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Ubicación guardada exitosamente:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error al guardar ubicación:', error);
-            });
+                fetch('{{ route('guardar.ubicacion') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ latitud, longitud })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Ubicación guardada exitosamente:', data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar ubicación:', error);
+                    });
 
             }, error => {
                 alert('Error obteniendo ubicación: ' + error.message);
             });
 
-            }
-        }"
-        x-init="
-            darkMode = JSON.parse(localStorage.getItem('darkMode'));
-            $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
+        }
+    }"
+    x-init="
+    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
 
-            // Escuchar cambios en otras pestañas
-            window.addEventListener('storage', event => {
-                if (event.key === 'ultimaUbicacion') {
-                    ultimaUbicacion = Number(event.newValue);
-                }
-            });
-        "
+    // Escuchar cambios en otras pestañas
+    window.addEventListener('storage', event => {
+        if (event.key === 'ultimaUbicacion') {
+            ultimaUbicacion = Number(event.newValue);
+        }
+    });"
         :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }"
         @click="solicitarUbicacion"
         @keydown="solicitarUbicacion"
@@ -130,7 +129,7 @@
                 @endif
 
                 <!-- ===== Main Content Start ===== -->
-                <main>
+                <main class="flex-1">
                     <div class="mx-auto p-4 md:p-6 2xl:p-10">
                         @yield('content')
                         @if (isset($slot))
@@ -139,6 +138,15 @@
                     </div>
                 </main>
                 <!-- ===== Main Content End ===== -->
+                <!-- ===== footer Content Start ===== -->
+                <!-- Footer al final -->
+                <footer class="bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
+                    <div class="flex items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
+                        <span>L & L GOLOMIX E.I.R.L.</span>
+                        <span>20603752458</span>
+                    </div>
+                </footer>
+                <!-- ===== footer Content End ===== -->
             </div>
         </div>
 
@@ -159,7 +167,7 @@
             #power-grid-table-container.overflow-x-auto {
                 overflow: visible;
             }
-            [role="navigation"] .z-10{
+            [role="navigation"] .z-10 {
                 z-index: 8 !important;
             }
         </style>
