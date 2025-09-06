@@ -69,42 +69,12 @@
     </table>
 
     <script defer>
-        document.addEventListener('DOMContentLoaded', function() {
-            new DataTable('#example');
+        document.addEventListener('DOMContentLoaded', function () {
+            new DataTable('#example', {
+            pageLength: 25, // ← mostrar 25 por página
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']]
+            });
         });
     </script>
-<div x-data="{
-    valor: 0.01,
-    factor: 20,
-
-    onInput(e) {
-        let val = parseFloat(e.target.value);
-        if (isNaN(val)) return;
-
-        this.valor = val;
-    },
-
-    onBlur() {
-        let entero = Math.floor(this.valor);
-        let decimales = Math.round((this.valor - entero) * 100);
-
-        if (decimales >= this.factor) {
-            entero += 1;
-            decimales = 0;
-        }
-
-        this.valor = parseFloat(`${entero}.${decimales.toString().padStart(2, '0')}`);
-    }
-}">
-    <input
-        type="number"
-        step="0.01"
-        min="0.01"
-        x-model="valor"
-        @input="onInput"
-        @blur="onBlur"
-        class="border rounded p-2 w-24 text-center"
-    />
-</div>
 
 @endsection
