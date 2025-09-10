@@ -1,12 +1,14 @@
 <div class="flex flex-col gap-2">
     <fieldset class="space-x-4">
         <label class="inline-flex items-center cursor-pointer space-x-2">
-            <input type="radio" wire:model="date_field" name="date_field" value="1" class="w-6 h-6 accent-green-600 cursor-pointer">
+            <input type="radio" wire:model="date_field" name="date_field" value="1"
+                class="w-6 h-6 accent-green-600 cursor-pointer">
             <span>Fecha</span>
         </label>
 
         <label class="inline-flex items-center cursor-pointer space-x-2">
-            <input type="radio" wire:model="date_field" name="date_field" value="2" class="w-6 h-6 accent-red-500 cursor-pointer">
+            <input type="radio" wire:model="date_field" name="date_field" value="2"
+                class="w-6 h-6 accent-red-500 cursor-pointer">
             <span>Fecha Reparto</span>
         </label>
     </fieldset>
@@ -70,9 +72,9 @@
         </div>
         <div>
             <label class="cursor-pointer space-x-1">
-                <input type="checkbox" wire:model="marcas_name"
+                <input type="checkbox" wire:model="usuario"
                     class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
-                <span class="text-lg">Marca Nombre</span>
+                <span class="text-lg">Usuario</span>
             </label>
         </div>
         <div>
@@ -87,6 +89,13 @@
                 <input type="checkbox" wire:model="conductor"
                     class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
                 <span class="text-lg">Conductor</span>
+            </label>
+        </div>
+        <div>
+            <label class="cursor-pointer space-x-1">
+                <input type="checkbox" wire:model="marcas_name"
+                    class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
+                <span class="text-lg">Marca Nombre</span>
             </label>
         </div>
         <div>

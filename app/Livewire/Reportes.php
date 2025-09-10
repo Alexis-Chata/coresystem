@@ -39,6 +39,7 @@ class Reportes extends Component
     public $num_documento;
     public $producto;
     public $fecha_emision;
+    public $usuario;
 
     public function mount()
     {
@@ -115,8 +116,8 @@ class Reportes extends Component
         $this->producto_id == "NULL" ? $this->producto_id = null : $this->producto_id;
 
         $date_field = match ((int) $this->date_field) {
-            2 => 'fechaEmision',
-            default => 'pedido_fecha_factuacion',
+            2 => 'f_comprobante_sunats.fechaEmision',
+            default => 'f_comprobante_sunats.pedido_fecha_factuacion',
         };
         $fecha_inicio = $this->fecha_inicio;
         $fecha_fin = $this->fecha_fin;
@@ -134,7 +135,8 @@ class Reportes extends Component
         $num_documento = $this->num_documento ?? false;
         $producto = $this->producto ?? false;
         $fecha_emision = $this->fecha_emision ?? false;
+        $usuario = $this->usuario ?? false;
         //dd($marcas_name, $fecha_emision, $ruta);
-        return Excel::download(new ReportesExport($date_field, $fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision), 'reporte_ventas.xlsx');
+        return Excel::download(new ReportesExport($date_field, $fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision, $usuario), 'reporte_ventas.xlsx');
     }
 }
