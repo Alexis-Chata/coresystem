@@ -143,6 +143,10 @@ Route::middleware([
         return view('categoria');
     })->middleware('can:view categoria')->name('categoria.index');
 
+    Route::get('/vehiculo', function () {
+        return view('vehiculo');
+    })->middleware('can:view vehiculo')->name('vehiculo.index');
+
     Route::get('/proveedor', function () {
         return view('proveedor');
     })->middleware('can:view proveedor')->name('proveedor.index');
