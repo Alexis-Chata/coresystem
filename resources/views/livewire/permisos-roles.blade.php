@@ -3,6 +3,12 @@
         Administración de Permisos de los Roles
     </h2>
 
+    <div class="flex justify-end mb-3">
+        <button wire:click="openCreateModal" class="px-3 py-2 text-sm text-white bg-green-600 rounded-md">
+            Crear Rol
+        </button>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="w-full border border-gray-200 rounded-lg text-sm">
             <thead class="bg-gray-100">
@@ -53,13 +59,18 @@
 
             <div class="mt-4 max-h-[50vh] overflow-y-auto border p-2 rounded-md text-sm">
                 <h3 class="font-semibold">Permisos</h3>
-                @foreach ($permissions as $permission)
-                    <div class="flex items-center text-sm">
-                        <label class="flex items-center">
-                            <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->id }}"
-                                class="mr-2">
-                            {{ $permission->name }}
-                        </label>
+                @foreach ($permissionsGrouped as $resource => $perms)
+                    <div class="mt-2">
+                        <h4 class="font-semibold text-sm mb-1">{{ ucfirst($resource) }}</h4>
+                        @foreach ($perms as $permission)
+                            <div class="flex items-center text-sm pl-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" wire:model="selectedPermissions" value="{{ $permission->id }}"
+                                        class="mr-2">
+                                    {{ $permission->name }}
+                                </label>
+                            </div>
+                        @endforeach
                     </div>
                 @endforeach
             </div>
@@ -73,6 +84,54 @@
                 <button wire:click="updateRolesPermissions"
                     class="px-3 py-1 md:px-4 md:py-2 bg-blue-600 text-white rounded-md text-xs md:text-sm">
                     Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Role Modal -->
+    <div x-data="{ openCreate: @entangle('isCreateOpen') }" x-show="openCreate"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-3">
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full max-w-xs md:max-w-md max-h-[80vh] overflow-y-auto"
+            @click.away="openCreate = false">
+            <h2 class="text-lg md:text-xl font-semibold">Crear Nuevo Rol</h2>
+
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-1">Nombre del Rol</label>
+                <input type="text" wire:model="newRoleName" class="w-full border rounded px-3 py-2 text-sm"
+                    placeholder="Ej: supervisor">
+                @error('newRoleName')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="mt-4 max-h-[50vh] overflow-y-auto border p-2 rounded-md text-sm">
+                <h3 class="font-semibold">Permisos</h3>
+                @foreach ($createPermissionsGrouped as $resource => $perms)
+                    <div class="mt-2">
+                        <h4 class="font-semibold text-sm mb-1">{{ ucfirst($resource) }}</h4>
+                        @foreach ($perms as $permission)
+                            <div class="flex items-center text-sm pl-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" wire:model="selectedCreatePermissions" value="{{ $permission->id }}"
+                                        class="mr-2">
+                                    {{ $permission->name }}
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end mt-4">
+                <button wire:click="closeCreateModal"
+                    class="px-3 py-1 md:px-4 md:py-2 bg-gray-500 text-white rounded-md text-xs md:text-sm mr-2">
+                    Cancelar
+                </button>
+                <button wire:click="createRole"
+                    class="px-3 py-1 md:px-4 md:py-2 bg-green-600 text-white rounded-md text-xs md:text-sm">
+                    Crear Rol
                 </button>
             </div>
         </div>
