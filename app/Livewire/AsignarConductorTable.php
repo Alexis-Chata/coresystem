@@ -109,6 +109,7 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        // Data para la tabla
         $pedidos = Pedido::query()->whereIn('estado', ['pendiente', 'asignado'])
             ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
             ->join("empleados as vendedores", "pedidos.vendedor_id", "=", "vendedores.id")
@@ -213,7 +214,7 @@ final class AsignarConductorTable extends PowerGridComponent
                 return $model->cliente_id . " - " . $model->cliente_nombre;
             })
             ->add("importe_total", function ($model) {
-                return number_format($model->importe_total, 2);
+                return "S/. ".number_format($model->importe_total, 2);
             })
             ->add("fecha_emision");
     }
@@ -230,7 +231,9 @@ final class AsignarConductorTable extends PowerGridComponent
             Column::make("Importe", "importe_total")->bodyAttribute('text-right')
                 ->sortable()
                 ->searchable(),
-            Column::make("Fecha Emision", "fecha_emision")->sortable()->searchable(),
+            Column::make("Fecha Emision", "fecha_emision")->sortable()->searchable()->hidden(),
+            Column::make("User", "user_id")->sortable()->searchable(),
+            Column::make("Creado", "created_at")->sortable()->searchable(),
         ];
     }
 

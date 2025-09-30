@@ -20,6 +20,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 final class ProductoTable extends PowerGridComponent
@@ -272,7 +273,7 @@ final class ProductoTable extends PowerGridComponent
             $stock = $producto->cantidad ?? 0;
 
             // Agregar un log para depuración
-            \Log::info('Stock obtenido:', [
+            Log::info('Stock obtenido:', [
                 'productoId' => $productoId,
                 'componentId' => $componentId,
                 'stock' => $stock
@@ -286,7 +287,7 @@ final class ProductoTable extends PowerGridComponent
             return $stock; // Retornamos el stock para confirmación
 
         } catch (\Exception $e) {
-            \Log::error('Error al obtener stock:', [
+            Log::error('Error al obtener stock:', [
                 'error' => $e->getMessage(),
                 'productoId' => $productoId,
                 'componentId' => $componentId
