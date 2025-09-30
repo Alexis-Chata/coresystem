@@ -15,6 +15,7 @@ class RoleSeeder extends Seeder
         'producto' => ['view', 'create', 'edit', 'delete', 'stock', 'precio-bm'],
         'categoria' => ['view', 'create', 'edit', 'delete'],
         'proveedor' => ['view', 'create', 'edit', 'delete'],
+        'vehiculo' => ['view', 'create', 'edit', 'delete'],
         'ruta' => ['view', 'create', 'edit', 'delete'],
         'padron' => ['view', 'create', 'edit', 'delete'],
         'pedido' => ['view', 'create', 'edit', 'delete', 'asignar', 'admin'],

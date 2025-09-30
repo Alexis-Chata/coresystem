@@ -18,6 +18,14 @@ class PermisosRoles extends Component
     public $isOpen = false;
     public $roleId, $roleName, $permissions = [];
     public $selectedPermissions = [];
+    public $permissionsGrouped = [];
+
+    // Create Role modal state
+    public $isCreateOpen = false;
+    public $newRoleName = '';
+    public $createPermissions = [];
+    public $selectedCreatePermissions = [];
+    public $createPermissionsGrouped = [];
 
     public function openModal($id)
     {
@@ -25,6 +33,7 @@ class PermisosRoles extends Component
         $this->roleId = $role->id;
         $this->roleName = $role->name;
         $this->permissions = Permission::all();
+        $this->permissionsGrouped = $this->groupPermissions($this->permissions);
 
         // Obtener permisos asignados al Rol
         $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
@@ -34,7 +43,7 @@ class PermisosRoles extends Component
 
     public function closeModal()
     {
-        $this->reset(['isOpen', 'roleId', 'roleName', 'selectedPermissions', 'permissions']);
+        $this->reset(['isOpen', 'roleId', 'roleName', 'selectedPermissions', 'permissions', 'permissionsGrouped']);
     }
 
     public function updateRolesPermissions()
@@ -53,4 +62,52 @@ class PermisosRoles extends Component
         $this->closeModal();
     }
 
+    // Crear Rol
+    public function openCreateModal()
+    {
+        $this->reset(['newRoleName', 'selectedCreatePermissions']);
+        $this->createPermissions = Permission::all();
+        $this->createPermissionsGrouped = $this->groupPermissions($this->createPermissions);
+        $this->isCreateOpen = true;
+    }
+
+    public function closeCreateModal()
+    {
+        $this->reset(['isCreateOpen', 'newRoleName', 'selectedCreatePermissions', 'createPermissions', 'createPermissionsGrouped']);
+    }
+
+    public function createRole()
+    {
+        $this->validate([
+            'newRoleName' => 'required|string|min:2|max:50|unique:roles,name',
+            'selectedCreatePermissions' => 'array|min:0',
+        ]);
+
+        $role = Role::findOrCreate($this->newRoleName);
+
+        if (!empty($this->selectedCreatePermissions)) {
+            $permissionNames = Permission::whereIn('id', $this->selectedCreatePermissions)->pluck('name')->toArray();
+            $role->syncPermissions($permissionNames);
+        }
+
+        $this->closeCreateModal();
+    }
+
+    private function groupPermissions($permissions)
+    {
+        // Agrupa por el recurso (última palabra del nombre del permiso)
+        // Ej: "edit vehiculo" => recurso: vehiculo, accion: edit
+        $grouped = [];
+        foreach ($permissions as $perm) {
+            $parts = explode(' ', $perm->name);
+            $resource = trim(end($parts));
+            if (!isset($grouped[$resource])) {
+                $grouped[$resource] = [];
+            }
+            $grouped[$resource][] = $perm;
+        }
+
+        ksort($grouped);
+        return $grouped;
+    }
 }
