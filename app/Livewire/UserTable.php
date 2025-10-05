@@ -33,7 +33,11 @@ final class UserTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return User::query()->with(['user_empleado', 'fsede.empresa', 'user_empleado.empleado']);
+        return User::query()
+            ->leftJoin('user_empleados as ue', 'ue.user_id', '=', 'users.id')
+            ->leftJoin('empleados as emp', 'emp.id', '=', 'ue.empleado_id')
+            ->select('users.*', 'emp.id as vendedor_id', 'emp.name as vendedor_name')
+            ->with(['fsede.empresa']);
     }
 
     public function relationSearch(): array
@@ -47,33 +51,29 @@ final class UserTable extends PowerGridComponent
             ->add('id')
             ->add('name')
             ->add('email')
-            ->add('name_vendedor', fn($user) => e(optional(optional($user->user_empleado)->empleado)->id . ' - ' . optional(optional($user->user_empleado)->empleado)->name))
-            ->add('empresa', fn($user) => e($user->fsede->empresa->razon_social))
-            ->add('created_at_formatted', function ($user) {
-                return Carbon::parse($user->created_at)->format('d/m/Y H:i'); //20/01/2024 10:05
-            })
-            ->add('deleted_at_formatted', function ($user) {
-                return $user->deleted_at ? Carbon::parse($user->deleted_at)->format('d/m/Y H:i') : ''; //20/01/2024 10:05
-            });
+            ->add('name_vendedor', fn($user) => $user->vendedor_id ? e($user->vendedor_id . ' - ' . $user->vendedor_name) : '')
+            ->add('empresa', fn($user) => e(optional(optional($user->fsede)->empresa)->razon_social))
+            ->add('created_at_formatted', fn($user) => Carbon::parse($user->created_at)->format('d/m/Y H:i'))
+            ->add('deleted_at_formatted', fn($user) => $user->deleted_at ? Carbon::parse($user->deleted_at)->format('d/m/Y H:i') : '');
     }
 
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
+            Column::make('Id', 'id')->sortable(),
             Column::make('Nombre Usuario', 'name')
                 ->sortable()
                 ->searchable(),
             Column::make('Email', 'email')
                 ->sortable()
                 ->searchable(),
-            Column::make('Cod - Nombre Vendedor', 'name_vendedor')
+            Column::make('Cod - Nombre Vendedor', 'name_vendedor', 'vendedor_id')
                 ->sortable()
                 ->searchable(),
             Column::make('Empresa', 'empresa'),
-            Column::make('Registrado', 'created_at_formatted')
+            Column::make('Registrado', 'created_at_formatted', 'users.created_at')
                 ->sortable(),
-            Column::make('Eliminado', 'deleted_at_formatted')
+            Column::make('Eliminado', 'deleted_at_formatted', 'users.deleted_at')
                 ->sortable(),
 
             Column::action('Action')
