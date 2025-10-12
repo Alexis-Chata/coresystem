@@ -104,9 +104,10 @@ class GenerarMovimientoLiquido extends Component
                     $pedidos_id = $pedidos->pluck('id');
                     $pedidos_detalle = PedidoDetalle::lockForUpdate()->whereIn('pedido_id', $pedidos_id)->get()->groupBy('producto_id');
                     $pedidos_detalle->each(function ($item, $key) use ($productos) {
-                        $unidadMedida = $productos->find($key)->cantidad;
-
+                        $unidadMedida = $productos->find($key)->cantidad; // factor
+                        $digitos = calcular_digitos($unidadMedida);
                         $sumaunidads = $item->sum('qcanpedunidads');
+                        // dd($item->toArray(), $key, $productos->find($key), $sumaunidads);
                         $sumaunidadsAbultos = intval($sumaunidads / $unidadMedida);
                         $sumaunidadsAbultosRestoenunidad = $sumaunidads % $unidadMedida;
 
@@ -115,7 +116,7 @@ class GenerarMovimientoLiquido extends Component
                         $item->marca_id = $productos->find($key)->marca->id;
                         $item->marca = $productos->find($key)->marca->name;
                         $item->totalqcanpedbultos = $item->sum('qcanpedbultos') + $sumaunidadsAbultos;
-                        $item->totalqcanpedunidads = str_pad($sumaunidadsAbultosRestoenunidad, 2, 0, STR_PAD_LEFT);
+                        $item->totalqcanpedunidads = str_pad($sumaunidadsAbultosRestoenunidad, $digitos, 0, STR_PAD_LEFT);
 
                         $item->cantidad = $productos->find($key)->cantidad;
                         $item->precio = $productos->find($key)->listaPrecios->find(1)->pivot->precio;
@@ -132,6 +133,7 @@ class GenerarMovimientoLiquido extends Component
                     $tipo_movimiento = TipoMovimiento::firstWhere("codigo", "201"); //sal. reparto sujeta a liquidacion
 
                     $data_para_movimiento_detalle = $pedidos_detalle->map(function ($item) use ($user) {
+                        $digitos = calcular_digitos($item->cantidad);
                         return [
                             'producto_id' => $item->producto_id,
                             'producto_name' => $item->producto_name,
@@ -140,7 +142,7 @@ class GenerarMovimientoLiquido extends Component
                             'marca' => $item->marca,
                             'totalqcanpedbultos' => $item->totalqcanpedbultos,
                             'totalqcanpedunidads' => $item->totalqcanpedunidads,
-                            'cantidad' => number_format_punto2($item->totalqcanpedbultos + ($item->totalqcanpedunidads / 100)),
+                            'cantidad' => number_format($item->totalqcanpedbultos + ($item->totalqcanpedunidads / (10 ** $digitos)), $digitos, '.', ''),
                             'producto_precio_venta' => number_format_punto2($item->precio),
                             'precio_venta_unitario' => number_format_punto2($item->precio / $item->cantidad),
                             'precio_venta_total' => number_format_punto2($item->importe),

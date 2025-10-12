@@ -142,7 +142,7 @@
                                     <td class="p-3 border-b border-gray-600">{{ $detalle['producto_id'] }} -
                                         {{ $detalle['producto_name'] }}</td>
                                     <td class="p-3 border-b border-gray-600">
-                                        <input type="number" step="0.01"
+                                        <input type="number" min="{{ convertir_a_cajas(1, $detalle['factor']) }}" step="{{ convertir_a_cajas(1, $detalle['factor']) }}"
                                             wire:model.lazy="detalles.{{ $index }}.cantidad"
                                             wire:change="ajustarCantidad({{ $index }})"
                                             class="w-20 px-2 py-1 text-sm border rounded text-right text-black" />

@@ -232,8 +232,7 @@ class PedidoTable extends Component
             //         return [
             //             "id" => $producto->id,
             //             "name" => $producto->name,
-            //             "precio" => $producto->listaPrecios->first()?->pivot
-            //                 ?->precio,
+            //             "precio" => $producto->listaPrecios->first()?->pivot?->precio,
             //         ];
             //     }),
             // ]);
@@ -260,8 +259,9 @@ class PedidoTable extends Component
         $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
         // Obtener productos en una sola consulta
         $productos = Producto::withTrashed()
-            ->with(['listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio),
-                    'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
+            ->with([
+                'listaPrecios' => fn($q) => $q->where("lista_precio_id", $this->lista_precio),
+                'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
             ])
             ->whereIn('id', array_column($array_productos, 'id'))
             ->get()
@@ -303,7 +303,7 @@ class PedidoTable extends Component
     protected function formatearDetalle($producto, $cantidad_ofrecida)
     {
         $cantidad = floatval($cantidad_ofrecida);
-        $cantidad = $cantidad > 0 ? number_format_punto2($cantidad) : 0.01;
+        $cantidad = $cantidad > 0 ? number_format($cantidad, calcular_digitos($producto->cantidad), '.', '') : 0.01;
         $paquetes = convertir_a_paquetes($cantidad, $producto->cantidad);
         $cantidad = convertir_a_cajas($paquetes, $producto->cantidad);
 
@@ -315,6 +315,7 @@ class PedidoTable extends Component
             "importe" => 0, // Se calculará en el siguiente paso
             "marca_id"    => $producto->marca_id,
             "almacen_producto_id" => $producto->almacenProductos->first()->id,
+            "cantidad_unidades"    => $paquetes,
         ];
 
         //$detalle['importe'] = $this->calcularImporteIndividual($producto, $cantidad);
@@ -365,7 +366,7 @@ class PedidoTable extends Component
         $this->pedido_detalles = [];
         $this->agregarProducto($items);
 
-        //dd($this->pedido_detalles);
+        // dd($items, $this->pedido_detalles);
         $this->guardarPedido();
     }
 
@@ -415,6 +416,7 @@ class PedidoTable extends Component
                         "importe" => $detalle["importe"],
                         "lista_precio" => $detalle["ref_producto_lista_precio"],
                         "almacen_producto_id" => $detalle["almacen_producto_id"],
+                        "cantidad_unidades" => $detalle["cantidad_unidades"],
                     ]);
                 }
 

@@ -42,7 +42,7 @@
                     padding: calc(2px + 0.5vw);
                 }
                 td input{
-                    width: clamp(35px, calc(34px + 4vw), 70px);
+                    width: clamp(35px, calc(50px + 4vw), 80px);
                 }
             }
         </style>

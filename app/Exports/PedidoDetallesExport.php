@@ -49,10 +49,10 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'pedido_detalles.*',
                 'producto_lista_precios.precio as precio_actual', // Agregamos el precio actual
             ])
-            ->selectRaw('FLOOR(pedido_detalles.cantidad) as bultos')
-            ->selectRaw('CAST((pedido_detalles.cantidad - FLOOR(pedido_detalles.cantidad)) * 100 AS UNSIGNED) as unidades')
-            ->selectRaw('CAST(ROUND( pedido_detalles.producto_precio * FLOOR(pedido_detalles.cantidad) + ((pedido_detalles.producto_precio * (pedido_detalles.cantidad - FLOOR(pedido_detalles.cantidad)) * 100) / pedido_detalles.producto_cantidad_caja) + 0.0001, 2) AS DECIMAL(10,2)) as calculando_importe')
-            ->selectRaw('CASE WHEN CAST(ROUND( pedido_detalles.producto_precio * FLOOR(pedido_detalles.cantidad) + ((pedido_detalles.producto_precio * (pedido_detalles.cantidad - FLOOR(pedido_detalles.cantidad)) * 100) / pedido_detalles.producto_cantidad_caja) + 0.0001, 2) AS DECIMAL(10,2)) = pedido_detalles.importe THEN 1 ELSE 0 END as verificacion_importe')
+            ->selectRaw('FLOOR(pedido_detalles.cantidad_unidades / pedido_detalles.producto_cantidad_caja) as bultos')
+            ->selectRaw('pedido_detalles.cantidad_unidades % pedido_detalles.producto_cantidad_caja as unidades')
+            ->selectRaw('CAST(ROUND((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja, 2) AS DECIMAL(10,2)) as calculando_importe')
+            ->selectRaw('ROUND((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja, 2) as verificacion_importe')
             ->selectRaw('CASE WHEN pedido_detalles.producto_precio = producto_lista_precios.precio THEN 1 ELSE 0 END as verificacion_precio') // Nueva comparación de precios
             ->whereBetween('pedidos.fecha_emision', [$fechaInicio, $fechaFin])
             ->havingRaw('verificacion_importe = 0 OR verificacion_precio = 0') // Filtra solo los casos donde hay diferencias
@@ -85,6 +85,8 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'lista_precio',
                 'importe',
                 'peso',
+                'almacen_producto_id',
+                'cantidad_unidades',
                 'created_at',
                 'updated_at',
                 'precio_actual',

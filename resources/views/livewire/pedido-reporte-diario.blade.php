@@ -15,7 +15,7 @@
             }
 
             td input {
-                width: clamp(35px, calc(34px + 4vw), 70px);
+                width: clamp(35px, calc(50px + 4vw), 80px);
             }
         }
     </style>
@@ -149,7 +149,7 @@
                                                                 <td class="px-6 py-4">#{{ $detalle->producto_id }} -
                                                                     {{ $detalle->producto_name }}</td>
                                                                 <td class="px-6 py-4">
-                                                                    {{ number_format($detalle->cantidad, 2) }}</td>
+                                                                    {{ number_format($detalle->cantidad, calcular_digitos($detalle->producto_cantidad_caja)) }}</td>
                                                                 <td class="px-6 py-4">S/.
                                                                     {{ number_format($detalle->producto_precio, 2) }}
                                                                 </td>
@@ -264,7 +264,7 @@
                 }
 
                 td input {
-                    width: clamp(35px, calc(34px + 4vw), 70px);
+                    width: clamp(35px, calc(50px + 4vw), 80px);
                 }
 
                 thead th:last-child {
@@ -405,7 +405,7 @@
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
                                                     class="px-2 py-1 w-20 text-sm rounded border" />
                                             @else
-                                                <input type="number" min="0.01" step="0.01"
+                                                <input type="number" min="{{ convertir_a_cajas(1, $producto->cantidad) }}" step="{{ convertir_a_cajas(1, $producto->cantidad) }}"
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"

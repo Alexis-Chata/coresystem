@@ -210,160 +210,159 @@ class PedidoReporteDiario extends Component
         try {
             DB::beginTransaction();
             Cache::lock('guardar_pedido', 15)->block(10, function () use ($productoId) {
-            $almacen_id = Empleado::with(['fSede.almacen'])->find($this->pedidoEnEdicion->vendedor_id)->fSede->almacen->id;
-            $producto = Producto::withTrashed()->with([
-                "listaPrecios" => function ($query) {
-                    $query->where(
-                        "lista_precio_id",
-                        $this->pedidoEnEdicion->lista_precio
-                    );
-                },
-                'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
-            ])->find($productoId);
+                $almacen_id = Empleado::with(['fSede.almacen'])->find($this->pedidoEnEdicion->vendedor_id)->fSede->almacen->id;
+                $producto = Producto::withTrashed()->with([
+                    "listaPrecios" => function ($query) {
+                        $query->where(
+                            "lista_precio_id",
+                            $this->pedidoEnEdicion->lista_precio
+                        );
+                    },
+                    'almacenProductos' => fn($q) => $q->where("almacen_id", $almacen_id),
+                ])->find($productoId);
 
-            if (!$producto) {
-                throw new \Exception("Producto no encontrado");
-            }
-            if (!$producto->almacenProductos->first()) {
-                throw new \Exception("Este producto aún no ha sido ingresado en almacén. Sin Stock Disponible.");
-            }
-
-            $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
-
-            // Verificar si el producto ya existe en el pedido
-            $detalleExistente = $this->pedidoEnEdicion
-                ->pedidoDetalles()
-                ->where("producto_id", $productoId)
-                ->first();
-
-            if ($detalleExistente) {
-                // Si existe, aumentar cantidad
-                $nuevaCantidad =
-                    $producto->cantidad == 1
-                    ? $detalleExistente->cantidad + 1
-                    : $detalleExistente->cantidad + 0.01;
-
-                $nuevaCantidad = $this->ajustarCantidadDetalle(
-                    $nuevaCantidad,
-                    $producto->cantidad
-                );
-
-                $nuevoImporte = $this->calcularImporteDetalle(
-                    $nuevaCantidad,
-                    $precio,
-                    $producto->cantidad,
-                    $producto->f_tipo_afectacion_id
-                );
-
-                $detail = is_object($detalleExistente) ? clone $detalleExistente : $detalleExistente;
-                $cant_actual = convertir_a_paquetes(
-                    $detail->cantidad,
-                    $detail->producto_cantidad_caja
-                );
-                $cant_nueva = convertir_a_paquetes(
-                    $nuevaCantidad,
-                    $detail->producto_cantidad_caja
-                );
-                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual), $detail->producto_cantidad_caja);
-                $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
-                $detail->importe = $nuevoImporte;
-                $array_detalles[] = $detail->toArray();
-
-                $this->validar_stock_precio($array_detalles);
-
-                $this->actualizar_stock(array($detalleExistente), true);
-                // Actualizar el detalleExistente existente directamente en bd (mejorar)
-                $detalleExistente->update([
-                    "cantidad" => $nuevaCantidad,
-                    "importe" => $nuevoImporte,
-                ]);
-                $this->actualizar_stock(array($detalleExistente), false);
-
-                // Actualizar detallesEdit para el producto existente
-                $this->detallesEdit[$detalleExistente->id] = [
-                    "cantidad" => $nuevaCantidad,
-                    "importe" => $nuevoImporte,
-                ];
-                //dd($this->pedidoEnEdicion, $detalleExistente, $nuevaCantidad, $nuevoImporte, $this->detallesEdit);
-            } else {
-                // Si no existe, crear nuevo detalle
-                $cantidad = $producto->cantidad == 1 ? 1 : 0.01;
-                $importe =
-                    $producto->cantidad == 1
-                    ? $precio
-                    : $precio / $producto->cantidad;
-
-                if ($producto->f_tipo_afectacion_id == '21') {
-                    $importe = 0;
+                if (!$producto) {
+                    throw new \Exception("Producto no encontrado");
                 }
-                $importe = number_format_punto2($importe);
-                // Crear el nuevo detalle directamente en bd (mejorar)
-                $nuevoDetalle = $this->pedidoEnEdicion
-                ->pedidoDetalles()
-                ->create([
-                    "producto_id" => $productoId,
-                    "producto_name" => $producto->name,
-                    "producto_precio" => $precio,
-                    "cantidad" => $cantidad,
-                    "importe" => $importe,
-                    "producto_cantidad_caja" => $producto->cantidad,
-                    "lista_precio" => $this->pedidoEnEdicion->lista_precio,
-                    "almacen_producto_id" => $producto->almacenProductos->first()->id,
-                ]);
-                $this->validar_stock_precio(array($nuevoDetalle));
-                $this->actualizar_stock(array($nuevoDetalle), false);
+                if (!$producto->almacenProductos->first()) {
+                    throw new \Exception("Este producto aún no ha sido ingresado en almacén. Sin Stock Disponible.");
+                }
 
-                // Agregar el nuevo detalle a detallesEdit
-                $this->detallesEdit[$nuevoDetalle->id] = [
-                    "cantidad" => $cantidad,
-                    "importe" => $importe,
-                ];
-            }
+                $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
 
-            // Recalcular totales
-            $detallesArray = $this->pedidoEnEdicion
-                ->pedidoDetalles()
-                ->get()
-                ->map(function ($detalle) {
-                    return [
-                        "producto_id" => $detalle->producto_id,
-                        "nombre" => $detalle->producto_name,
-                        "cantidad" => $detalle->cantidad,
-                        "importe" => $detalle->importe,
-                        "tipAfeIgv" => $detalle->producto->f_tipo_afectacion_id ?? 10,
-                        "tipSisIsc" => "01",
-                        "producto_precio" => $detalle->producto_precio,
-                        "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
-                        "lista_precio" => $detalle->lista_precio,
+                // Verificar si el producto ya existe en el pedido
+                $detalleExistente = $this->pedidoEnEdicion
+                    ->pedidoDetalles()
+                    ->where("producto_id", $productoId)
+                    ->first();
+
+                if ($detalleExistente) {
+                    // Si existe, aumentar cantidad
+                    $nuevaCantidad = $detalleExistente->cantidad + convertir_a_cajas(1, $producto->cantidad);
+
+                    $nuevaCantidad = $this->ajustarCantidadDetalle(
+                        $nuevaCantidad,
+                        $producto->cantidad
+                    );
+
+                    $nuevoImporte = $this->calcularImporteDetalle(
+                        $nuevaCantidad,
+                        $precio,
+                        $producto->cantidad,
+                        $producto->f_tipo_afectacion_id
+                    );
+
+                    $detail = is_object($detalleExistente) ? clone $detalleExistente : $detalleExistente;
+                    $cant_actual = convertir_a_paquetes(
+                        $detail->cantidad,
+                        $detail->producto_cantidad_caja
+                    );
+                    $cant_nueva = convertir_a_paquetes(
+                        $nuevaCantidad,
+                        $detail->producto_cantidad_caja
+                    );
+                    $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual), $detail->producto_cantidad_caja);
+                    $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
+                    $detail->importe = $nuevoImporte;
+                    $array_detalles[] = $detail->toArray();
+
+                    $this->validar_stock_precio($array_detalles);
+
+                    $this->actualizar_stock(array($detalleExistente), true);
+                    // Actualizar el detalleExistente existente directamente en bd (mejorar)
+                    $detalleExistente->update([
+                        "cantidad" => $nuevaCantidad,
+                        "importe" => $nuevoImporte,
+                        "cantidad_unidades" => convertir_a_paquetes($nuevaCantidad, $producto->cantidad)
+                    ]);
+                    $this->actualizar_stock(array($detalleExistente), false);
+
+                    // Actualizar detallesEdit para el producto existente
+                    $this->detallesEdit[$detalleExistente->id] = [
+                        "cantidad" => $nuevaCantidad,
+                        "importe" => $nuevoImporte,
+                        "cantidad_unidades" => convertir_a_paquetes($nuevaCantidad, $producto->cantidad),
                     ];
-                })
-                ->toArray();
+                    //dd($this->pedidoEnEdicion, $detalleExistente, $nuevaCantidad, $nuevoImporte, $this->detallesEdit);
+                } else {
+                    // Si no existe, crear nuevo detalle
+                    $cantidad = $producto->cantidad == 1 ? 1 : 0.01;
+                    $importe =
+                        $producto->cantidad == 1
+                        ? $precio
+                        : $precio / $producto->cantidad;
 
-            $this->totales = $this->setSubTotalesIgv($detallesArray);
+                    if ($producto->f_tipo_afectacion_id == '21') {
+                        $importe = 0;
+                    }
+                    $importe = number_format_punto2($importe);
+                    // Crear el nuevo detalle directamente en bd (mejorar)
+                    $nuevoDetalle = $this->pedidoEnEdicion
+                        ->pedidoDetalles()
+                        ->create([
+                            "producto_id" => $productoId,
+                            "producto_name" => $producto->name,
+                            "producto_precio" => $precio,
+                            "cantidad" => $cantidad,
+                            "importe" => $importe,
+                            "producto_cantidad_caja" => $producto->cantidad,
+                            "lista_precio" => $this->pedidoEnEdicion->lista_precio,
+                            "almacen_producto_id" => $producto->almacenProductos->first()->id,
+                        ]);
+                    $this->validar_stock_precio(array($nuevoDetalle));
+                    $this->actualizar_stock(array($nuevoDetalle), false);
 
-            // Actualizar el pedido
-            $this->pedidoEnEdicion->update([
-                "valor_venta" => $this->totales["valorVenta"],
-                "total_impuestos" => $this->totales["totalImpuestos"],
-                "importe_total" => $this->totales["subTotal"],
-            ]);
+                    // Agregar el nuevo detalle a detallesEdit
+                    $this->detallesEdit[$nuevoDetalle->id] = [
+                        "cantidad" => $cantidad,
+                        "importe" => $importe,
+                    ];
+                }
 
-            // Recargar el pedido
-            $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
-                "pedidoDetalles.producto",
-            ]);
+                // Recalcular totales
+                $detallesArray = $this->pedidoEnEdicion
+                    ->pedidoDetalles()
+                    ->get()
+                    ->map(function ($detalle) {
+                        return [
+                            "producto_id" => $detalle->producto_id,
+                            "nombre" => $detalle->producto_name,
+                            "cantidad" => $detalle->cantidad,
+                            "importe" => $detalle->importe,
+                            "tipAfeIgv" => $detalle->producto->f_tipo_afectacion_id ?? 10,
+                            "tipSisIsc" => "01",
+                            "producto_precio" => $detalle->producto_precio,
+                            "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                            "lista_precio" => $detalle->lista_precio,
+                        ];
+                    })
+                    ->toArray();
 
-            // Limpiar búsqueda
-            $this->search = "";
-            $this->productos = [];
+                $this->totales = $this->setSubTotalesIgv($detallesArray);
 
-            DB::commit();
+                // Actualizar el pedido
+                $this->pedidoEnEdicion->update([
+                    "valor_venta" => $this->totales["valorVenta"],
+                    "total_impuestos" => $this->totales["totalImpuestos"],
+                    "importe_total" => $this->totales["subTotal"],
+                ]);
 
-            $this->dispatch("notify", [
-                "message" => "Producto agregado correctamente",
-                "type" => "success",
-            ]);
-        });
+                // Recargar el pedido
+                $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
+                    "pedidoDetalles.producto",
+                ]);
+
+                // Limpiar búsqueda
+                $this->search = "";
+                $this->productos = [];
+
+                DB::commit();
+
+                $this->dispatch("notify", [
+                    "message" => "Producto agregado correctamente",
+                    "type" => "success",
+                ]);
+            });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
             $this->addError("error_guardar", $e->getMessage());
@@ -395,6 +394,7 @@ class PedidoReporteDiario extends Component
             $detalle->update([
                 "cantidad" => $cantidad,
                 "importe" => $nuevoImporte,
+                "cantidad_unidades" => convertir_a_paquetes($cantidad, $detalle->producto_cantidad_caja),
             ]);
 
             // Actualizar importe total del pedido
@@ -530,83 +530,85 @@ class PedidoReporteDiario extends Component
         try {
             DB::beginTransaction();
             Cache::lock('guardar_pedido', 15)->block(10, function () {
-            $array_detalles = [];
-            //dd($this->cambiosTemporales);
-            foreach ($this->cambiosTemporales as $detalleId => $cambio) {
-                $detail = PedidoDetalle::find($detalleId);
-                $cant_actual = convertir_a_paquetes(
-                    $detail->cantidad,
-                    $detail->producto_cantidad_caja
-                );
-                $cant_nueva = convertir_a_paquetes(
-                    $cambio["cantidad"],
-                    $detail->producto_cantidad_caja
-                );
-                $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual),
-                    $detail->producto_cantidad_caja);
-                $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
-                $detail->importe = $cambio["importe"];
-                $array_detalles[] = $detail->toArray();
-            }
-            $this->validar_stock_precio($array_detalles);
+                $array_detalles = [];
+                //dd($this->cambiosTemporales);
+                foreach ($this->cambiosTemporales as $detalleId => $cambio) {
+                    $detail = PedidoDetalle::find($detalleId);
+                    $cant_actual = convertir_a_paquetes(
+                        $detail->cantidad,
+                        $detail->producto_cantidad_caja
+                    );
+                    $cant_nueva = convertir_a_paquetes(
+                        $cambio["cantidad"],
+                        $detail->producto_cantidad_caja
+                    );
+                    $cant_diferencia = convertir_a_cajas(($cant_nueva - $cant_actual),
+                        $detail->producto_cantidad_caja
+                    );
+                    $detail->cantidad = ($cant_diferencia < 0) ? 0 : $cant_diferencia;
+                    $detail->importe = $cambio["importe"];
+                    $array_detalles[] = $detail->toArray();
+                }
+                $this->validar_stock_precio($array_detalles);
 
-            // Aplicar los cambios temporales
-            foreach ($this->cambiosTemporales as $detalleId => $cambio) {
-                $detalle = PedidoDetalle::find($detalleId);
-                $this->actualizar_stock(array($detalle), true);
-                $detalle->update([
-                    "cantidad" => $cambio["cantidad"],
-                    "importe" => $cambio["importe"],
+                // Aplicar los cambios temporales
+                foreach ($this->cambiosTemporales as $detalleId => $cambio) {
+                    $detalle = PedidoDetalle::find($detalleId);
+                    $this->actualizar_stock(array($detalle), true);
+                    $detalle->update([
+                        "cantidad" => $cambio["cantidad"],
+                        "importe" => $cambio["importe"],
+                        "cantidad_unidades" => $cambio["cantidad_unidades"],
+                    ]);
+                    $this->actualizar_stock(array($detalle), false);
+                }
+
+                // Recalcular totales basados en los detalles actualizados
+                $detalles = $this->pedidoEnEdicion->pedidoDetalles()->get();
+                $detallesArray = $detalles
+                    ->map(function ($detalle) {
+                        return [
+                            "producto_id" => $detalle->producto_id,
+                            "nombre" => $detalle->producto_name,
+                            "cantidad" => $detalle->cantidad,
+                            "importe" => $detalle->importe,
+                            "tipAfeIgv" =>
+                            $detalle->producto->f_tipo_afectacion_id ?? 10,
+                            "tipSisIsc" => "01",
+                            "producto_precio" => $detalle->producto_precio,
+                            "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
+                            "lista_precio" => $detalle->lista_precio,
+                        ];
+                    })
+                    ->toArray();
+
+                $totalesTemp = $this->setSubTotalesIgv($detallesArray);
+
+                // Actualizar el pedido con los valores calculados
+                $this->pedidoEnEdicion->update([
+                    "comentario" => $this->comentarios,
+                    "valor_venta" => $totalesTemp["valorVenta"],
+                    "total_impuestos" => $totalesTemp["totalImpuestos"],
+                    "importe_total" => $totalesTemp["subTotal"],
+                    "monto_redondeo" => $totalesTemp["redondeo"] ?? 0,
                 ]);
-                $this->actualizar_stock(array($detalle), false);
-            }
 
-            // Recalcular totales basados en los detalles actualizados
-            $detalles = $this->pedidoEnEdicion->pedidoDetalles()->get();
-            $detallesArray = $detalles
-                ->map(function ($detalle) {
-                    return [
-                        "producto_id" => $detalle->producto_id,
-                        "nombre" => $detalle->producto_name,
-                        "cantidad" => $detalle->cantidad,
-                        "importe" => $detalle->importe,
-                        "tipAfeIgv" =>
-                        $detalle->producto->f_tipo_afectacion_id ?? 10,
-                        "tipSisIsc" => "01",
-                        "producto_precio" => $detalle->producto_precio,
-                        "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
-                        "lista_precio" => $detalle->lista_precio,
-                    ];
-                })
-                ->toArray();
+                DB::commit();
 
-            $totalesTemp = $this->setSubTotalesIgv($detallesArray);
+                // Limpiar cambios temporales
+                $this->cambiosTemporales = [];
 
-            // Actualizar el pedido con los valores calculados
-            $this->pedidoEnEdicion->update([
-                "comentario" => $this->comentarios,
-                "valor_venta" => $totalesTemp["valorVenta"],
-                "total_impuestos" => $totalesTemp["totalImpuestos"],
-                "importe_total" => $totalesTemp["subTotal"],
-                "monto_redondeo" => $totalesTemp["redondeo"] ?? 0,
-            ]);
+                $this->dispatch("notify", [
+                    "message" => "Cambios guardados correctamente",
+                    "type" => "success",
+                ]);
 
-            DB::commit();
+                $this->dispatch("close-modal");
+                $this->pedidoEnEdicion = null;
+                $this->detallesEdit = [];
+                $this->comentarios = "";
 
-            // Limpiar cambios temporales
-            $this->cambiosTemporales = [];
-
-            $this->dispatch("notify", [
-                "message" => "Cambios guardados correctamente",
-                "type" => "success",
-            ]);
-
-            $this->dispatch("close-modal");
-            $this->pedidoEnEdicion = null;
-            $this->detallesEdit = [];
-            $this->comentarios = "";
-
-            $this->mount();
+                $this->mount();
             });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollBack();
@@ -653,23 +655,24 @@ class PedidoReporteDiario extends Component
             $this->cambiosTemporales[$detalleId] = [
                 "cantidad" => $cantidad,
                 "importe" => $importe,
+                "cantidad_unidades" => convertir_a_paquetes($cantidad, $producto->cantidad),
             ];
 
             // Actualiza el array de detalles en edición (solo para visualización)
             $this->detallesEdit[$detalleId] = [
                 "cantidad" => $cantidad,
                 "importe" => $importe,
+                "cantidad_unidades" => convertir_a_paquetes($cantidad, $producto->cantidad),
             ];
 
             // Recalcula totales temporales
             $detallesArray = $this->pedidoEnEdicion->pedidoDetalles
                 ->map(function ($det) use ($detalleId) {
                     $cambio = $this->cambiosTemporales[$det->id] ?? null;
+                    $cambio_cantidad = $cambio ? $cambio["cantidad"] : $det->cantidad;
                     return [
                         "producto_id" => $det->producto_id,
-                        "cantidad" => $cambio
-                            ? $cambio["cantidad"]
-                            : $det->cantidad,
+                        "cantidad" => $cambio_cantidad,
                         "importe" => $cambio
                             ? $cambio["importe"]
                             : $det->importe,
@@ -702,30 +705,35 @@ class PedidoReporteDiario extends Component
     private function ajustarCantidadDetalle($cantidad, $cantidadPorCaja)
     {
         // Convierte el valor en número
-        $cantidad = ($cantidad == "" ? 0 : $cantidad);
-        $cantidad = number_format_punto2($cantidad <= 0 ? 0.01 : $cantidad);
+        $cantidad = ($cantidad === "" || $cantidad === null) ? 0 : (float) $cantidad;
+        if ($cantidad <= 0) {
+            $cantidad = convertir_a_cajas(1, $cantidadPorCaja);
+        }
+
+        $digitos = calcular_digitos($cantidadPorCaja);
+        $cantidad = number_format($cantidad, $digitos, '.', '');
 
         // Si la cantidad es menor a 1, asumimos que son paquetes
         if ($cantidad < 1) {
-            $paquetes = round($cantidad * 100); // Convertir a paquetes
+            $paquetes = round($cantidad * 10 ** $digitos); // Convertir a paquetes
             if ($paquetes >= $cantidadPorCaja) {
                 $cajas = floor($paquetes / $cantidadPorCaja);
                 $paquetes = $paquetes % $cantidadPorCaja;
-                return $cajas . "." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+                return $cajas . "." . str_pad($paquetes, $digitos, "0", STR_PAD_LEFT);
             }
-            return "0." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+            return "0." . str_pad($paquetes, $digitos, "0", STR_PAD_LEFT);
         }
 
         // Para cantidades mayores a 1 (cajas)
         $cajas = floor($cantidad);
-        $paquetes = round(($cantidad - $cajas) * 100);
+        $paquetes = round(($cantidad - $cajas) * 10 ** $digitos);
 
         if ($paquetes >= $cantidadPorCaja) {
             $cajas += floor($paquetes / $cantidadPorCaja);
             $paquetes = $paquetes % $cantidadPorCaja;
         }
 
-        return $cajas . "." . str_pad($paquetes, 2, "0", STR_PAD_LEFT);
+        return $cajas . "." . str_pad($paquetes, $digitos, "0", STR_PAD_LEFT);
     }
 
     private function calcularImporteDetalle(
@@ -734,7 +742,7 @@ class PedidoReporteDiario extends Component
         $cantidadPorCaja,
         $f_tipo_afectacion_id = null
     ) {
-        $cantidad = number_format_punto2($cantidad);
+        $cantidad = number_format($cantidad, calcular_digitos($cantidadPorCaja), '.', '');
         // Separar cajas y paquetes
         list($cajas, $paquetes) = explode(".", $cantidad);
         $cajas = intval($cajas);

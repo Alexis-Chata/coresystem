@@ -253,23 +253,23 @@
 
                         <!-- Contenedor para los inputs numéricos -->
                         <div class="flex gap-4 items-center mt-2">
-                            <!-- Stock -->
+                            <!-- Factor -->
                             <div class="flex-1">
-                                <label class="block text-gray-700 text-sm mb-1">Stock</label>
+                                <label class="block text-gray-700 text-sm mb-1">Factor</label>
                                 <input type="text" x-model="component.stock"
-                                    class="w-full border rounded px-3 py-2 bg-gray-100" placeholder="Stock" readonly>
+                                    class="w-full border rounded px-3 py-2 bg-gray-100" placeholder="Factor" readonly>
                             </div>
 
                             <!-- Cantidad -->
                             <div class="flex-1">
                                 <label class="block text-gray-700 text-sm mb-1">Cantidad</label>
                                 <input type="number" x-model="component.cantidad"
-                                    @input="if(parseFloat(component.cantidad) > parseFloat(component.stock)) {
+                                    @input="if(parseFloat(component.cantidad) <= parseFloat(0)) {
                                         component.cantidad = component.stock;
-                                        alert('La cantidad no puede superar el stock disponible');
+                                        alert('Cantidad no valida, debe ser mayor a 0');
                                     }
                                     $wire.updateComponents(components)"
-                                    class="w-full border rounded px-3 py-2" placeholder="Cantidad" min="1"
+                                    class="w-full border rounded px-3 py-2" placeholder="Cantidad" min="0.01"
                                     :max="component.stock">
                             </div>
 
@@ -277,7 +277,11 @@
                             <div class="flex-1">
                                 <label class="block text-gray-700 text-sm mb-1">Subcantidad</label>
                                 <input type="number" x-model="component.subcantidad"
-                                    @input="$wire.updateComponents(components)"
+                                    @input="if(parseFloat(component.subcantidad) <= parseFloat(0)) {
+                                        component.subcantidad = component.stock;
+                                        alert('SubCantidad no valida, debe ser mayor a 0');
+                                    }
+                                    $wire.updateComponents(components)"
                                     class="w-full border rounded px-3 py-2" placeholder="Subcantidad" min="0">
                             </div>
 

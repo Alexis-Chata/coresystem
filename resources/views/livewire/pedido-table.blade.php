@@ -228,7 +228,7 @@
                         }
 
                         td input {
-                            width: clamp(35px, calc(34px + 4vw), 70px);
+                            width: clamp(35px, calc(50px + 4vw), 80px);
                         }
 
                         thead th:last-child {
@@ -263,9 +263,10 @@
                             <tr class="text-xs bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                 <td class="p-2 sm:px-6 sm:py-4" x-text="`${item.id} - ${item.nombre}`"></td>
                                 <td class="p-2 sm:px-6 sm:py-4">
-                                    <input type="number" min="0.01" step="0.01"
-                                        class="w-20 px-2 py-1 text-sm border rounded" x-model="item.cantidad"
-                                        @input="actualizar_importe(index)" @blur="actualizar_importe_items(index)">
+                                    <input type="number" class="min-w-[60px] px-1 py-1 text-sm border rounded"
+                                        x-model="item.cantidad" :min="calcularMinStep(item.factor).min"
+                                        :step="calcularMinStep(item.factor).step" @input="actualizar_importe(index)"
+                                        @blur="actualizar_importe_items(index)">
                                 </td>
                                 <td class="p-2 sm:px-6 sm:py-4">
                                     <span x-text="`S/. ${item.importe}`"></span>
@@ -367,9 +368,27 @@
                     Livewire.dispatch('recargar-productos');
                 },
 
+                // helper: obtiene la cantidad de dígitos para representar (factor - 1), mínimo 2
+                calcularDigitos(factor) {
+                    const f = Math.max(1, Number(factor) || 0);
+                    const maxUnits = Math.max(0, f - 1); // p.ej. factor=1000 -> maxUnits=999
+                    const digits = Math.max(2, String(Math.abs(Math.floor(maxUnits))).length);
+                    return digits;
+                },
+
+                calcularMinStep(factor) {
+                    let decimales = this.calcularDigitos(factor);
+                    let step = "0." + "0".repeat(decimales - 1) + "1"; // ejemplo: 0.001, 0.0001, etc.
+                    return {
+                        min: step,
+                        step: step
+                    };
+                },
+
                 agregar_producto_item(producto) {
+                    //console.log(this.cantidad_ofrecida, typeof this.cantidad_ofrecida);
                     let ofrecida = parseFloat(this.cantidad_ofrecida || 0);
-                    if (isNaN(ofrecida) || ofrecida <= 0) return;
+                    if (isNaN(ofrecida) || ofrecida <= 0) return; // validacion
 
                     const factor = parseFloat(producto.factor || 1);
                     const precio = parseFloat(producto.precio || 0);
@@ -379,7 +398,8 @@
                         cantidad_convertida,
                         total_unidades,
                         importe
-                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
+                    } = this.convertirCantidad(this.cantidad_ofrecida, factor, precio, f_tipo_afectacion_id);
+                    //console.log(cantidad_convertida, total_unidades, importe);
 
                     const existe = this.items.find(i => i.id === producto.id);
                     if (!existe) {
@@ -398,20 +418,38 @@
                     this.open = false;
                 },
                 convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id) {
-                    const parte_entera = Math.floor(ofrecida);
-                    const decimal = ofrecida - parte_entera;
+                    // 1) digitos según factor (corrige el error para factores tipo 1000)
+                    const digitos = this.calcularDigitos(factor);
 
-                    const unidades_extra = Math.round(decimal * 100);
-                    const total_unidades = parte_entera * factor + unidades_extra;
+                    // 2) normalizar input como string y arreglar casos como ".015" o "" o null
+                    let ofrecidaStr = String(ofrecida ?? "0").trim();
+                    if (ofrecidaStr === "") ofrecidaStr = "0";
+                    if (ofrecidaStr.startsWith(".")) ofrecidaStr = "0" + ofrecidaStr; // ".015" -> "0.015"
+                    if (ofrecidaStr.endsWith(".")) ofrecidaStr = ofrecidaStr + "0"; // "1." -> "1.0"
+
+                    // 3) separar entero y decimal (asegurando que entero no quede vacío)
+                    let [enteroStr = "0", decimalStr = ""] = ofrecidaStr.split(".");
+                    if (enteroStr === "") enteroStr = "0";
+                    decimalStr = decimalStr || "";
+
+                    // 4) truncar a 'digitos' y rellenar a la derecha para que tenga exactamente 'digitos'
+                    decimalStr = decimalStr.slice(0, digitos);
+                    if (decimalStr.length < digitos) decimalStr = decimalStr.padEnd(digitos, "0");
+
+                    // 5) parseos seguros
+                    const parte_entera = parseInt(enteroStr, 10) || 0;
+                    const parte_decimal = parseInt(decimalStr, 10) || 0;
+
+                    // 6) cálculo en unidades
+                    const total_unidades = parte_entera * factor + parte_decimal;
 
                     const nuevos_bultos = Math.floor(total_unidades / factor);
                     const nuevas_unidades = total_unidades % factor;
 
-                    const cantidad_convertida = parseFloat(
-                        `${nuevos_bultos}.${nuevas_unidades.toString().padStart(2, '0')}`
-                    );
+                    const cantidad_convertida = `${nuevos_bultos}.${nuevas_unidades.toString().padStart(digitos, "0")}`;
 
                     const importe = parseFloat(((precio * total_unidades) / factor).toFixed(2));
+
                     if (f_tipo_afectacion_id === 21) {
                         // Si es tipo de afectación 21, no se aplica IGV
                         return {
@@ -420,6 +458,7 @@
                             importe: parseFloat((0).toFixed(2))
                         };
                     }
+
                     return {
                         cantidad_convertida: cantidad_convertida,
                         total_unidades: total_unidades.toFixed(2),
@@ -433,14 +472,15 @@
                 },
                 actualizar_importe_items(index) {
                     const item = this.items[index];
+                    let digitos = this.calcularDigitos(item.factor);
                     cant = this.actualizar_importe(index)
                     if (cant !== undefined && !isNaN(parseFloat(cant))) {
-                        item.cantidad = parseFloat(cant).toFixed(2);
+                        item.cantidad = parseFloat(cant).toFixed(digitos);
                     }
-                    console.log("actualizar_importe_items");
+                    //console.log("actualizar_importe_items", item);
                 },
                 actualizar_importe(index) {
-                    console.log("actualizar_importe");
+                    //console.log("actualizar_importe");
                     const item = this.items[index];
                     const cantidadStr = item.cantidad?.toString() || '';
 
@@ -448,6 +488,7 @@
                         cantidadStr.endsWith('.') ||
                         cantidadStr.endsWith('.0') ||
                         cantidadStr.endsWith('.00') ||
+                        cantidadStr.endsWith('.000') ||
                         cantidadStr === '' ||
                         isNaN(parseFloat(cantidadStr)) ||
                         parseFloat(cantidadStr) === 0
@@ -457,11 +498,11 @@
 
                     const factor = parseFloat(item.factor || 1);
                     const precio = parseFloat(item.precio || 0);
-                    const cantidad = parseFloat(item.cantidad).toFixed(2);
+                    const cantidad = parseFloat(item.cantidad).toFixed(this.calcularDigitos(factor));
                     const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
 
                     const [bultosStr, unidadesStr] = cantidad.split('.');
-                    const ofrecida = (parseInt(bultosStr) || 0) + (parseInt(unidadesStr || '0') / 100);
+                    const ofrecida = (parseInt(bultosStr) || 0) + (parseInt(unidadesStr || '0') / (10 ** this.calcularDigitos(factor)));
 
                     const {
                         cantidad_convertida,

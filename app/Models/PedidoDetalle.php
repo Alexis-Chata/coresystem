@@ -22,6 +22,7 @@ class PedidoDetalle extends Model implements Auditable
         'lista_precio',
         'importe',
         'almacen_producto_id',
+        'cantidad_unidades',
     ];
 
     public function pedido()
@@ -38,11 +39,13 @@ class PedidoDetalle extends Model implements Auditable
 
     public function getQcanpedbultosAttribute()
     {
-        return explode(localeconv()['decimal_point'],number_format_punto2($this->cantidad))[0] ?? 0;
+        $digitos = calcular_digitos($this->producto_cantidad_caja);
+        return explode(localeconv()['decimal_point'],number_format($this->cantidad, $digitos, ".", ""))[0] ?? 0;
     }
 
     public function getQcanpedunidadsAttribute()
     {
-        return explode(localeconv()['decimal_point'], number_format_punto2($this->cantidad))[1] ?? 0;
+        $digitos = calcular_digitos($this->producto_cantidad_caja);
+        return explode(localeconv()['decimal_point'], number_format($this->cantidad, $digitos, ".", ""))[1] ?? 0;
     }
 }

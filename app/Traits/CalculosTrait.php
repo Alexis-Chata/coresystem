@@ -18,8 +18,9 @@ trait CalculosTrait
             $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
             $data_detalle['ref_producto_precio_cajon'] = number_format_punto2($data_detalle['ref_producto_precio_cajon'] ?? $data_detalle['producto_precio']);
             $data_detalle['ref_producto_cantidad_cajon'] = $data_detalle['ref_producto_cantidad_cajon'] ?? $data_detalle['producto_cantidad_caja'];
-            $data_detalle['ref_producto_cant_vendida'] = number_format_punto2($data_detalle['ref_producto_cant_vendida'] ?? $data_detalle['cantidad']);
-            list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', number_format_punto2($data_detalle['ref_producto_cant_vendida']));
+            $digitos = calcular_digitos($data_detalle['ref_producto_cantidad_cajon']);
+            $data_detalle['ref_producto_cant_vendida'] = number_format($data_detalle['ref_producto_cant_vendida'] ?? $data_detalle['cantidad'], $digitos, '.', '');
+            list($data_detalle['bultos'], $data_detalle['unidades']) = explode('.', $data_detalle['ref_producto_cant_vendida']);
             $data_detalle['cantidad'] = ($data_detalle['bultos'] * $data_detalle['ref_producto_cantidad_cajon']) + $data_detalle['unidades'];
 
             if ($data_detalle['bultos'] == 0 and $data_detalle['unidades'] == 0) {
@@ -29,7 +30,7 @@ trait CalculosTrait
             $data_detalle['codProducto'] = $data_detalle['producto_id'];
             $data_detalle['unidad'] = "NIU";
             $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];
-            $data_detalle['cantidad'] = number_format_punto2($data_detalle['cantidad']);
+            $data_detalle['cantidad'] = number_format_punto2($data_detalle['cantidad']); // unidades o paquetes totales
             $data_detalle['tipAfeIgv'] = $data_detalle['tipAfeIgv'] ?? $producto->f_tipo_afectacion_id;
             $data_detalle['mtoPrecioUnitario'] = $data_detalle['importe'] / $data_detalle['cantidad'];
             $data_detalle['porcentajeIgv'] = $producto->porcentaje_igv ?? 0;

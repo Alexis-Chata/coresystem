@@ -187,6 +187,11 @@ final class ClienteTable extends PowerGridComponent
 
     public function createCliente()
     {
+        $this->validate([
+            'newCliente.latitude' => 'nullable|numeric|between:-90,90',
+            'newCliente.longitude' => 'nullable|numeric|between:-180,180',
+        ]);
+
         $this->newCliente['razon_social'] = mb_strtoupper(preg_replace('/\s+/', ' ', trim($this->newCliente['razon_social'])), 'UTF-8');
         $this->newCliente['direccion'] = mb_strtoupper(preg_replace('/\s+/', ' ', trim($this->newCliente['direccion'])), 'UTF-8');
         // Establecer valores por defecto si no están presentes
@@ -242,7 +247,7 @@ final class ClienteTable extends PowerGridComponent
         ], $messages);
 
         $ruta = Ruta::find($this->newCliente['ruta_id']);
-        if($ruta->codigo){
+        if ($ruta->codigo) {
             $this->newCliente['ubigeo_inei'] = $ruta->codigo;
         }
 

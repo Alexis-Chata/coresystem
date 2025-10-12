@@ -3,7 +3,7 @@
 @section('content')
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <livewire:empleado-table/>
+    <livewire:empleado-table />
     <script>
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('empleado-created', message => {

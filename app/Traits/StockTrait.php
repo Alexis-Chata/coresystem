@@ -122,8 +122,8 @@ trait StockTrait
             }
 
             if ($tipo_movimiento == 'ingreso') {
-                $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), true);
-                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), true);
+                $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format($almacenProducto->stock_disponible, calcular_digitos($producto->cantidad), '.', ''), number_format($detalle->cantidad, calcular_digitos($producto->cantidad), '.', ''), true);
+                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format($almacenProducto->stock_fisico, calcular_digitos($producto->cantidad), '.', ''), number_format($detalle->cantidad, calcular_digitos($producto->cantidad), '.', ''), true);
                 if ($anulando) {
                     $new_stock = ["stock_fisico" => $nuevo_stock_fisico];
                 } else {
@@ -139,10 +139,10 @@ trait StockTrait
                     throw new \Exception("Stock insuficiente para el producto {$producto->name}. Stock disponible: {$almacenProducto->stock_disponible}. Solicitado {$detalle->cantidad}");
                 }
 
-                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_fisico), number_format_punto2($detalle->cantidad), false);
+                $nuevo_stock_fisico = $this->calculandoNuevoStock($producto, number_format($almacenProducto->stock_fisico, calcular_digitos($producto->cantidad), '.', ''), number_format($detalle->cantidad, calcular_digitos($producto->cantidad), '.', ''), false);
                 $almacenProducto->update(["stock_fisico" => $nuevo_stock_fisico]);
                 if ($codigo_movimiento != '201') {
-                    $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), false);
+                    $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format($almacenProducto->stock_disponible, calcular_digitos($producto->cantidad), '.', ''), number_format($detalle->cantidad, calcular_digitos($producto->cantidad), '.', ''), false);
                     $almacenProducto->update(["stock_disponible" => $nuevo_stock_disponible]);
                 }
             }
@@ -164,7 +164,7 @@ trait StockTrait
     {
         $producto = Producto::withTrashed()->find($detalle->producto_id);
         $almacenProducto = $producto->almacenProductos()->where("almacen_id", $almacenId)->first();
-        $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format_punto2($almacenProducto->stock_disponible), number_format_punto2($detalle->cantidad), $anulando);
+        $nuevo_stock_disponible = $this->calculandoNuevoStock($producto, number_format($almacenProducto->stock_disponible, calcular_digitos($producto->cantidad), '.', ''), number_format($detalle->cantidad, calcular_digitos($producto->cantidad), '.', ''), $anulando);
 
         if (!$almacenProducto) {
             $almacenProducto = $producto->almacenProductos()->create(["almacen_id" => $almacenId, "stock_disponible" => 0, "stock_fisico" => 0]);
@@ -196,7 +196,7 @@ trait StockTrait
         } else {
             $nuevo_stock_display = $stock_disponible_display - $cantidad_detalle_display;
         }
-        $nuevo_stock = intval($nuevo_stock_display / $producto->cantidad) + intval($nuevo_stock_display % $producto->cantidad) / 100;
+        $nuevo_stock = intval($nuevo_stock_display / $producto->cantidad) + intval($nuevo_stock_display % $producto->cantidad) / (10 ** calcular_digitos($producto->cantidad));
         return $nuevo_stock;
     }
 }

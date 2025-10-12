@@ -70,10 +70,10 @@ final class AlmacenProductoTable extends PowerGridComponent
                 return $row->almacen->name;
             })
             ->add('stock_disponible', function ($row) {
-                return number_format_punto2($row->stock_disponible);
+                return number_format($row->stock_disponible, calcular_digitos($row->producto->cantidad), '.', '');
             })
             ->add('stock_fisico', function ($row) {
-                return number_format_punto2($row->stock_fisico);
+                return number_format($row->stock_fisico, calcular_digitos($row->producto->cantidad), '.', '');
             })
             ->add('marca_name', function ($row) {
                 return $row->producto->marca->name;

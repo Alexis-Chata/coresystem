@@ -147,6 +147,7 @@ class Movimiento extends Component
             $this->detalles[] = [
                 "producto_id" => $producto->id,
                 "producto_name" => $producto->name,
+                "factor" => $producto->cantidad,
                 "cantidad" => number_format($cantidad, 2, '.', ''),
                 "codigo" => $producto->id,
                 "precio_venta_unitario" => $precio,
@@ -215,10 +216,10 @@ class Movimiento extends Component
 
             // Interpretar la cantidad ingresada
             $cantidad = $detalle['cantidad']; // Cantidad ingresada en cajas y paquetes
-
+            $digitos = calcular_digitos($cantidadProducto); // Obtener los dígitos decimales según la cantidad del producto
             // Separar la cantidad en cajas y paquetes
             $cajas = floor($cantidad); // Parte entera representa las cajas
-            $paquetes = round(($cantidad - $cajas) * 100); // Parte decimal convertida a paquetes
+            $paquetes = round(($cantidad - $cajas) * (10 ** $digitos)); // Parte decimal convertida a paquetes
 
             // Validar que los paquetes no excedan la cantidad de productos por caja
             if ($paquetes >= $cantidadProducto) {
@@ -313,7 +314,8 @@ class Movimiento extends Component
     public function ajustarCantidad($index)
     {
         $detalle = $this->detalles[$index];
-        $cantidad = number_format($detalle['cantidad'], 2, '.', '');
+        $digitos = calcular_digitos($detalle['factor']);
+        $cantidad = number_format($detalle['cantidad'], $digitos, '.', '');
 
         // Separar la cantidad ingresada en cajas y paquetes
         if (strpos($cantidad, '.') !== false) {
@@ -336,7 +338,7 @@ class Movimiento extends Component
         }
 
         // Actualizar la cantidad en el detalle
-        $this->detalles[$index]['cantidad'] = number_format($cajas + ($paquetes / 100), 2, '.', ''); // Convertir de nuevo a formato X.Y
+        $this->detalles[$index]['cantidad'] = number_format($cajas + ($paquetes / (10 ** $digitos)), $digitos, '.', ''); // Convertir de nuevo a formato X.Y
 
         // Recalcular el importe
         $this->calcularImporte($index);
