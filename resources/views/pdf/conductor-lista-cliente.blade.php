@@ -225,19 +225,24 @@
         <tbody>
             @foreach ($comprobantes_rutas->groupBy('ruta_id') as $key => $comprobantes)
                 <tr class="empty-row">
-                    <td colspan="7" style="font-weight: bold;font-size: 11px;">*** RUTA: {{ str_pad($key, 3, '0', STR_PAD_LEFT) }} :
+                    <td colspan="7" style="font-weight: bold;font-size: 11px;">*** RUTA:
+                        {{ str_pad($key, 3, '0', STR_PAD_LEFT) }} :
                         {{ $rutas->find($key)->name }}
                     </td>
                 </tr>
                 @foreach ($comprobantes as $comprobante)
                     <tr>
                         <td>{{ str_pad($comprobante->cliente_id, 7, '0', STR_PAD_LEFT) }}</td>
-                        <td>{!! empty($comprobante->clientRazonSocial) ? '..............' : nl2br(wordwrap($comprobante->clientRazonSocial,30,"\n")) !!}</td>
-                        <td>{!! empty($comprobante->clientDireccion) ? '..............' : nl2br(wordwrap($comprobante->clientDireccion,50,"\n")) !!}</td>
+                        <td>{!! empty($comprobante->clientRazonSocial)
+                            ? '..............'
+                            : nl2br(wordwrap($comprobante->clientRazonSocial, 30, "\n")) !!}</td>
+                        <td>{!! empty($comprobante->clientDireccion)
+                            ? '..............'
+                            : nl2br(wordwrap($comprobante->clientDireccion, 50, "\n")) !!}</td>
                         <td>{{ $comprobante->serie }} - {{ str_pad($comprobante->correlativo, 8, '0', STR_PAD_LEFT) }}
                         </td>
                         <td style="text-align: right;">{{ number_format($comprobante->mtoImpVenta, 2) }}</td>
-                        <td>{!! empty($comprobante->pedido_obs) ? '..............' : nl2br(wordwrap($comprobante->pedido_obs,25,"\n")) !!}</td>
+                        <td>{!! empty($comprobante->pedido_obs) ? '..............' : nl2br(wordwrap($comprobante->pedido_obs, 25, "\n")) !!}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -307,7 +312,8 @@
             <td></td>
             <td style="font-weight: bold">{{ $comprobantes_rutas->unique('cliente_id')->count() }}</td>
             <td style="font-weight: bold">{{ $comprobantes_rutas->count() }}</td>
-            <td style="font-weight: bold; text-align: right">{{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
+            <td style="font-weight: bold; text-align: right">
+                {{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
         </tfoot>
     </table>
 
@@ -321,21 +327,21 @@
                 <td>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
                 <td>TOTAL FACTURAS</td>
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '01')->count() }}</td>
-                <td>{{ $comprobantes_rutas->where('tipoDoc', '01')->sum('mtoImpVenta') }}</td>
+                <td>{{ number_format($comprobantes_rutas->where('tipoDoc', '01')->sum('mtoImpVenta'), 2) }}</td>
             </tr>
             <tr>
                 <td></td>
                 <td></td>
                 <td>TOTAL BOLETAS</td>
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->count() }}</td>
-                <td>{{ $comprobantes_rutas->where('tipoDoc', '03')->sum('mtoImpVenta') }}</td>
+                <td>{{ number_format($comprobantes_rutas->where('tipoDoc', '03')->sum('mtoImpVenta'), 2) }}</td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
                 <td>TOTAL NOTA PEDIDO</td>
                 <td>{{ $comprobantes_rutas->where('tipoDoc', '00')->count() }}</td>
-                <td>{{ $comprobantes_rutas->where('tipoDoc', '00')->sum('mtoImpVenta') }}</td>
+                <td>{{ number_format($comprobantes_rutas->where('tipoDoc', '00')->sum('mtoImpVenta'), 2) }}</td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
@@ -350,11 +356,13 @@
             </tr>
         </tbody>
         <tfoot>
-            <td style="font-weight: bold; font-size: 11px">TOTAL IMPORTE ==></td>
-            <td style="font-weight: bold; font-size: 11px"><span>{{ $comprobantes_rutas->sum('mtoImpVenta') }}</span></td>
-            <td style="font-weight: bold; font-size: 11px">TOTAL DOCUMENTOS ===></td>
-            <td style="font-weight: bold; font-size: 11px">{{ $comprobantes_rutas->count() }}</td>
-            <td style="font-weight: bold; font-size: 11px">{{ $comprobantes_rutas->sum('mtoImpVenta') }}</td>
+            <td style="font-weight: bold; font-size: 13px">TOTAL IMPORTE ==></td>
+            <td style="font-weight: bold; font-size: 13px"><span>{{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</span>
+            </td>
+            <td style="font-weight: bold; font-size: 13px">TOTAL DOCUMENTOS ===></td>
+            <td style="font-weight: bold; font-size: 13px">{{ $comprobantes_rutas->count() }}</td>
+            <td style="font-weight: bold; font-size: 13px">
+                {{ number_format($comprobantes_rutas->sum('mtoImpVenta'), 2) }}</td>
         </tfoot>
     </table>
 
