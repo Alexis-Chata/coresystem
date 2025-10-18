@@ -308,6 +308,7 @@ class PedidoReporteDiario extends Component
                             "producto_cantidad_caja" => $producto->cantidad,
                             "lista_precio" => $this->pedidoEnEdicion->lista_precio,
                             "almacen_producto_id" => $producto->almacenProductos->first()->id,
+                            "cantidad_unidades" => convertir_a_paquetes($cantidad, $producto->cantidad),
                         ]);
                     $this->validar_stock_precio(array($nuevoDetalle));
                     $this->actualizar_stock(array($nuevoDetalle), false);

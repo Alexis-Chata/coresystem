@@ -51,8 +51,8 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
             ])
             ->selectRaw('FLOOR(pedido_detalles.cantidad_unidades / pedido_detalles.producto_cantidad_caja) as bultos')
             ->selectRaw('pedido_detalles.cantidad_unidades % pedido_detalles.producto_cantidad_caja as unidades')
-            ->selectRaw('CAST(ROUND((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja, 2) AS DECIMAL(10,2)) as calculando_importe')
-            ->selectRaw('ROUND((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja, 2) as verificacion_importe')
+            ->selectRaw('CAST(ROUND(((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja) + 0.0001, 2) AS DECIMAL(10,2)) as calculando_importe')
+            ->selectRaw('CASE WHEN ROUND(((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja) + 0.0001, 2) = pedido_detalles.importe THEN 1 ELSE 0 END as verificacion_importe')
             ->selectRaw('CASE WHEN pedido_detalles.producto_precio = producto_lista_precios.precio THEN 1 ELSE 0 END as verificacion_precio') // Nueva comparación de precios
             ->whereBetween('pedidos.fecha_emision', [$fechaInicio, $fechaFin])
             ->havingRaw('verificacion_importe = 0 OR verificacion_precio = 0') // Filtra solo los casos donde hay diferencias
