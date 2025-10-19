@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CoY46ui2.css",
+    "file": "assets/app-CEn77ZZh.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-CQeNlBSJ.css",
+    "file": "assets/tailadmin-DWAKorib.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true,
     "names": [
@@ -144,7 +144,7 @@
     "src": "resources/images/icon/icon-calendar.svg"
   },
   "resources/js/app.js": {
-    "file": "assets/app-C0G0cght.js",
+    "file": "assets/app-Bj43h_rG.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
