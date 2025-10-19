@@ -193,12 +193,12 @@
             </tr>
             <tr>
                 <td>DIVISION GALLETA</td>
-                <td class="center">Fecha Emisión del : {{ $movimiento->fecha_movimiento }}</td>
+                <td class="center">Fecha Emisión del : {{ format_date($movimiento->fecha_movimiento) }}</td>
                 <td class="right">{{ now()->format('d/m/Y') }}</td>
             </tr>
             <tr>
                 <td>SPVR68</td>
-                <td></td>
+                <td class="center">Fecha Reparo: {{ format_date_long($movimiento->fecha_liquidacion) }}</td>
                 <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
