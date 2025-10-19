@@ -7,6 +7,13 @@ if (!function_exists('format_date')) {
     }
 }
 
+if (!function_exists('format_date_long')) {
+    function format_date_long($date)
+    {
+        return \Carbon\Carbon::parse($date)->translatedFormat('d-m-Y (l)');
+    }
+}
+
 if (!function_exists('auth_id')) {
     function auth_id()
     {

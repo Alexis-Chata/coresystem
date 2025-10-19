@@ -153,7 +153,7 @@
         }
 
         @page {
-            margin: 90px 5px 60px;
+            margin: 90px 5px 80px; /*margin: [arriba] [horizontal] [abajo]; */
             /* Margen superior e inferior para header y footer */
         }
 
@@ -168,7 +168,7 @@
 
         .footer {
             position: fixed;
-            bottom: -70px;
+            bottom: -90px;
             /* Ajuste para coincidir con @page margin inferior */
             left: 0;
             right: 0;
@@ -202,7 +202,7 @@
                 <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
-        <p>*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong> {{ $movimiento->conductor_id }} -
+        <p>*** C.D.: 07: JICAMARCA - SJL <strong style="margin-left: 100px">Chofer:</strong> {{ $movimiento->conductor_id }} -
             {{ $movimiento->conductor->name }}</p>
 
     </div>

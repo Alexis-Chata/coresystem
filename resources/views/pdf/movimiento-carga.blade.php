@@ -133,7 +133,7 @@
                 <td class="right">{{ now()->format('h:i:s A') }}</td>
             </tr>
         </table>
-        <p style="padding: 0 0 2px 0; margin:0 0 2px 0;">*** C.D.: 07: JICAMARCA - SJL <strong>Chofer:</strong>
+        <p style="padding: 0 0 2px 0; margin:0 0 2px 0;">*** C.D.: 07: JICAMARCA - SJL <strong style="margin-left: 100px">Chofer:</strong>
             {{ $movimiento->conductor->id }} -
             {{ $movimiento->conductor->name }}</p>
         <p style="padding: 0 0 2px 0; margin:0 0 2px 0;">Vehículo: {{ $movimiento->vehiculo->id }}
@@ -141,8 +141,8 @@
             {{ $movimiento->vehiculo->placa }} &nbsp;&nbsp;&nbsp; Capac.Tn.:
             {{ number_format_punto2($movimiento->vehiculo->tonelaje_maximo) }}</p>
         <p style="padding: 2px 0 2px 0; margin:2px 0 2px 0;">Fecha Movimiento:
-            {{ $movimiento->created_at->format('d/m/Y') }} - Fecha Liquidación:
-            {{ format_date($movimiento->fecha_liquidacion) }}</p>
+            {{ $movimiento->created_at->format('d/m/Y') }} - Fecha Reparto:
+            {{ format_date_long($movimiento->fecha_liquidacion) }}</p>
     </div>
 
     <div class="footer">
