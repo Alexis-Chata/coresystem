@@ -150,7 +150,7 @@
                 x-on:livewire:load.window="
                 Livewire.hook('message.sent', () => procesando = true)
                 Livewire.hook('message.processed', () => procesando = false)">
-                <button @click="$wire.cerrarModal()" wire:target="guardarDevoluciones" wire:loading.attr="disabled"
+                <button @click="$wire.cerrarModal()" wire:target="guardarDevoluciones, cerrarModal" wire:loading.attr="disabled"
                     class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">✕</button>
 
                 <h2 class="text-lg font-semibold mb-4">Detalles del comprobante</h2>
@@ -241,10 +241,10 @@
                 @if (optional($comprobanteSeleccionado)->estado_reporte)
                     <button
                         @click="if (confirm('(IRREVERSIBLE): Esta acción permitirá registrar devoluciones para este comprobante. ¿Desea continuar?')) { $wire.guardarDevoluciones(detalles); }"
-                        wire:target="guardarDevoluciones" wire:loading.attr="disabled"
+                        wire:target="guardarDevoluciones, cerrarModal" wire:loading.attr="disabled"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span wire:loading.remove wire:target="guardarDevoluciones">💾 Guardar devolución</span>
-                        <span wire:loading wire:target="guardarDevoluciones">⏳ Guardando...</span>
+                        <span wire:loading.remove wire:target="guardarDevoluciones, cerrarModal">💾 Guardar devolución</span>
+                        <span wire:loading wire:target="guardarDevoluciones, cerrarModal">⏳ Guardando...</span>
                     </button>
                 @endif
             </div>
