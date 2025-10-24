@@ -202,7 +202,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
         ]);
 
         try {
-            Cache::lock('generar_movimiento', 15)->block(10, function () {
+            Cache::lock('generar_comprobante', 15)->block(10, function () {
                 DB::beginTransaction();
                 $movimientos = Movimiento::with([
                     'pedidos' => function ($query) {
@@ -317,6 +317,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                 $invoice->save();
                             }
 
+                            // Generar guia de remision
                             if ($pedido->tipoComprobante->tipo_comprobante == '01' || $pedido->tipoComprobante->tipo_comprobante == '03') {
                                 $serie_guia = FSerie::where("f_sede_id", $sede->id)->where('f_tipo_comprobante_id', 6)->first();
                                 $serie_guia->correlativo = $serie_guia->correlativo + 1;

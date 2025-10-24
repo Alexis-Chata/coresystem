@@ -19,6 +19,8 @@ class MovimientoDetalle extends Model
         'costo_unitario',
         'costo_total',
         'empleado_id',
+        'cantidad_total_unidades',
+        'factor',
     ];
 
     public function movimiento()

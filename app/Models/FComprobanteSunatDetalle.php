@@ -30,6 +30,8 @@ class FComprobanteSunatDetalle extends Model
         "porcentajeIsc",
         "isc",
         "f_comprobante_sunat_id",
+        "cantidad_devuelta",
+        "valor_devuelto",
         "ref_producto_lista_precio",
         "ref_producto_precio_cajon",
         "ref_producto_cantidad_cajon",

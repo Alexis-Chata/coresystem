@@ -108,7 +108,7 @@ class FComprobanteSunat extends Model
     }
     public function detalle()
     {
-        return $this->hasMany(FComprobanteSunatDetalle::class);
+        return $this->hasMany(FComprobanteSunatDetalle::class, "f_comprobante_sunat_id", "id");
     }
     public function tipo_doc()
     {

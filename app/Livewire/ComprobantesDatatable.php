@@ -308,6 +308,7 @@ class ComprobantesDatatable extends DataTableComponent
         }
 
         $nota_anulacion_operacion = FComprobanteSunat::where('numDocfectado', $comprobante_guia->serie . "-" . $comprobante_guia->correlativo)
+            ->where('tipoDoc', '07')
             ->where('codMotivo', '01')
             ->where('desMotivo', 'ANULACION DE LA OPERACION')
             ->exists();
@@ -315,8 +316,16 @@ class ComprobantesDatatable extends DataTableComponent
             return;
         }
 
+        $nota_anulacion = FComprobanteSunat::where('numDocfectado', $comprobante_guia->serie . "-" . $comprobante_guia->correlativo)
+            ->where('tipoDoc', '07')
+            ->exists();
+        if ($nota_anulacion) {
+            return;
+        }
+
         try {
             Cache::lock('generar_nota', 15)->block(10, function () use ($id) {
+                DB::beginTransaction();
                 $tipoDoc = "07";
                 $comprobante = FComprobanteSunat::with('detalle')->find($id);
                 $serie = FSerie::where('f_sede_id', $comprobante->sede_id)->where('serie', 'like', substr($comprobante->serie, 0, 1) . "%")
@@ -329,7 +338,7 @@ class ComprobantesDatatable extends DataTableComponent
 
                 $notaSunat = $comprobante->replicate();
                 $notaSunat->fill([
-                    "conductor_id" => 10,
+                    //"conductor_id" => 10,
                     "ublVersion" => "2.1",
                     "tipoDoc" => $tipoDoc,
                     "tipoDoc_name" => $serie->fTipoComprobante->name,
@@ -357,6 +366,7 @@ class ComprobantesDatatable extends DataTableComponent
                 $comprobante->estado_reporte = false;
                 $comprobante->save();
                 //dd($serie, substr($comprobante->serie, 0, 1), $notaSunat, $comprobante->detalle->toArray());
+                DB::commit();
             });
         } catch (Exception | LockTimeoutException $e) {
             DB::rollback();
