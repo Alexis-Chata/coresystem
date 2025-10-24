@@ -142,13 +142,14 @@ class Movimiento extends Component
         if (!$existe) {
             $precio = $producto->listaPrecios->first()?->pivot?->precio ?? 0;
             $cantidad = 1;
-
+            $digitos = calcular_digitos($producto->cantidad);
             //if ($precio > 0) {
             $this->detalles[] = [
                 "producto_id" => $producto->id,
                 "producto_name" => $producto->name,
                 "factor" => $producto->cantidad,
-                "cantidad" => number_format($cantidad, 2, '.', ''),
+                "cantidad" => number_format($cantidad, $digitos, '.', ''),
+                "cantidad_total_unidades" => convertir_a_paquetes($cantidad, $producto->cantidad),
                 "codigo" => $producto->id,
                 "precio_venta_unitario" => $precio,
                 "precio_venta_total" => $precio * $cantidad,
@@ -282,6 +283,7 @@ class Movimiento extends Component
             Cache::lock('generar_movimiento', 15)->block(10, function () {
                 DB::transaction(function () {
                     $movimiento = ModelsMovimiento::create($this->all());
+                    //dd($this->detalles);
                     $movimiento->movimientoDetalles()->createMany($this->detalles);
 
                     $this->actualizarStock($movimiento);
@@ -339,7 +341,8 @@ class Movimiento extends Component
 
         // Actualizar la cantidad en el detalle
         $this->detalles[$index]['cantidad'] = number_format($cajas + ($paquetes / (10 ** $digitos)), $digitos, '.', ''); // Convertir de nuevo a formato X.Y
-
+        $this->detalles[$index]['cantidad_total_unidades'] = convertir_a_paquetes($this->detalles[$index]['cantidad'], $cantidadProducto);
+        //dd($this->detalles);
         // Recalcular el importe
         $this->calcularImporte($index);
     }
