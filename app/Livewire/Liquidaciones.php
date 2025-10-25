@@ -95,6 +95,9 @@ class Liquidaciones extends Component
             ->whereHas('tipoMovimiento', function ($q) {
                 $q->where('tipo', 'salida');
             })->get();
+        $comprobantes_ids = (FComprobanteSunat::where("movimiento_id", $movimiento_id)->pluck('id'));
+        $series_correlativos = (FComprobanteSunat::selectRaw("CONCAT(serie, '-', correlativo) as serie_correlativo")->where("movimiento_id", $movimiento_id)->get()->pluck('serie_correlativo'));
+        $refacturados_ids =(FComprobanteSunat::whereIn("numDocfectado", $series_correlativos)->whereIn('tipoDoc', ["00", "01", "03"])->pluck('id'));
         //dd($movimientos_extras_ingresos->toArray(), $movimientos_extras_ingresos->pluck('id'));
         $movimiento_detalles_extras_ingreso = MovimientoDetalle::whereIn("movimiento_id", $movimientos_extras_ingresos->pluck('id'))->get();
         //dd($movimiento_detalles_extras_ingreso->where('producto_id', 303)->sum('cantidad_total_unidades'));
@@ -110,11 +113,12 @@ class Liquidaciones extends Component
                 DB::raw('SUM(f_comprobante_sunat_detalles.cantidad) AS total_cantidad')
             )
             ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
-            ->where('f_comprobante_sunats.movimiento_id', $movimiento_id)
+            ->whereIn('f_comprobante_sunats.id', $comprobantes_ids->merge($refacturados_ids))
             ->where('f_comprobante_sunats.estado_reporte', true)
             ->groupBy('f_comprobante_sunat_detalles.codProducto')
             ->orderByRaw('CAST(f_comprobante_sunat_detalles.codProducto AS UNSIGNED)')
             ->get();
+        //dd($comprobante_detalles->toArray(), $refacturados_ids);
         //dd($movimiento_detalles_extras_ingreso, $movimiento_detalles_extras_ingreso->where('producto_id', 1197)->sum('cantidad_total_unidades'), $comprobante_detalles->where('codProducto', 1197)->sum('total_cantidad'), $movimiento_detalles->where('producto_id', 1197));
         $cd_producto_ids = $comprobante_detalles->pluck('codProducto')->unique();
 
