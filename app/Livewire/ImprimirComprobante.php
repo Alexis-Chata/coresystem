@@ -16,6 +16,7 @@ class ImprimirComprobante extends Component
     public $series;
     public $impresoras = [];
 
+    // Clase sin uso (no utilizada, se separo en otro sistema)
     public function mount()
     {
         $this->series = FSerie::with(['fSede', 'fTipoComprobante'])->whereIn('f_tipo_comprobante_id', [1, 2, 3])->where('f_sede_id', auth_user()->f_sede_id)->get()->keyBy('id')->toArray();

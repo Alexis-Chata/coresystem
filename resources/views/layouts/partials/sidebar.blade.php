@@ -123,6 +123,13 @@
                         'name' => 'Empleados',
                     ],
                     [
+                        'link_descripcion' => 'Vehículo', //opcional
+                        'permission' => 'view vehiculo',
+                        'route' => 'vehiculo.index',
+                        'icon' => 'svg_carrito', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Vehículos',
+                    ],
+                    [
                         'link_descripcion' => 'Ruta', //opcional
                         'permission' => 'view ruta',
                         'route' => 'ruta.index',

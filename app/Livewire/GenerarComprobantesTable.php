@@ -58,9 +58,9 @@ final class GenerarComprobantesTable extends PowerGridComponent
         $this->serie_facturas = $this->series->where('f_tipo_comprobante_id', 2);
         $this->serie_boletas = $this->series->where('f_tipo_comprobante_id', 3);
         $this->serie_nota_pedidos = $this->series->where('f_tipo_comprobante_id', 1);
-        $this->serie_factura_seleccionada = $this->serie_facturas->first()->id;
-        $this->serie_boleta_seleccionada = $this->serie_boletas->first()->id;
-        $this->serie_nota_pedido_seleccionada = $this->serie_nota_pedidos->first()->id;
+        $this->serie_factura_seleccionada = optional($this->serie_facturas->first())->id;
+        $this->serie_boleta_seleccionada = optional($this->serie_boletas->first())->id;
+        $this->serie_nota_pedido_seleccionada = optional($this->serie_nota_pedidos->first())->id;
         //dd($this->serie_nota_pedidos);
 
         return [
