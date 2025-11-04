@@ -142,8 +142,8 @@
                 <!-- Footer al final -->
                 <footer class="bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
                     <div class="flex items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
-                        <span>L & L GOLOMIX E.I.R.L.</span>
-                        <span>20603752458</span>
+                        <span>{{ auth()->user()->fsede?->empresa?->name_comercial }}</span>
+                        <span>{{ auth()->user()->fsede?->empresa?->ruc }}</span>
                     </div>
                 </footer>
                 <!-- ===== footer Content End ===== -->
