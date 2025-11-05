@@ -26,8 +26,8 @@ class ImpresionController extends Controller
     {
         $sede_id = $request->query('sede_id');
         $serie = $request->query('serie');
-        $desde = $request->query('desde');
-        $hasta = $request->query('hasta');
+        $desde = (int) $request->query('desde');
+        $hasta = (int) $request->query('hasta');
 
         $comprobantes = FComprobanteSunat::with([
             'vendedor',
