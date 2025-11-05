@@ -14,3 +14,4 @@ Route::get('/user', function (Request $request) {
 // });
 
 Route::middleware('auth:sanctum')->get('/series', [ImpresionController::class, 'lista_series']);
+Route::middleware('auth:sanctum')->get('/comprobantes', [ImpresionController::class, 'lista_comprobantes']);
