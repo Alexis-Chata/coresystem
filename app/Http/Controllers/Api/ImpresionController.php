@@ -40,8 +40,15 @@ class ImpresionController extends Controller
         ])
             ->where('sede_id', $sede_id)
             ->where('serie', $serie)
-            ->whereRaw('CAST(correlativo AS UNSIGNED) BETWEEN ? AND ?', [$desde, $hasta])
-            ->get();
+            // Convertimos correlativo a número para comparar
+            ->whereRaw('CAST(correlativo AS UNSIGNED) >= ?', [$desde])
+            ->whereRaw('CAST(correlativo AS UNSIGNED) <= ?', [$hasta])
+            ->orderByRaw('CAST(correlativo AS UNSIGNED) ASC') // Opcional: orden ascendente
+            ->get()
+            ->map(function ($c) {
+                // Convertimos todo a objetos stdClass para mantener -> en Livewire
+                return json_decode(json_encode($c));
+            });
 
         return response()->json($comprobantes);
     }
