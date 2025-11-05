@@ -32,7 +32,9 @@ class ImpresionController extends Controller
         $comprobantes = FComprobanteSunat::with([
             'vendedor',
             'tipo_doc',
-            'cliente.padron' => fn($q) => $q->withTrashed(),
+            'cliente.padron' => function ($query) {
+                $query->withTrashed();
+            },
             'conductor',
             'detalle.producto',
         ])
@@ -41,7 +43,6 @@ class ImpresionController extends Controller
             ->whereBetween('correlativo', [$desde, $hasta])
             ->get();
 
-        // ⚠️ devolvemos los modelos tal cual (sin map, sin toArray)
         return response()->json($comprobantes);
     }
 }
