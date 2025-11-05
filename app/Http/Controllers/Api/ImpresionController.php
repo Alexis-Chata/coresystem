@@ -15,8 +15,8 @@ class ImpresionController extends Controller
         $sede_id = $request->query('sede_id');
 
         $series = FSerie::with(['fSede', 'fTipoComprobante'])
-            ->when($tipos, fn($q) => $q->whereIn('f_tipo_comprobante_id', $tipos))
-            ->when($sede_id, fn($q) => $q->where('f_sede_id', $sede_id))
+            ->when($tipos, fn ($q) => $q->whereIn('f_tipo_comprobante_id', $tipos))
+            ->when($sede_id, fn ($q) => $q->where('f_sede_id', $sede_id))
             ->get();
 
         return response()->json($series);
@@ -40,7 +40,7 @@ class ImpresionController extends Controller
         ])
             ->where('sede_id', $sede_id)
             ->where('serie', $serie)
-            ->whereBetween('correlativo', [$desde, $hasta])
+            ->whereRaw('CAST(correlativo AS UNSIGNED) BETWEEN ? AND ?', [$desde, $hasta])
             ->get();
 
         return response()->json($comprobantes);
