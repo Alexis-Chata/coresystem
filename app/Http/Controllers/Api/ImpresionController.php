@@ -32,59 +32,16 @@ class ImpresionController extends Controller
         $comprobantes = FComprobanteSunat::with([
             'vendedor',
             'tipo_doc',
-            'cliente.padron',
+            'cliente.padron' => fn($q) => $q->withTrashed(),
             'conductor',
-            'detalle.producto'
+            'detalle.producto',
         ])
             ->where('sede_id', $sede_id)
             ->where('serie', $serie)
             ->whereBetween('correlativo', [$desde, $hasta])
             ->get();
 
-        // Transformación opcional para mantener campos exactos como en tu método imprimir()
-        $data = $comprobantes->map(function ($c) {
-            return [
-                'id' => $c->id,
-                'sede_id' => $c->sede_id,
-                'serie' => $c->serie,
-                'correlativo' => $c->correlativo,
-                'tipoDoc' => $c->tipoDoc,
-                'tipoDoc_name' => $c->tipo_doc->nombre ?? '',
-                'fechaEmision' => $c->fechaEmision,
-                'companyRazonSocial' => $c->companyRazonSocial,
-                'companyRuc' => $c->companyRuc,
-                'companyAddressDireccion' => $c->companyAddressDireccion,
-                'cliente_id' => $c->cliente_id,
-                'clientNumDoc' => $c->clientNumDoc,
-                'clientRazonSocial' => $c->clientRazonSocial,
-                'clientDireccion' => $c->clientDireccion,
-                'vendedor_id' => $c->vendedor_id,
-                'vendedor' => $c->vendedor,
-                'conductor_id' => $c->conductor_id,
-                'conductor' => $c->conductor,
-                'ruta_id' => $c->ruta_id,
-                'detalle' => $c->detalle->map(function ($d) {
-                    return [
-                        'codProducto' => $d->codProducto,
-                        'descripcion' => $d->descripcion,
-                        'ref_producto_cantidad_cajon' => $d->ref_producto_cantidad_cajon,
-                        'ref_producto_cant_vendida' => $d->ref_producto_cant_vendida,
-                        'ref_producto_precio_cajon' => $d->ref_producto_precio_cajon,
-                        'mtoValorVenta' => $d->mtoValorVenta,
-                        'mtoValorUnitario' => $d->mtoValorUnitario,
-                        'tipAfeIgv' => $d->tipAfeIgv,
-                        'totalImpuestos' => $d->totalImpuestos,
-                        'producto' => $d->producto,
-                    ];
-                }),
-                'subTotal' => $c->subTotal,
-                'valorVenta' => $c->valorVenta,
-                'totalImpuestos' => $c->totalImpuestos,
-                'mtoImpVenta' => $c->mtoImpVenta,
-                'deleted_at' => $c->deleted_at,
-            ];
-        });
-
-        return response()->json($data);
+        // ⚠️ devolvemos los modelos tal cual (sin map, sin toArray)
+        return response()->json($comprobantes);
     }
 }
