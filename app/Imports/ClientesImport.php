@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Cliente;
+use App\Models\Padron;
 use App\Models\Ruta;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
@@ -45,7 +46,7 @@ class ClientesImport implements ToModel, WithHeadingRow, WithBatchInserts, WithC
         }
         //dd($clean, $clean['ruta'], strlen($clean->get('numero_documento')), $ruta);
 
-        return new Cliente([
+        $cliente = Cliente::create([
             'razon_social'        => $clean['razon_social'],
             'direccion'           => $clean['direccion'],
             'f_tipo_documento_id' => $clean['f_tipo_documento_id'],
@@ -57,6 +58,15 @@ class ClientesImport implements ToModel, WithHeadingRow, WithBatchInserts, WithC
             'ubigeo_inei'         => $ruta->codigo ?? 150132,
             'latitude'            => $clean['latitude'] ?? null,
             'longitude'           => $clean['longitude'] ?? null,
+        ]);
+
+        $ultimo = Padron::where('ruta_id', $ruta->id)->max('nro_secuencia');
+        $nro_secuencia = ($ultimo ?? 0) + 1;
+
+        return new Padron([
+            'cliente_id'      => $cliente->id,
+            'ruta_id'         => $ruta->id,
+            'nro_secuencia'   => $nro_secuencia,
         ]);
     }
 
