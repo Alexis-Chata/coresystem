@@ -248,6 +248,8 @@ final class RutaTable extends PowerGridComponent
         if ($empleado && $empleado->tipo_empleado === 'vendedor') {
             $this->newRuta['vendedor_id'] = $empleado->id;
         }
+        $this->newRuta['codigo'] = 150132;
+        $this->newRuta['dia_visita'] = 'Lunes';
 
         $this->validate([
             'newRuta.name' => 'required',

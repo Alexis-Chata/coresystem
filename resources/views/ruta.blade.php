@@ -9,7 +9,7 @@
 <br>
 <br>
 @endcan
-<livewire:ruta-table/>
+<livewire:ruta-table />
 <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('ruta-created', message => {

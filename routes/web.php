@@ -72,6 +72,10 @@ Route::middleware([
         return view('cliente');
     })->middleware('can:view cliente')->name('cliente.index');
 
+    Route::get('/cliente-masivo', function () {
+        return view('cliente-masivo');
+    })->middleware('can:view cliente')->name('cliente-masivo.index');
+
     Route::prefix('producto')->group(function () {
         Route::get('/', function () {
             return view('producto');
