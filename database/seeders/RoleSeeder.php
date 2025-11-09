@@ -29,6 +29,7 @@ class RoleSeeder extends Seeder
         'reporte' => ['view'],
         'dashboard' => ['view'],
         'precios' => ['bodega', 'mayorista'],
+        'liquidacion' => ['view'],
     ];
 
     // Define los roles y sus permisos

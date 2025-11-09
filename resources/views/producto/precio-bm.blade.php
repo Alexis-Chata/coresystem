@@ -27,8 +27,10 @@
                 <th>Precio Cj B</th>
                 <th>Marca</th>
                 <th>Cantidad/Cj</th>
-                <th>Precio Cj M</th>
-                <th>Precio Unidad M</th>
+                @if (isset($productos->first()->precios->{2}))
+                    <th>Precio Unidad M</th>
+                    <th>Precio Cj M</th>
+                @endif
                 <th>deleted_at</th>
                 <th>stock_fisico</th>
                 <th>stock_disponible</th>
@@ -39,12 +41,15 @@
                 <tr class="{{ $producto->deleted_at ? 'bg-red-200' : '' }}">
                     <td>{{ $producto->id }}</td>
                     <td>{{ $producto->name }}</td>
-                    <td class="font-extrabold text-blue-400">{{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
+                    <td class="font-extrabold text-blue-400">
+                        {{ number_format($producto->precios->{1} / $producto->cantidad, 2) }}</td>
                     <td>{{ $producto->precios->{1} }}</td>
                     <td>{{ $producto->marca }}</td>
                     <td>{{ $producto->cantidad }}</td>
-                    <td>{{ $producto->precios->{2} }}</td>
-                    <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
+                    @if (isset($producto->precios->{2}))
+                        <td>{{ number_format($producto->precios->{2} / $producto->cantidad, 2) }}</td>
+                        <td>{{ $producto->precios->{2} }}</td>
+                    @endif
                     <td>{{ $producto->deleted_at?->format('d-m-Y | H:i:s') ?? '*' }}</td>
                     <td>{{ number_format($producto->stock_fisico, calcular_digitos($producto->cantidad)) }}</td>
                     <td>{{ number_format($producto->stock_disponible, calcular_digitos($producto->cantidad)) }}</td>
@@ -59,8 +64,10 @@
                 <th>Precio Cj B</th>
                 <th>Marca</th>
                 <th>Cantidad/Cj</th>
-                <th>Precio Cj M</th>
-                <th>Precio Unidad M</th>
+                @if (isset($productos->first()->precios->{2}))
+                    <th>Precio Unidad M</th>
+                    <th>Precio Cj M</th>
+                @endif
                 <th>deleted_at</th>
                 <th>stock_fisico</th>
                 <th>stock_disponible</th>
@@ -69,12 +76,14 @@
     </table>
 
     <script defer>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             new DataTable('#example', {
-            pageLength: 25, // ← mostrar 25 por página
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']]
+                pageLength: 25, // ← mostrar 25 por página
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, 'Todos']
+                ]
             });
         });
     </script>
-
 @endsection
