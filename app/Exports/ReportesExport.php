@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Producto;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -99,7 +100,10 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'f_comprobante_sunats.fechaEmision',
         ]) ? $this->date_field : 'f_comprobante_sunats.fechaEmision';
 
-        $reporte = DB::table('f_comprobante_sunat_detalles')
+        $date_inicio = Carbon::parse($this->fecha_inicio)->startOfDay(); // 2025-11-17 00:00:00
+        $date_fin    = Carbon::parse($this->fecha_fin)->endOfDay();      // 2025-11-17 23:59:59
+
+        $query = DB::table('f_comprobante_sunat_detalles')
             ->join('f_comprobante_sunats', 'f_comprobante_sunat_detalles.f_comprobante_sunat_id', '=', 'f_comprobante_sunats.id')
             ->join('productos', 'f_comprobante_sunat_detalles.codProducto', '=', 'productos.id')
             ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
@@ -118,12 +122,12 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             ->when($num_documento, fn($q) => $q->addSelect(DB::raw("CONCAT(f_comprobante_sunats.serie, '-', f_comprobante_sunats.correlativo) as num_documento")))
             ->when($productoFlag, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.codProducto', 'productos.name as nombre_articulo'))
             ->when($fecha_emision, fn($q) => $q->addSelect(DB::raw("DATE_FORMAT(f_comprobante_sunats.fechaEmision, '%d-%m-%Y') as fecha_emision")))
-            ->addSelect(DB::raw('SUM(f_comprobante_sunat_detalles.cantidad) as detalle_cantidad'))
+            ->when($productoFlag, fn($q) => $q->addSelect(DB::raw('SUM(f_comprobante_sunat_detalles.cantidad) as detalle_cantidad')))
             ->addSelect(DB::raw('ROUND(SUM(f_comprobante_sunat_detalles.cantidad * f_comprobante_sunat_detalles.mtoPrecioUnitario), 2) AS importe'))
 
             // filtros
             ->where('f_comprobante_sunats.estado_reporte', true)
-            ->whereBetween($date_field, [$this->fecha_inicio, $this->fecha_fin])
+            ->whereBetween($date_field, [$date_inicio, $date_fin])
             ->when(!is_null($ruta_id),     fn($q) => $q->where('rutas.id', $ruta_id))
             ->when(!is_null($marca_id),    fn($q) => $q->where('marcas.id', $marca_id))
             ->when(!is_null($vendedor_id), fn($q) => $q->where('f_comprobante_sunats.vendedor_id', $vendedor_id))
@@ -145,18 +149,22 @@ class ReportesExport implements FromCollection, WithHeadings, ShouldAutoSize
             ->when($num_documento, fn($q) => $q->orderBy('num_documento'))
             ->when($productoFlag, fn($q) => $q->orderBy('f_comprobante_sunat_detalles.codProducto'))
             ->when($productoFlag, fn($q) => $q->orderBy('productos.name'))
-            ->when($fecha_emision, fn($q) => $q->orderBy('fecha_emision'))
-            ->get();
+            ->when($fecha_emision, fn($q) => $q->orderBy('fecha_emision'));
+
+        // 👀 Ver SQL con bindings separados
+        //logger('SQL Query', [$query->toSql()]);
+        //logger('SQL Query getBindings', [$query->getBindings()]);
+
+        $reporte = $query->get();
 
         // Post-proceso de cantidades a "cajas.unidades"
         if ($productoFlag) {
-            $reporte = $reporte->map(function ($item) use ($productos) {
-                $prod = $productos->find($item->codProducto);
-                if ($prod && $prod->cantidad > 0) {
-                    $u = (int) $item->detalle_cantidad; // total unidades
-                    $cajas = intdiv($u, $prod->cantidad);
-                    $sueltas = $u % $prod->cantidad;
-                    $item->detalle_cantidad = number_format_punto2($cajas + ($sueltas / 100));
+            // Opcional: indexar productos por id para no hacer find() en cada vuelta
+            $productosById = $productos->keyBy('id');
+            $reporte = $reporte->map(function ($item) use ($productosById) {
+                $prod = $productosById->get($item->codProducto);
+                if ($prod && (int) $prod->cantidad > 0) {
+                    $item->detalle_cantidad = convertir_a_cajas($item->detalle_cantidad, $prod->cantidad);
                 }
                 return $item;
             });
