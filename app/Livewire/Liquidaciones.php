@@ -738,11 +738,14 @@ class Liquidaciones extends Component
                         $lote_det['lista_precio'] = $det->ref_producto_lista_precio;
                         $lote_det['importe'] = $det->mtoValorVenta + $det->totalImpuestos - $det->valor_devuelto;
                         $lote_det['peso'] = $det->peso; //calcular
+                        if ($det->tipAfeIgv == 21) {
+                            $lote_det['importe'] = 0;
+                        }
                         $lote_det['cantidad_unidades'] = ($det->cantidad - $det->cantidad_devuelta);
                         $lote_detalles[] = $lote_det;
                     }
                 }
-                logger("Detalles para refacturar:", ["detalles" => $lote_detalles]);
+                //logger("Detalles para refacturar:", ["detalles" => $lote_detalles]);
 
                 if (count($lote_detalles) === 0) {
                     throw new \Exception("No hay detalles válidos para refacturar.");
@@ -750,6 +753,7 @@ class Liquidaciones extends Component
 
                 $formatter = new NumeroALetras();
                 list($subtotales, $detalles) = ($this->setSubTotalesIgv($lote_detalles, true));
+                //logger("Detalles calculado para refacturar:", ["detalles" => $detalles]);
                 $subtotales = (object)$subtotales;
                 $datos_comprobante = [];
                 $datos_comprobante = [

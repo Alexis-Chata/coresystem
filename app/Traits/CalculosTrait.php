@@ -13,6 +13,7 @@ trait CalculosTrait
     {
         $data_detalles = $detalles;
         // dd($data_detalles);
+        //logger("setSubTotalesIgv", ["detalles" => $data_detalles]);
         foreach ($data_detalles as $key => $data_detalle) {
             $producto = Producto::withTrashed()->find($data_detalle['producto_id']);
             $data_detalle['ref_producto_lista_precio'] = $data_detalle['ref_producto_lista_precio'] ?? $data_detalle['lista_precio'];
