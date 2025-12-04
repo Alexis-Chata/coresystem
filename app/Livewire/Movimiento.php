@@ -349,6 +349,17 @@ class Movimiento extends Component
 
     public function render()
     {
+        $movimiento_detalles_null = \App\Models\MovimientoDetalle::whereNull('factor')->orWhereNull('cantidad_total_unidades')->take(3000)->get();
+
+        foreach ($movimiento_detalles_null as $detalle) {
+            $producto = Producto::withTrashed()->find($detalle->producto_id);
+            if ($producto) {
+                $detalle->cantidad_total_unidades = convertir_a_paquetes($detalle->cantidad, $producto->cantidad);
+                $detalle->factor = $producto->cantidad;
+                $detalle->save();
+            }
+        }
+        //dd($movimiento_detalles_null);
         return view('livewire.movimiento');
     }
 }
