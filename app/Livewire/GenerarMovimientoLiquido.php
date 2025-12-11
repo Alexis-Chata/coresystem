@@ -118,9 +118,9 @@ class GenerarMovimientoLiquido extends Component
                         $item->totalqcanpedbultos = $item->sum('qcanpedbultos') + $sumaunidadsAbultos;
                         $item->totalqcanpedunidads = str_pad($sumaunidadsAbultosRestoenunidad, $digitos, 0, STR_PAD_LEFT);
 
-                        $item->cantidad = $productos->find($key)->cantidad;
+                        $item->factor = $productos->find($key)->cantidad;
                         $item->precio = $productos->find($key)->listaPrecios->find(1)->pivot->precio;
-                        $importe = ($item->totalqcanpedbultos * $item->precio) + ($item->precio * $item->totalqcanpedunidads) / $item->cantidad;
+                        $importe = ($item->totalqcanpedbultos * $item->precio) + ($item->precio * $item->totalqcanpedunidads) / $item->factor;
                         $item->importe = ($importe);
                         //dd($item, $key, $productos->find($key), $sumaunidads);
                     });
@@ -133,22 +133,26 @@ class GenerarMovimientoLiquido extends Component
                     $tipo_movimiento = TipoMovimiento::firstWhere("codigo", "201"); //sal. reparto sujeta a liquidacion
 
                     $data_para_movimiento_detalle = $pedidos_detalle->map(function ($item) use ($user) {
-                        $digitos = calcular_digitos($item->cantidad);
+                        $digitos = calcular_digitos($item->factor);
+                        $cantidad = number_format($item->totalqcanpedbultos + ($item->totalqcanpedunidads / (10 ** $digitos)), $digitos, '.', '');
+                        
                         return [
                             'producto_id' => $item->producto_id,
                             'producto_name' => $item->producto_name,
-                            'producto_cantidad' => $item->cantidad,
+                            'producto_cantidad' => $item->factor,
                             'marca_id' => $item->marca_id,
                             'marca' => $item->marca,
                             'totalqcanpedbultos' => $item->totalqcanpedbultos,
                             'totalqcanpedunidads' => $item->totalqcanpedunidads,
-                            'cantidad' => number_format($item->totalqcanpedbultos + ($item->totalqcanpedunidads / (10 ** $digitos)), $digitos, '.', ''),
+                            'cantidad' => $cantidad,
                             'producto_precio_venta' => number_format_punto2($item->precio),
-                            'precio_venta_unitario' => number_format_punto2($item->precio / $item->cantidad),
+                            'precio_venta_unitario' => number_format_punto2($item->precio / $item->factor),
                             'precio_venta_total' => number_format_punto2($item->importe),
-                            "costo_unitario" => number_format_punto2($item->precio / $item->cantidad),
+                            "costo_unitario" => number_format_punto2($item->precio / $item->factor),
                             "costo_total" => number_format_punto2($item->importe),
                             'empleado_id' => $user->user_empleado->empleado->id,
+                            'cantidad_total_unidades' => convertir_a_paquetes($cantidad, $item->factor),
+                            'factor' => $item->factor,
                         ];
                     })->toArray();
 
