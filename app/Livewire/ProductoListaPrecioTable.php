@@ -24,7 +24,7 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     public string $sortField = 'id';
     public string $sortDirection = 'desc';
     public $precios = [];
-    
+
     public $newProductoListaPrecio = [
         'producto_id' => '',
         'lista_precio_id' => '',
@@ -76,9 +76,9 @@ final class ProductoListaPrecioTable extends PowerGridComponent
 
         $listaPrecios = ListaPrecio::all();
         foreach ($listaPrecios as $listaPrecio) {
-            $fields->add('precio_' . $listaPrecio->id, 
-                fn($model) => $model->{'precio_' . $listaPrecio->id} 
-                    ? number_format($model->{'precio_' . $listaPrecio->id}, 2) 
+            $fields->add('precio_' . $listaPrecio->id,
+                fn($model) => $model->{'precio_' . $listaPrecio->id}
+                    ? number_format($model->{'precio_' . $listaPrecio->id}, 2)
                     : '-'
             );
         }
@@ -151,8 +151,9 @@ final class ProductoListaPrecioTable extends PowerGridComponent
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
         if (str_starts_with($field, 'precio_')) {
+            $value = (float) preg_replace('/[^0-9.]/', '', $value);
             $listaPrecioId = substr($field, 7); // Extraer el ID de la lista de precio
-            
+
             $productoListaPrecio = ProductoListaPrecio::updateOrCreate(
                 [
                     'producto_id' => $id,
@@ -160,7 +161,7 @@ final class ProductoListaPrecioTable extends PowerGridComponent
                 ],
                 ['precio' => $value]
             );
-            
+
             $this->dispatch('pg:eventRefresh-default');
             $this->dispatch('producto-lista-precio-SweetAlert2', 'Precio actualizado exitosamente');
         }
