@@ -147,6 +147,7 @@ class PedidoReporteDiario extends Component
                     "producto_id" => $detalle->producto_id,
                     "nombre" => $detalle->producto_name,
                     "cantidad" => $detalle->cantidad,
+                    "peso" => $detalle->peso,
                     "importe" => $detalle->importe,
                     "tipAfeIgv" =>
                     $detalle->producto->f_tipo_afectacion_id ?? 10,
@@ -270,10 +271,14 @@ class PedidoReporteDiario extends Component
 
                     $this->actualizar_stock(array($detalleExistente), true);
                     // Actualizar el detalleExistente existente directamente en bd (mejorar)
+                    $cantidad_unidades = convertir_a_paquetes($nuevaCantidad, $producto->cantidad);
+                    $peso_bulto = (float) ($producto->peso ?? 0);
+                    $peso = number_format((($peso_bulto * $cantidad_unidades) / $producto->cantidad), 3, '.', '');
                     $detalleExistente->update([
                         "cantidad" => $nuevaCantidad,
                         "importe" => $nuevoImporte,
-                        "cantidad_unidades" => convertir_a_paquetes($nuevaCantidad, $producto->cantidad)
+                        "cantidad_unidades" => $cantidad_unidades,
+                        "peso"        => $peso,
                     ]);
                     $this->actualizar_stock(array($detalleExistente), false);
 
@@ -281,7 +286,8 @@ class PedidoReporteDiario extends Component
                     $this->detallesEdit[$detalleExistente->id] = [
                         "cantidad" => $nuevaCantidad,
                         "importe" => $nuevoImporte,
-                        "cantidad_unidades" => convertir_a_paquetes($nuevaCantidad, $producto->cantidad),
+                        "cantidad_unidades" => $cantidad_unidades,
+                        "peso"        => $peso,
                     ];
                     //dd($this->pedidoEnEdicion, $detalleExistente, $nuevaCantidad, $nuevoImporte, $this->detallesEdit);
                 } else {
@@ -297,6 +303,9 @@ class PedidoReporteDiario extends Component
                     }
                     $importe = number_format_punto2($importe);
                     // Crear el nuevo detalle directamente en bd (mejorar)
+                    $cantidad_unidades = convertir_a_paquetes($cantidad, $producto->cantidad);
+                    $peso_bulto = (float) ($producto->peso ?? 0);
+                    $peso = number_format((($peso_bulto * $cantidad_unidades) / $producto->cantidad), 3, '.', '');
                     $nuevoDetalle = $this->pedidoEnEdicion
                         ->pedidoDetalles()
                         ->create([
@@ -308,7 +317,8 @@ class PedidoReporteDiario extends Component
                             "producto_cantidad_caja" => $producto->cantidad,
                             "lista_precio" => $this->pedidoEnEdicion->lista_precio,
                             "almacen_producto_id" => $producto->almacenProductos->first()->id,
-                            "cantidad_unidades" => convertir_a_paquetes($cantidad, $producto->cantidad),
+                            "cantidad_unidades" => $cantidad_unidades,
+                            "peso" => $peso,
                         ]);
                     $this->validar_stock_precio(array($nuevoDetalle));
                     $this->actualizar_stock(array($nuevoDetalle), false);
@@ -317,6 +327,8 @@ class PedidoReporteDiario extends Component
                     $this->detallesEdit[$nuevoDetalle->id] = [
                         "cantidad" => $cantidad,
                         "importe" => $importe,
+                        "cantidad_unidades" => $cantidad_unidades,
+                        "peso" => $peso,
                     ];
                 }
 
@@ -335,6 +347,7 @@ class PedidoReporteDiario extends Component
                             "producto_precio" => $detalle->producto_precio,
                             "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
                             "lista_precio" => $detalle->lista_precio,
+                            "peso" => $detalle->peso ?? 0,
                         ];
                     })
                     ->toArray();
@@ -390,12 +403,13 @@ class PedidoReporteDiario extends Component
 
             // Calcular nuevo importe
             $nuevoImporte = $detalle->producto_precio * $cantidad;
-
+            $peso = $this->calcularPeso($detalle->producto, $cantidad);
             // Actualizar detalle
             $detalle->update([
                 "cantidad" => $cantidad,
                 "importe" => $nuevoImporte,
                 "cantidad_unidades" => convertir_a_paquetes($cantidad, $detalle->producto_cantidad_caja),
+                "peso"        => $peso,
             ]);
 
             // Actualizar importe total del pedido
@@ -455,6 +469,7 @@ class PedidoReporteDiario extends Component
                         "producto_precio" => $detalle->producto_precio,
                         "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
                         "lista_precio" => $detalle->lista_precio,
+                        "peso" => $detalle->peso ?? 0,
                     ];
                 })
                 ->toArray();
@@ -556,10 +571,12 @@ class PedidoReporteDiario extends Component
                 foreach ($this->cambiosTemporales as $detalleId => $cambio) {
                     $detalle = PedidoDetalle::find($detalleId);
                     $this->actualizar_stock(array($detalle), true);
+                    $peso = $this->calcularPeso($detalle->producto, $cambio["cantidad"]);
                     $detalle->update([
                         "cantidad" => $cambio["cantidad"],
                         "importe" => $cambio["importe"],
                         "cantidad_unidades" => $cambio["cantidad_unidades"],
+                        "peso"        => $peso,
                     ]);
                     $this->actualizar_stock(array($detalle), false);
                 }
@@ -579,6 +596,7 @@ class PedidoReporteDiario extends Component
                             "producto_precio" => $detalle->producto_precio,
                             "producto_cantidad_caja" => $detalle->producto_cantidad_caja,
                             "lista_precio" => $detalle->lista_precio,
+                            "peso" => $detalle->peso ?? 0,
                         ];
                     })
                     ->toArray();
@@ -831,5 +849,13 @@ class PedidoReporteDiario extends Component
                 $this->actualizarStockDetalle($detalle, $almacen_id, $anulando);
             }
         });
+    }
+
+    private function calcularPeso($producto, $cantidad)
+    {
+        $cantidad_unidades = convertir_a_paquetes($cantidad, $producto->cantidad);
+        $peso_bulto = (float) ($producto->peso ?? 0);
+
+        return number_format((($peso_bulto * $cantidad_unidades) / $producto->cantidad), 3, '.', '');
     }
 }

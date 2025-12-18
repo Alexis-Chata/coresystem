@@ -32,13 +32,14 @@ final class ProductoTable extends PowerGridComponent
 
     public $newProducto = [
         'name' => '',
-        'empresa_id' => '',
+        'empresa_id' => '1',
         'marca_id' => '',
-        'categoria_id' => '',
-        'f_tipo_afectacion_id' => '',
-        'porcentaje_igv' => '',
+        'categoria_id' => '1',
+        'f_tipo_afectacion_id' => '10',
+        'porcentaje_igv' => '18',
         'cantidad' => '',
-        'sub_cantidad' => '',
+        'sub_cantidad' => '1',
+        'peso' => '1.000', // 👈 AQUÍ
         'tipo' => 'estandar',
         'tipo_unidad' => 'NIU',
         'cantidad_total' => '',
@@ -98,7 +99,9 @@ final class ProductoTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('name')
-            ->add('peso')
+            ->add('peso', function ($producto) {
+                return number_format($producto->peso ?? '0', 3, '.', '');
+            })
             ->add('empresa_id', function ($producto) use ($empresaOptions) {
                 return $this->selectComponent('empresa_id', $producto->id, $producto->empresa_id, $empresaOptions);
             })
@@ -161,7 +164,7 @@ final class ProductoTable extends PowerGridComponent
                 ->sortable()
                 ->searchable()
                 ->editOnClick(),
-            Column::make('Peso', 'peso')
+            Column::make('Peso (Kg)', 'peso')
                 ->editOnClick(),
             Column::make('Tipo', 'tipo')
                 ->sortable()
@@ -176,15 +179,70 @@ final class ProductoTable extends PowerGridComponent
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
-        $update_data = [
-            $field => strtoupper($value),
-        ];
-        if ($field == 'tipo') {
-            $update_data = [
-                $field => strtolower($value),
-            ];
+        $producto = Producto::withTrashed()->find($id);
+
+        if (!$producto) {
+            return;
         }
-        Producto::query()->withTrashed()->find($id)->update($update_data);
+
+        switch ($field) {
+
+            case 'peso':
+                // Validación
+                if (!is_numeric($value) || $value < 0) {
+                    session()->flash('error', 'El peso debe ser un número mayor o igual a 0');
+                    return;
+                }
+
+                $update_data = [
+                    'peso' => (float) $value
+                ];
+                break;
+
+            case 'porcentaje_igv':
+                if (!is_numeric($value) || $value < 0) {
+                    session()->flash('error', 'El IGV debe ser un número válido');
+                    return;
+                }
+
+                $update_data = [
+                    'porcentaje_igv' => (float) $value
+                ];
+                break;
+
+            case 'cantidad':
+            case 'sub_cantidad':
+                if (!is_numeric($value) || $value <= 0) {
+                    session()->flash('error', 'La cantidad debe ser un número válido');
+                    return;
+                }
+
+                $update_data = [
+                    $field => (float) $value
+                ];
+                break;
+
+            case 'tipo':
+                if (!in_array($value, ['estandar', 'compuesto'])) {
+                    session()->flash('error', 'Tipo de producto inválido');
+                    return;
+                }
+
+                $update_data = [
+                    'tipo' => strtolower($value)
+                ];
+                break;
+
+            default:
+                // Campos de texto
+                $update_data = [
+                    $field => strtoupper($value)
+                ];
+                break;
+        }
+
+        $producto->update($update_data);
+
         $this->dispatch('pg:eventRefresh-producto-lista-precio-table');
     }
 
@@ -309,6 +367,7 @@ final class ProductoTable extends PowerGridComponent
                 'newProducto.categoria_id' => 'required|exists:categorias,id',
                 'newProducto.f_tipo_afectacion_id' => 'required|exists:f_tipo_afectacions,id',
                 'newProducto.porcentaje_igv' => 'required|numeric',
+                'newProducto.peso' => 'required|numeric|min:0', // 👈 AQUÍ
                 'newProducto.tipo' => 'required|in:estandar,compuesto',
                 'newProducto.tipo_unidad' => 'required|string',
             ];
@@ -316,13 +375,13 @@ final class ProductoTable extends PowerGridComponent
             // Validación específica según el tipo de producto
             if ($this->newProducto['tipo'] === 'estandar') {
                 $baseValidation['newProducto.cantidad'] = 'required|numeric|min:1';
-                $baseValidation['newProducto.sub_cantidad'] = 'nullable|numeric|min:0';
+                $baseValidation['newProducto.sub_cantidad'] = 'required|numeric|min:1';
             } else {
                 $baseValidation['newProducto.cantidad_total'] = 'required|numeric|min:1';
                 $baseValidation['newProducto.components'] = 'required|array|min:1';
                 $baseValidation['newProducto.components.*.producto_id'] = 'required|exists:productos,id';
                 $baseValidation['newProducto.components.*.cantidad'] = 'required|numeric|min:1';
-                $baseValidation['newProducto.components.*.subcantidad'] = 'nullable|numeric|min:0';
+                $baseValidation['newProducto.components.*.subcantidad'] = 'required|numeric|min:1';
             }
 
             $this->validate($baseValidation);
@@ -339,6 +398,7 @@ final class ProductoTable extends PowerGridComponent
                 'cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['cantidad'] : 1,
                 'sub_cantidad' => $this->newProducto['tipo'] === 'estandar' ? $this->newProducto['sub_cantidad'] : 0,
                 'cantidad_total' => $this->newProducto['cantidad_total'],
+                'peso' => $this->newProducto['peso'], // 👈 AQUÍ
             ];
 
             $producto = Producto::create($productoData);

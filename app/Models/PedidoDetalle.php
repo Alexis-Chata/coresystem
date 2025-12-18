@@ -17,6 +17,7 @@ class PedidoDetalle extends Model implements Auditable
         'producto_id',
         'producto_name',
         'cantidad',
+        'peso',
         'producto_precio',
         'producto_cantidad_caja',
         'lista_precio',

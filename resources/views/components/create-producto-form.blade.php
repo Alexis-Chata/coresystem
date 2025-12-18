@@ -236,6 +236,19 @@
                 @enderror
             </div>
 
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="peso">
+                    Peso (Kg)
+                </label>
+                <input wire:model="newProducto.peso" id="peso" type="number" step="0.001" min="0"
+                    placeholder="Peso del producto"
+                    class="focus:ring shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                @error('newProducto.peso')
+                    <span class="text-red-500 text-xs italic">{{ $message }}</span>
+                @enderror
+            </div>
+
+
             <div x-show="isCompuesto === 'compuesto'" class="border-t mt-4 pt-4">
                 <h3 class="block text-gray-700 text-sm font-bold mb-2">Componentes del Producto</h3>
 

@@ -29,6 +29,7 @@ class FComprobanteSunatDetalle extends Model
         "tipSisIsc",
         "porcentajeIsc",
         "isc",
+        "peso",
         "f_comprobante_sunat_id",
         "cantidad_devuelta",
         "valor_devuelto",

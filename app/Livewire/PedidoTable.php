@@ -312,7 +312,8 @@ class PedidoTable extends Component
             "codigo"      => $producto->id,
             "nombre"      => $producto->name,
             "cantidad"    => $cantidad,
-            "importe" => 0, // Se calculará en el siguiente paso
+            "peso"        => number_format((($producto->peso * $paquetes) / $producto->cantidad), 3, '.', ''),
+            "importe"     => 0, // Se calculará en el siguiente paso
             "marca_id"    => $producto->marca_id,
             "almacen_producto_id" => $producto->almacenProductos->first()->id,
             "cantidad_unidades"    => $paquetes,
@@ -356,10 +357,12 @@ class PedidoTable extends Component
         foreach ($items as $item) {
             if (empty($item['cantidad']) || floatval($item['cantidad']) <= 0) {
                 $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene una cantidad inválida.");
+                return;
             }
 
             if (!isset($item['unidades']) || intval($item['unidades']) <= 0) {
                 $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene unidades inválidas.");
+                return;
             }
         }
 
@@ -411,6 +414,7 @@ class PedidoTable extends Component
                         "producto_id" => $detalle["producto_id"],
                         "producto_name" => $detalle["nombre"],
                         "cantidad" => $detalle["cantidad"],
+                        "peso" => $detalle["peso"],
                         "producto_precio" => $detalle["ref_producto_precio_cajon"],
                         "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
                         "importe" => $detalle["importe"],
@@ -509,11 +513,12 @@ class PedidoTable extends Component
         $precioImporte = $producto->f_tipo_afectacion_id == '21' ? 0 : $precioCaja;
 
         $importe = number_format_punto2(($cantidadPaquetes * $precioImporte) / $cantidadPorCaja);
-
+        $peso = number_format((($producto->peso * $cantidadPaquetes) / $cantidadPorCaja), 3, '.', '');
         // Guardar referencias
         $this->pedido_detalles[$index] = array_merge(
             $this->pedido_detalles[$index],
             [
+                "peso" => $peso,
                 "importe" => $importe,
                 "ref_producto_lista_precio" => $this->lista_precio,
                 "ref_producto_precio_cajon" => $precioCaja,
@@ -532,6 +537,7 @@ class PedidoTable extends Component
             "cantidadPaquetes" => $cantidadPaquetes,
             "precioPorPaquete" => $precioCaja / $cantidadPorCaja,
             "importeCalculado" => $importe,
+            "peso" => $peso,
         ]);
     }
 

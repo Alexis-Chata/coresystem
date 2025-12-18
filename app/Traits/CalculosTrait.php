@@ -32,6 +32,7 @@ trait CalculosTrait
             $data_detalle['unidad'] = "NIU";
             $data_detalle['descripcion'] = $data_detalle['producto_name'] ?? $data_detalle['nombre'];
             $data_detalle['cantidad'] = number_format_punto2($data_detalle['cantidad']); // unidades o paquetes totales
+            $data_detalle['peso'] = $data_detalle['peso']; // peso
             $data_detalle['tipAfeIgv'] = $data_detalle['tipAfeIgv'] ?? $producto->f_tipo_afectacion_id;
             $data_detalle['mtoPrecioUnitario'] = $data_detalle['importe'] / $data_detalle['cantidad'];
             $data_detalle['porcentajeIgv'] = $producto->porcentaje_igv ?? 0;
