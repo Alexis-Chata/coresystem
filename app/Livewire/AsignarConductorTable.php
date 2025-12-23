@@ -214,7 +214,7 @@ final class AsignarConductorTable extends PowerGridComponent
                 return $model->cliente_id . " - " . $model->cliente_nombre;
             })
             ->add("importe_total", function ($model) {
-                return "S/. ".number_format($model->importe_total, 2);
+                return "S/. " . number_format($model->importe_total, 2);
             })
             ->add("fecha_emision");
     }
@@ -348,6 +348,10 @@ final class AsignarConductorTable extends PowerGridComponent
             return;
         }
 
+        $pesosSub = DB::table('pedido_detalles')
+            ->select('pedido_id', DB::raw('SUM(CAST(peso AS DECIMAL(15,3))) as peso_pedido'))
+            ->groupBy('pedido_id');
+
         // Obtener los pedidos en el rango
         $pedidos = Pedido::query()
             ->join("rutas", "pedidos.ruta_id", "=", "rutas.id")
@@ -355,6 +359,9 @@ final class AsignarConductorTable extends PowerGridComponent
             ->join("clientes", "pedidos.cliente_id", "=", "clientes.id")
             ->leftJoin("empleados as conductores", "pedidos.conductor_id", "=", "conductores.id")
             ->leftJoin("vehiculos", "conductores.vehiculo_id", "=", "vehiculos.id")
+            ->leftJoinSub($pesosSub, 'pesos', function ($join) {
+                $join->on('pesos.pedido_id', '=', 'pedidos.id');
+            })
             ->whereBetween("pedidos.fecha_emision", [
                 $this->startDate . " 00:00:00",
                 $this->endDate . " 23:59:59",
@@ -372,19 +379,38 @@ final class AsignarConductorTable extends PowerGridComponent
                 "vehiculos.placa as vehiculo_placa",
                 "vehiculos.marca as vehiculo_marca",
                 "vehiculos.tonelaje_maximo as vehiculo_tonelaje",
-                "pedidos.cliente_id"
+                "pedidos.cliente_id",
+                DB::raw("COALESCE(pesos.peso_pedido, 0) as peso_pedido")
             )
             ->get();
+
         $pedidosAgrupados = $pedidos->groupBy('conductor_id')->map(function ($grupo) {
             $clientesPorRuta = $grupo->groupBy('ruta_id')->map(function ($pedidosPorRuta) {
                 return $pedidosPorRuta->unique('cliente_id')->count();
             });
 
+            $pesoPorRuta = $grupo->groupBy('ruta_id')->map(function ($pedidosPorRuta) {
+                return $pedidosPorRuta->sum('peso_pedido');
+            });
+
+            $pesoTotal = $grupo->sum('peso_pedido');
+
+            $first = $grupo->first();
+            $tonelaje = (float) str_replace(',', '', $first->vehiculo_tonelaje ?? 0); // en toneladas
+            $capacidadKg = $tonelaje > 0 ? ($tonelaje * 1000) : null;
+
+            // "Diferencia" típico: peso - capacidad (negativo = aún cabe)
+            $diferenciaKg = $capacidadKg !== null ? ($pesoTotal - $capacidadKg) : null;
+
             return [
-                'pedidos' => $grupo,
-                'importeTotal' => $grupo->sum('importe_total'),
+                'pedidos'        => $grupo,
+                'importeTotal'   => $grupo->sum('importe_total'),
                 'clientesPorRuta' => $clientesPorRuta,
-                'totalClientes' => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
+                'totalClientes'  => $clientesPorRuta->sum(), // Sumar los clientes únicos por ruta
+                'pesoPorRuta'    => $pesoPorRuta,
+                'pesoTotal'      => $pesoTotal,
+                'capacidadKg'    => $capacidadKg,
+                'diferenciaKg'   => $diferenciaKg,
             ];
         });
 

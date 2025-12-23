@@ -211,8 +211,8 @@
             </tr>
             <!-- TOTAL PESO KG -->
             <tr>
-                <td class="codigo">TOTAL PESO KG</td>
-                <td colspan="7" style="text-align: left">0.00</td>
+                <td class="codigo">TOTAL PESO KaaaaG</td>
+                <td colspan="7" style="text-align: left">{{ number_format($pesoTotalKg, 3) }}</td>
             </tr>
             <!-- Firma -->
             <tr>

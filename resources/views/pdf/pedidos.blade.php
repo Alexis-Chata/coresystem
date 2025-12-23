@@ -118,7 +118,7 @@
                     @endif
                     <span style="float: right;">TOTALES:</span>
                 </td>
-                <td class="total-value">0.00</td>
+                <td class="total-value">{{ number_format($grupo['pesoTotal'], 3) }}</td>
                 <td class="total-value">{{ $grupo['totalClientes'] }}</td>
                 <td class="total-value">{{ number_format($importeTotalConductor, 2) }}</td>
                 <td></td>
@@ -141,11 +141,11 @@
                     @endif
                         <td style="text-align: left;">{{ $pedido->ruta_id }} - {{ $pedido->ruta_nombre }}</td>
                         <td style="text-align: left;">{{ $pedido->vendedor_id }} - {{ $pedido->vendedor_nombre }}</td>
-                        <td>0.00</td>
+                        <td>{{ number_format($grupo['pesoPorRuta']->get($pedido->ruta_id, 0), 3) }}</td>
                         <td>{{ $grupo['clientesPorRuta'][$pedido->ruta_id] }}</td>
                         <td>{{ number_format($pedidosPorConductor->where('ruta_id', $pedido->ruta_id)->sum('importe_total'), 2) }}</td>
                         @if ($loop->first)
-                            <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}">-50,000.00</td>
+                            <td rowspan="{{ $pedidosPorConductor->unique('ruta_id')->count() }}">{{ number_format($grupo['diferenciaKg'] ?? 0, 2) }}</td>
                         @endif
                     @if (!$loop->first)
                         </tr>

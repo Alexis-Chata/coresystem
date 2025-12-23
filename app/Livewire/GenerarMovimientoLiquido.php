@@ -135,7 +135,7 @@ class GenerarMovimientoLiquido extends Component
                     $data_para_movimiento_detalle = $pedidos_detalle->map(function ($item) use ($user) {
                         $digitos = calcular_digitos($item->factor);
                         $cantidad = number_format($item->totalqcanpedbultos + ($item->totalqcanpedunidads / (10 ** $digitos)), $digitos, '.', '');
-                        
+
                         return [
                             'producto_id' => $item->producto_id,
                             'producto_name' => $item->producto_name,
@@ -229,6 +229,16 @@ class GenerarMovimientoLiquido extends Component
             'almacen',
             'vehiculo'
         ]);
+
+        // ✅ TOTAL PESO KG (OJO: ajusta si tu peso es por bulto y no por unidad)
+        $pesoTotalKg = $movimiento->movimientoDetalles->sum(function ($d) {
+            $factor   = (float) str_replace(',', '', $d->producto->cantidad ?? 0); // factor
+            $peso_bulto = (float) str_replace(',', '', $d->producto->peso ?? 0); // productos.peso
+            $unidades   = (float) str_replace(',', '', $d->cantidad_total_unidades ?? 0); // tu campo usado en la vista
+            //dd( $d->toArray(), $d->producto->toArray(), $factor, $peso_bulto, $unidades);
+            return ($peso_bulto * $unidades) / $factor;
+        });
+
         $detallesAgrupados = $movimiento->movimientoDetalles->groupBy(function ($detalle) {
             return $detalle->producto->marca->id; // Agrupar por nombre de la marca
         });
@@ -240,7 +250,7 @@ class GenerarMovimientoLiquido extends Component
         // Generar el PDF
         $pdf = Pdf::loadView(
             "pdf.movimiento-carga",
-            compact("movimiento", "detallesAgrupadosOrdenados", "marca")
+            compact("movimiento", "detallesAgrupadosOrdenados", "marca", "pesoTotalKg")
         );
 
         // Guardar el PDF en storage/app/private
