@@ -354,7 +354,7 @@ final class GenerarComprobantesTable extends PowerGridComponent
                                     'desTraslado' => "VENTA SUJETA A CONFIRMACION DEL COMPRADOR",
                                     'modTraslado' => "02",
                                     'fecTraslado' => $fechaFormateada,
-                                    'pesoTotal' => $invoice->pesoTotal ?? 0,
+                                    'pesoTotal' => $invoice->detalle->sum('peso') ?? 0,
                                     'undPesoTotal' => "KGM",
                                     'llegadaUbigeo' => $invoice->ubigueo ?? "150132", // 150132 - ubigeo san juan de lurigancho
                                     'llegadaDireccion' => $invoice->clientDireccion,

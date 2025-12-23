@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'wkhtmltopdf' => [
+        'bin' => env('WKHTML_PDF_PATH', "/usr/bin/wkhtmltopdf"),
+    ],
+
 ];

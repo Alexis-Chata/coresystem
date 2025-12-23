@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -113,5 +114,13 @@ class FComprobanteSunat extends Model
     public function tipo_doc()
     {
         return $this->belongsTo(FTipoDocumento::class, "clientTipoDoc", "codigo");
+    }
+
+    // Recomendación de rendimiento (IMPORTANTE); precarga el detalle para evitar N+1:
+    protected function pesoTotal(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->detalle->sum('peso')
+        );
     }
 }

@@ -240,16 +240,16 @@ class SunatService
         return $drivers;
     }
 
-    public function getDespatchDetails($details){
+    public function getDespatchDetails($details)
+    {
         $green_details = [];
 
         foreach ($details as $detail) {
             $green_details[] = (new DespatchDetail())
-            ->setCantidad($detail->cantidad)
-            ->setUnidad($detail->unidad)
-            ->setDescripcion($detail->descripcion)
-            ->setCodigo($detail->codigo)
-            ;
+                ->setCantidad($detail->cantidad)
+                ->setUnidad($detail->unidad)
+                ->setDescripcion($detail->descripcion)
+                ->setCodigo($detail->codigo);
         }
 
         return $green_details;
@@ -397,7 +397,7 @@ class SunatService
             'page-width' => '21cm',
             'page-height' => '29.7cm',
         ]);
-        $report->setBinPath(env('WKHTML_PDF_PATH', "/usr/bin/wkhtmltopdf"));
+        $report->setBinPath(config('services.wkhtmltopdf.bin'));
 
         $ruc = $invoice->getCompany()->getRuc();
         $company = Empresa::where('ruc', $ruc)->first();
