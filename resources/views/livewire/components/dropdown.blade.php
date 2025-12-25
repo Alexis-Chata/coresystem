@@ -48,10 +48,11 @@
                     @endif
                 @endif
             </a>
+{{--        Ya no se usa anular() desde el dropdown
             <a href="#" wire:click.prevent="anular({{ $id }})"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><span>Anular</span>
                 <x-svg_circle_equis />
-            </a>
+            </a> --}}
         </div>
     </div>
 </div>
