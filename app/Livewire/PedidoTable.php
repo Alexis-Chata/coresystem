@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PedidoTable extends Component
 {
@@ -43,6 +44,7 @@ class PedidoTable extends Component
     public $tipoComprobantes = [];
     public $comentarios = "";
     public $listado_productos = [];
+    public string $pedido_uuid;
     public $totales = [
         "valorVenta" => 0,
         "totalImpuestos" => 0,
@@ -82,6 +84,7 @@ class PedidoTable extends Component
         $this->user = auth_user();
         $this->empleado = $this->user->empleados()->first();
         $this->pedido_detalles = [];
+        $this->pedido_uuid = (string) Str::uuid();
 
         // Inicializar datos por defecto
         $this->initializeDefaultData();
@@ -379,61 +382,77 @@ class PedidoTable extends Component
         $this->resetValidation();
         $this->validate();
 
+        $lock = Cache::lock('guardar_pedido', 15);
+
         try {
-            DB::beginTransaction();
-            Cache::lock('guardar_pedido', 15)->block(10, function () {
-                $this->importe_total = collect($this->pedido_detalles)->sum(
-                    "importe"
-                );
+            // 🔒 Espera automática (como compra online)
+            $lock->block(10);
+
+            $wasCreated = false;
+
+            $pedido = DB::transaction(function () use (&$wasCreated) {
+
+                $this->importe_total = collect($this->pedido_detalles)->sum("importe");
                 if ($this->importe_total <= 0) {
-                    throw new \Exception("Importe Total no valido<br />");
+                    throw new \Exception("Importe Total no válido");
                 }
 
                 $almacen_id = Empleado::with(['fSede.almacen'])->find($this->vendedor_id)->fSede->almacen->id;
                 $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
                 $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
-                $pedido = Pedido::create([
-                    "ruta_id" => $this->ruta_id,
-                    "f_tipo_comprobante_id" => $this->f_tipo_comprobante_id,
-                    "vendedor_id" => $this->vendedor_id,
-                    "cliente_id" => $this->cliente_id,
-                    "fecha_emision" => $this->fecha_emision,
-                    "importe_total" => $this->importe_total,
-                    "nro_doc_liquidacion" => $this->nro_doc_liquidacion,
-                    "lista_precio" => $this->lista_precio,
-                    "comentario" => $this->comentarios,
-                    "empresa_id" => $this->empresa->id,
-                    "user_id" => $this->user->id,
-                ]);
 
-                foreach ($this->pedido_detalles as $index => $detalle) {
+                // ✅ Idempotencia por UUID
+                $pedido = Pedido::firstOrCreate(
+                    ["uuid" => $this->pedido_uuid],
+                    [
+                        "ruta_id" => $this->ruta_id,
+                        "f_tipo_comprobante_id" => $this->f_tipo_comprobante_id,
+                        "vendedor_id" => $this->vendedor_id,
+                        "cliente_id" => $this->cliente_id,
+                        "fecha_emision" => $this->fecha_emision,
+                        "importe_total" => $this->importe_total,
+                        "nro_doc_liquidacion" => $this->nro_doc_liquidacion,
+                        "lista_precio" => $this->lista_precio,
+                        "comentario" => $this->comentarios,
+                        "empresa_id" => $this->empresa->id,
+                        "user_id" => $this->user->id,
+                    ]
+                );
 
-                    PedidoDetalle::create([
-                        "pedido_id" => $pedido->id,
-                        "item" => $index + 1,
-                        "producto_id" => $detalle["producto_id"],
-                        "producto_name" => $detalle["nombre"],
-                        "cantidad" => $detalle["cantidad"],
-                        "peso" => $detalle["peso"],
-                        "producto_precio" => $detalle["ref_producto_precio_cajon"],
-                        "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
-                        "importe" => $detalle["importe"],
-                        "lista_precio" => $detalle["ref_producto_lista_precio"],
-                        "almacen_producto_id" => $detalle["almacen_producto_id"],
-                        "cantidad_unidades" => $detalle["cantidad_unidades"],
+                $wasCreated = $pedido->wasRecentlyCreated;
+
+                // IMPORTANTÍSIMO: solo crear detalles y mover stock si el pedido fue NUEVO
+                if ($wasCreated) {
+                    foreach ($this->pedido_detalles as $index => $detalle) {
+
+                        PedidoDetalle::create([
+                            "pedido_id" => $pedido->id,
+                            "item" => $index + 1,
+                            "producto_id" => $detalle["producto_id"],
+                            "producto_name" => $detalle["nombre"],
+                            "cantidad" => $detalle["cantidad"],
+                            "peso" => $detalle["peso"],
+                            "producto_precio" => $detalle["ref_producto_precio_cajon"],
+                            "producto_cantidad_caja" => $detalle["ref_producto_cantidad_cajon"],
+                            "importe" => $detalle["importe"],
+                            "lista_precio" => $detalle["ref_producto_lista_precio"],
+                            "almacen_producto_id" => $detalle["almacen_producto_id"],
+                            "cantidad_unidades" => $detalle["cantidad_unidades"],
+                        ]);
+                    }
+
+                    $this->actualizarStock($pedido);
+
+                    $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
+
+                    // Actualizar el pedido con el total final (por si acaso)
+                    $pedido->update([
+                        "importe_total" => $this->importe_total,
                     ]);
                 }
 
-                $this->actualizarStock($pedido);
-
-                $subTotalesIgv = $this->setSubTotalesIgv($this->pedido_detalles);
-
-                // Actualizar el pedido con el total final (por si acaso)
-                $pedido->update([
-                    "importe_total" => $this->importe_total,
-                ]);
+                return $pedido;
             });
-            DB::commit();
 
             // Limpiar formulario
             $this->reset([
@@ -454,14 +473,23 @@ class PedidoTable extends Component
                 $this->dispatch("reset-vendedor-select");
             }
             $this->dispatch("reset-cliente-select");
-
-            $this->dispatch("pedido-guardado", "Pedido guardado exitosamente");
-        } catch (Exception | LockTimeoutException $e) {
-            DB::rollback();
+            $this->pedido_uuid = (string) Str::uuid();
+            // ✅ Mensaje final
+            $this->dispatch(
+                'pedido-guardado',
+                $wasCreated
+                    ? 'Pedido guardado exitosamente'
+                    : 'Este pedido ya fue procesado'
+            );
+        } catch (LockTimeoutException $e) {
+            $this->dispatch('error-guardando-pedido', 'El sistema está muy ocupado, intente nuevamente');
+        } catch (\Exception $e) {
             logger("Error al guardar pedido:", ["error" => $e->getMessage()]);
             //throw $e; // Relanza la excepción si necesitas propagarla
-            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . $e->getMessage());
+            $this->dispatch("error-guardando-pedido", "Error al guardar el pedido<br>" . $e->getMessage());
             $this->addError("error_guardar", $e->getMessage());
+        } finally {
+            optional($lock)->release();
         }
     }
 

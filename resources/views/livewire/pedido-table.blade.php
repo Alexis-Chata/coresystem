@@ -149,7 +149,7 @@
             <div class="mb-4 relative">
                 <input type="number" x-model="cantidad_ofrecida" min="0.01" step="0.01"
                     class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$cliente_id ? 'bg-gray-100' : '' }}"
-                    placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} autocomplete="false"/>
+                    placeholder=" " {{ !$cliente_id ? 'disabled' : '' }} autocomplete="false" />
                 <label
                     class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
                     Cantidad Ofrecida
@@ -179,7 +179,7 @@
             <ul x-show="open"
                 class="absolute z-10 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm pb-3">
                 <template x-for="(producto, index) in productosFiltrados" :key="producto.id">
-                    <li @mousedown.prevent
+                    <li @mousedown.prevent @click="agregar_producto_item(producto)"
                         :class="{
                             'bg-gray-300 rounded-md': index === cursor,
                             'hover:bg-gray-300 hover:rounded-md': index !== cursor
@@ -191,7 +191,7 @@
                             :value="producto.id" x-model.number="seleccionados" @click.stop />
 
                         <!-- Contenido del producto -->
-                        <div @click="agregar_producto_item(producto)" class="flex-1">
+                        <div class="flex-1">
                             <div class="font-semibold" x-text="`${producto.id} - ${producto.nombre}`"></div>
                             <div>
                                 <span
@@ -306,9 +306,13 @@
             </div>
 
             <!-- Botón para enviar todo a Livewire -->
-            <button @click="guardar"
-                class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Guardar
-                Pedido</button>
+            <button type="button" @click="guardar" :disabled="cargando"
+                :class="cargando ? 'opacity-50 cursor-not-allowed' : ''"
+                class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <span x-show="!cargando">Guardar Pedido</span>
+                <span x-show="cargando">Guardando...</span>
+            </button>
+
         </div>
     </div>
     @if ($this->getErrorBag()->count())
@@ -386,9 +390,19 @@
                 },
 
                 agregar_producto_item(producto) {
-                    //console.log(this.cantidad_ofrecida, typeof this.cantidad_ofrecida);
-                    let ofrecida = parseFloat(this.cantidad_ofrecida || 0);
-                    if (isNaN(ofrecida) || ofrecida <= 0) return; // validacion
+                    let ofrecidaStr = String(this.cantidad_ofrecida ?? '').trim();
+                    console.log(ofrecidaStr, ofrecidaStr === '', ofrecidaStr === '.', ofrecidaStr === '0.');
+                    if (ofrecidaStr === '' || ofrecidaStr === '.' || ofrecidaStr === '0.') {
+                        ofrecidaStr = '0.01'; // valor mínimo seguro
+                    }
+
+                    let ofrecida = parseFloat(ofrecidaStr);
+                    console.log(ofrecida);
+
+                    if (isNaN(ofrecida) || ofrecida <= 0) {
+                        alert('Ingrese una cantidad válida');
+                        return;
+                    }
 
                     const factor = parseFloat(producto.factor || 1);
                     const precio = parseFloat(producto.precio || 0);
@@ -398,7 +412,7 @@
                         cantidad_convertida,
                         total_unidades,
                         importe
-                    } = this.convertirCantidad(this.cantidad_ofrecida, factor, precio, f_tipo_afectacion_id);
+                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
                     //console.log(cantidad_convertida, total_unidades, importe);
 
                     const existe = this.items.find(i => i.id === producto.id);
@@ -533,6 +547,8 @@
                 },
 
                 guardar() {
+                    if (this.cargando) return; // ✅ corta doble click
+
                     if (this.items.length === 0) {
                         alert("No hay productos agregados al pedido.");
                         return;
@@ -565,7 +581,9 @@
 
                     $wire.call('guardar_pedido_items', this.items).catch(error => {
                         alert(error.message); // O mostrar en tu interfaz personalizada
-                    });
+                    }).finally(() => {
+                        this.cargando = false;
+                    }); // ✅ re-habilita el botón;
                     //$wire.guardar_pedido_items(this.items);
                 },
                 init() {
