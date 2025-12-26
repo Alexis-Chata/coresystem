@@ -206,6 +206,13 @@
                         'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
                         'name' => 'Liquidaciones',
                     ],
+                    [
+                        'link_descripcion' => 'Avances', //opcional
+                        'permission' => 'view avance',
+                        'route' => 'avance.view',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Avances',
+                    ],
                 ],
             ],
 

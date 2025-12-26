@@ -45,6 +45,11 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+
+    Route::get('/avance', function () {
+        return view('avance-ventas');
+    })->name('avance.view');
+
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
