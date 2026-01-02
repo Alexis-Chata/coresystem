@@ -13,6 +13,7 @@ class Pedido extends Model implements Auditable
     use \OwenIt\Auditing\Auditable;
 
     protected $fillable = [
+        "uuid",
         "ruta_id",
         "f_tipo_comprobante_id",
         "vendedor_id",
