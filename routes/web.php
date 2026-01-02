@@ -48,7 +48,7 @@ Route::middleware([
 
     Route::get('/avance', function () {
         return view('avance-ventas');
-    })->name('avance.view');
+    })->middleware('can:view avance')->name('avance.view');
 
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -58,6 +58,7 @@ Route::middleware([
     Route::get('/user-roles', [UserRoleController::class, 'index'])
         ->middleware('can:view roles')
         ->name('user-roles.index');
+
     Route::put('/users/{user}/assign-role', [UserRoleController::class, 'assignRole'])
         ->middleware('can:assign roles')
         ->name('users.assign-role');

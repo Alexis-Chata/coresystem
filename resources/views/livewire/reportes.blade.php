@@ -65,6 +65,13 @@
         <br />
         <div>
             <label class="cursor-pointer space-x-1">
+                <input type="checkbox" wire:model="producto_factor"
+                    class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
+                <span class="text-lg">Producto Factor</span>
+            </label>
+        </div>
+        <div>
+            <label class="cursor-pointer space-x-1">
                 <input type="checkbox" wire:model="rutas_name"
                     class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
                 <span class="text-lg">Rutas</span>

@@ -30,6 +30,7 @@ class Reportes extends Component
     public $productos;
     public $producto_id;
 
+    public $producto_factor;
     public $rutas_name;
     public $marcas_name;
     public $tipo_documento;
@@ -110,6 +111,7 @@ class Reportes extends Component
 
     public function exportar_reporte()
     {
+        $t0 = microtime(true);
         $this->ruta_id == "NULL" ? $this->ruta_id = null : $this->ruta_id;
         $this->marca_id == "NULL" ? $this->marca_id = null : $this->marca_id;
         $this->vendedor_id == "NULL" ? $this->vendedor_id = null : $this->vendedor_id;
@@ -126,6 +128,7 @@ class Reportes extends Component
         $vendedor_id = $this->vendedor_id;
         $producto_id = $this->producto_id;
 
+        $producto_factor = $this->producto_factor ?? false;
         $ruta = $this->rutas_name ?? false;
         $marcas_name = $this->marcas_name ?? false;
         $tipo_documento = $this->tipo_documento ?? false;
@@ -137,6 +140,44 @@ class Reportes extends Component
         $fecha_emision = $this->fecha_emision ?? false;
         $usuario = $this->usuario ?? false;
         //dd($marcas_name, $fecha_emision, $ruta);
-        return Excel::download(new ReportesExport($date_field, $fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision, $usuario), 'reporte_ventas.xlsx');
+        //return Excel::download(new ReportesExport($date_field, $fecha_inicio, $fecha_fin, $ruta_id, $marca_id, $vendedor_id, $producto_id, $ruta, $marcas_name, $tipo_documento, $conductor, $vendedor, $cliente, $num_documento, $producto, $fecha_emision, $usuario), 'reporte_ventas.xlsx');
+
+
+        $response = Excel::download(
+            new ReportesExport(
+                $date_field,
+                $fecha_inicio,
+                $fecha_fin,
+                $ruta_id,
+                $marca_id,
+                $vendedor_id,
+                $producto_id,
+                $ruta,
+                $marcas_name,
+                $tipo_documento,
+                $conductor,
+                $vendedor,
+                $cliente,
+                $num_documento,
+                $producto,
+                $fecha_emision,
+                $usuario,
+                $producto_factor
+            ),
+            'reporte_ventas.xlsx'
+        );
+
+        $seg = round(microtime(true) - $t0, 2);
+        logger("EXPORT reporte_ventas.xlsx => {$seg}s", [
+            'date_field' => $date_field,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin,
+            'ruta_id' => $ruta_id,
+            'marca_id' => $marca_id,
+            'vendedor_id' => $vendedor_id,
+            'producto_id' => $producto_id,
+        ]);
+
+        return $response;
     }
 }
