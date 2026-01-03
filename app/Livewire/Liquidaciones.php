@@ -97,7 +97,7 @@ class Liquidaciones extends Component
             })->get();
         $comprobantes_ids = (FComprobanteSunat::where("movimiento_id", $movimiento_id)->pluck('id'));
         $series_correlativos = (FComprobanteSunat::selectRaw("CONCAT(serie, '-', correlativo) as serie_correlativo")->where("movimiento_id", $movimiento_id)->get()->pluck('serie_correlativo'));
-        $refacturados_ids =(FComprobanteSunat::whereIn("numDocfectado", $series_correlativos)->whereIn('tipoDoc', ["00", "01", "03"])->pluck('id'));
+        $refacturados_ids = (FComprobanteSunat::whereIn("numDocfectado", $series_correlativos)->whereIn('tipoDoc', ["00", "01", "03"])->pluck('id'));
         //dd($movimientos_extras_ingresos->toArray(), $movimientos_extras_ingresos->pluck('id'));
         $movimiento_detalles_extras_ingreso = MovimientoDetalle::whereIn("movimiento_id", $movimientos_extras_ingresos->pluck('id'))->get();
         //dd($movimiento_detalles_extras_ingreso->where('producto_id', 303)->sum('cantidad_total_unidades'));
@@ -755,6 +755,15 @@ class Liquidaciones extends Component
                 list($subtotales, $detalles) = ($this->setSubTotalesIgv($lote_detalles, true));
                 //logger("Detalles calculado para refacturar:", ["detalles" => $detalles]);
                 $subtotales = (object)$subtotales;
+
+                $fechaOriginal = Carbon::parse($comprobante->fechaEmision);
+                $hoy = now();
+
+                // Si han pasado 1, 2 o 3 días (ej: 1 -> 2/3/4), mantiene la fecha original
+                $fechaEmisionNueva = ($hoy->greaterThan($fechaOriginal) && $hoy->diffInDays($fechaOriginal) <= 3)
+                    ? $fechaOriginal
+                    : $hoy; // si ya pasó más de 4 días, aquí quedará con fecha de hoy
+
                 $datos_comprobante = [];
                 $datos_comprobante = [
                     //"conductor_id" => 10,
@@ -766,7 +775,7 @@ class Liquidaciones extends Component
                     'serie' => $serie->serie,
                     'correlativo' => $serie->correlativo,
                     //'fechaEmision' => $this->fecha_reparto,
-                    "fechaEmision" => now(),
+                    "fechaEmision" => $fechaEmisionNueva,
                     'mtoOperGravadas' => $subtotales->mtoOperGravadas,
                     'mtoOperInafectas' => $subtotales->mtoOperInafectas,
                     'mtoOperExoneradas' => $subtotales->mtoOperExoneradas,
