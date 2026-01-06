@@ -27,6 +27,7 @@ class ReportesExport implements FromCollection, WithHeadings
     private $cliente;
     private $num_documento;
     private $producto;
+    private $producto_factor;
     private $fecha_emision;
     private $usuario;
 
@@ -48,6 +49,7 @@ class ReportesExport implements FromCollection, WithHeadings
         $this->cliente = $cliente;
         $this->num_documento = $num_documento;
         $this->producto = $producto || !is_null($producto_id) || $producto_factor;
+        $this->producto_factor = $producto_factor;
         $this->fecha_emision = $fecha_emision;
         $this->usuario = $usuario;
     }
@@ -70,6 +72,7 @@ class ReportesExport implements FromCollection, WithHeadings
         $cliente = $this->cliente;
         $num_documento = $this->num_documento;
         $productoFlag  = $this->producto; // renombrado para no chocar
+        $producto_factor = $this->producto_factor;
         $fecha_emision = $this->fecha_emision;
         $usuario = $this->usuario;
         //ini_set('memory_limit', '512M');
@@ -89,7 +92,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ["by" => DB::raw("CONCAT(f_comprobante_sunats.serie, '-', f_comprobante_sunats.correlativo)"), "estado" => $num_documento],
             ["by" => "f_comprobante_sunat_detalles.codProducto", "estado" => $productoFlag],
             ["by" => "productos.name", "estado" => $productoFlag],
-            ["by" => "f_comprobante_sunat_detalles.ref_producto_cantidad_cajon", "estado" => $productoFlag],
+            ["by" => "f_comprobante_sunat_detalles.ref_producto_cantidad_cajon", "estado" => $producto_factor],
             ["by" => DB::raw("DATE_FORMAT(f_comprobante_sunats.fechaEmision, '%d-%m-%Y')"), "estado" => $fecha_emision],
         ]);
 
@@ -149,7 +152,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when($cliente, fn($q) => $q->addSelect('f_comprobante_sunats.cliente_id', 'f_comprobante_sunats.clientRazonSocial'))
             ->when($num_documento, fn($q) => $q->addSelect(DB::raw("CONCAT(f_comprobante_sunats.serie, '-', f_comprobante_sunats.correlativo) as num_documento")))
             ->when($productoFlag, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.codProducto', 'productos.name as nombre_articulo'))
-            ->when($productoFlag, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.ref_producto_cantidad_cajon'))
+            ->when($producto_factor, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.ref_producto_cantidad_cajon'))
             ->when($fecha_emision, fn($q) => $q->addSelect(DB::raw("DATE_FORMAT(f_comprobante_sunats.fechaEmision, '%d-%m-%Y') as fecha_emision")))
             ->when($productoFlag, fn($q) => $q->addSelect(DB::raw('SUM(f_comprobante_sunat_detalles.cantidad) as detalle_cantidad')))
             ->addSelect(DB::raw('ROUND(SUM(f_comprobante_sunat_detalles.cantidad * f_comprobante_sunat_detalles.mtoPrecioUnitario), 2) AS importe'))
@@ -178,31 +181,33 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when($num_documento, fn($q) => $q->orderBy('num_documento'))
             ->when($productoFlag, fn($q) => $q->orderBy('f_comprobante_sunat_detalles.codProducto'))
             ->when($productoFlag, fn($q) => $q->orderBy('productos.name'))
-            ->when($productoFlag, fn($q) => $q->orderBy('f_comprobante_sunat_detalles.ref_producto_cantidad_cajon'))
+            ->when($producto_factor, fn($q) => $q->orderBy('f_comprobante_sunat_detalles.ref_producto_cantidad_cajon'))
             ->when($fecha_emision, fn($q) => $q->orderBy('fecha_emision'));
 
         // 👀 Ver SQL con bindings separados
-        logger('SQL Query', [$query->toSql()]);
-        logger('SQL Query getBindings', [$query->getBindings()]);
+        // logger('SQL Query', [$query->toSql()]);
+        // logger('SQL Query getBindings', [$query->getBindings()]);
         $countQuery = (clone $query)->reorder();
 
         $total = DB::query()
             ->fromSub($countQuery, 't')
             ->count();
 
-        logger("Filas a exportar: $total");
+        //logger("Filas a exportar: $total");
 
         $reporte = $query->get();
 
         $ms = round((microtime(true) - $t0) * 1000, 2);
-        logger("ARMADO QUERY => {$ms}ms");
+        //logger("ARMADO QUERY => {$ms}ms");
 
         // Post-proceso de cantidades a "cajas.unidades"
         if ($productoFlag) {
             // Opcional: indexar productos por id para no hacer find() en cada vuelta
             $productosById = $productos->keyBy('id');
-            $reporte = $reporte->map(function ($item) use ($productosById) {
-                $item->cantidad_unidades = $item->detalle_cantidad;
+            $reporte = $reporte->map(function ($item) use ($productosById, $producto_factor) {
+                if($producto_factor){
+                    $item->cantidad_unidades = $item->detalle_cantidad;
+                }
                 $item->importe = $item->importe == 0.00 ? "0" : $item->importe;
 
                 $prod = $productosById->get($item->codProducto);
@@ -236,11 +241,11 @@ class ReportesExport implements FromCollection, WithHeadings
             ["titulo" => "Num Documento", "estado" => $this->num_documento],
             ["titulo" => "Cod Articulo", "estado" => $this->producto],
             ["titulo" => "Nombre de Articulo", "estado" => $this->producto],
-            ["titulo" => "Factor", "estado" => $this->producto],
+            ["titulo" => "Factor", "estado" => $this->producto_factor],
             ["titulo" => "Fecha Emision", "estado" => $this->fecha_emision],
             ["titulo" => "Cantidad Bultos Venta", "estado" => $this->producto],
             ["titulo" => "Importe Venta", "estado" => true], // siempre incluido
-            ["titulo" => "Cantidad Unidades Venta", "estado" => $this->producto],
+            ["titulo" => "Cantidad Unidades Venta", "estado" => $this->producto_factor],
         ]);
 
         $titulos_array = $titulos
