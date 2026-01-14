@@ -253,6 +253,47 @@
         ];
     @endphp
 
+    @php
+        $user = auth()->user();
+
+        // Evalúa un permiso o una lista de permisos con modo any/all
+        $canPerm = function ($perm, string $mode = 'any') use ($user) {
+            // Si no definiste permiso, lo dejamos visible (útil para links públicos)
+            if ($perm === null || $perm === '' || $perm === []) {
+                return true;
+            }
+
+            // Normalizamos a array
+            $perms = is_array($perm) ? $perm : [$perm];
+            $perms = array_values(array_filter($perms, fn($p) => !empty($p)));
+
+            if (count($perms) === 0) {
+                return true;
+            }
+
+            return $mode === 'all'
+                ? collect($perms)->every(fn($p) => $user?->can($p)) // TODOS
+                : collect($perms)->contains(fn($p) => $user?->can($p)); // CUALQUIERA
+        };
+
+        // Evalúa un item del menú. Si tiene sublinks, se muestra si:
+        // - el padre pasa, O
+        // - al menos un sublink pasa
+        $canItem = function (array $item) use ($canPerm) {
+            $allowedParent = $canPerm($item['permission'] ?? null, $item['perm_mode'] ?? 'any');
+
+            $sublinks = $item['sublinks'] ?? [];
+            if (!empty($sublinks)) {
+                $allowedAnySub = collect($sublinks)->contains(
+                    fn($s) => $canPerm($s['permission'] ?? null, $s['perm_mode'] ?? 'any'),
+                );
+                return $allowedParent || $allowedAnySub;
+            }
+
+            return $allowedParent;
+        };
+    @endphp
+
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <!-- Sidebar Menu -->
         <nav class="mt-2 px-4 py-4 lg:px-6">
@@ -264,7 +305,7 @@
                     <ul class="mb-6 flex flex-col gap-1.5">
                         <!-- Menu Item {{ $grupo_link['grupo_name'] }} -->
                         @foreach ($grupo_link['links'] as $item)
-                            @can($item['permission'])
+                            @if ($canItem($item))
                                 <!-- {{ $item['link_descripcion'] ?? '' }} -->
                                 @if (!count($item['sublinks'] ?? []))
                                     <li>
@@ -272,7 +313,6 @@
                                             :class="{ 'bg-graydark dark:bg-meta-4': {{ request()->routeIs($item['route']) ? 'true' : 'false' }} }"
                                             href="{{ route($item['route']) }}">
                                             <x-dynamic-component :component="$item['icon']" />
-                                            {{-- <x-svg_user /> --}}
                                             {{ $item['name'] }}
                                         </a>
                                     </li>
@@ -282,7 +322,6 @@
                                             href="#" @click.prevent="open = !open"
                                             :class="{ 'bg-graydark dark:bg-meta-4': open }">
                                             <x-dynamic-component :component="$item['icon']" />
-                                            {{-- <x-svg_user /> --}}
                                             {{ $item['name'] }}
                                             <x-svg_desplegable />
                                         </a>
@@ -291,7 +330,7 @@
                                         <div class="translate transform overflow-hidden" x-show="open" x-transition>
                                             <ul class="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                                                 @foreach ($item['sublinks'] as $sublink)
-                                                    @can($sublink['permission'])
+                                                    @if ($canPerm($sublink['permission'] ?? null, $sublink['perm_mode'] ?? 'any'))
                                                         <li>
                                                             <a class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
                                                                 href="{{ route($sublink['route']) }}"
@@ -299,13 +338,13 @@
                                                                 {{ $sublink['name'] }}
                                                             </a>
                                                         </li>
-                                                    @endcan
+                                                    @endif
                                                 @endforeach
                                             </ul>
                                         </div>
                                     </li>
                                 @endif
-                            @endcan
+                            @endif
                         @endforeach
                         <!-- Menu Item {{ $grupo_link['grupo_name'] }} -->
                     </ul>
