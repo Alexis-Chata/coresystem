@@ -11,6 +11,7 @@ use App\Models\FTipoAfectacion;
 use App\Models\ProductoComponent;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
@@ -258,26 +259,37 @@ final class ProductoTable extends PowerGridComponent
                 ->dispatch('editProductoComponents', ['productoId' => $row->id]);
         }
 
+        $user = Auth::user();
+        $canDelete = $user?->can('delete producto'); // 👈 permiso exacto
+
         if ($row->deleted_at) {
-            $actions[] = Button::add('restore')
-                ->slot('Restaurar')
-                ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('restoreProducto', ['productoId' => $row->id]);
+            // Si quieres que restaurar use el mismo permiso delete:
+            if ($canDelete) {
+                $actions[] = Button::add('restore')
+                    ->slot('Restaurar')
+                    ->id()
+                    ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                    ->dispatch('restoreProducto', ['productoId' => $row->id]);
+            }
         } else {
-            $actions[] = Button::add('delete')
-                ->slot('Eliminar')
-                ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('deleteProducto', ['productoId' => $row->id]);
+            if ($canDelete) {
+                $actions[] = Button::add('delete')
+                    ->slot('Eliminar')
+                    ->id()
+                    ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
+                    ->dispatch('deleteProducto', ['productoId' => $row->id]);
+            }
         }
 
         return $actions;
     }
 
+
     #[On('deleteProducto')]
     public function deleteProducto($productoId): void
     {
+        abort_unless(Auth::user()?->can('delete producto'), 403, 'No autorizado.');
+
         $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
             $producto->delete();
@@ -289,6 +301,8 @@ final class ProductoTable extends PowerGridComponent
     #[On('restoreProducto')]
     public function restoreProducto($productoId): void
     {
+        abort_unless(Auth::user()?->can('delete producto'), 403, 'No autorizado.');
+
         $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
             $producto->restore();
@@ -296,6 +310,7 @@ final class ProductoTable extends PowerGridComponent
             $this->dispatch('producto-restored', 'Producto restaurado exitosamente');
         }
     }
+
 
     public function openCreateForm()
     {
