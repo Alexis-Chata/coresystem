@@ -251,4 +251,85 @@
         </div>
     </div>
 
+    {{-- ================= TABLA VENTAS POR LISTA DE PRECIO ================= --}}
+    <div class="mt-5 rounded-md border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <div class="flex items-center justify-between border-b border-stroke px-4 py-3 text-xs dark:border-strokedark">
+            <div class="font-semibold">
+                Ventas por lista de precio
+            </div>
+            <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                Rango: {{ $desde }} &rarr; {{ $hasta }}
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-[11px]">
+                <thead
+                    class="bg-gray-50 text-[11px] uppercase tracking-wide text-gray-500 dark:bg-boxdark-2 dark:text-gray-400">
+                    <tr>
+                        <th class="px-4 py-2">ID</th>
+                        <th class="px-4 py-2">Lista</th>
+                        <th class="px-4 py-2 text-right">Ventas</th>
+                        <th class="px-4 py-2 text-right">Bultos</th>
+                        <th class="px-4 py-2 text-right">Docs</th>
+                        <th class="px-4 py-2 text-right">Clientes</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-stroke dark:divide-strokedark">
+                    @forelse($ventasListaPrecio as $r)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-boxdark-2">
+                            <td class="px-4 py-1.5 font-semibold text-gray-700 dark:text-gray-200">
+                                {{ (int) $r->lista_id }}
+                            </td>
+                            <td class="px-4 py-1.5 text-gray-800 dark:text-gray-100">
+                                {{ $r->lista_precio }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right">
+                                S/ {{ number_format((float) $r->total_ventas, 2) }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right">
+                                {{ number_format((float) $r->total_bultos, 3) }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right">
+                                {{ (int) $r->documentos }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right">
+                                {{ (int) $r->clientes_unicos }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-6 text-center text-gray-400">
+                                No hay ventas por lista de precio en el rango seleccionado.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+
+                @if ($ventasListaPrecio->count() > 0)
+                    <tfoot
+                        class="bg-gray-50 text-[11px] font-semibold text-gray-700 dark:bg-boxdark-2 dark:text-gray-100">
+                        <tr>
+                            <td colspan="2" class="px-4 py-2 text-right">Totales</td>
+                            <td class="px-4 py-2 text-right">
+                                S/ {{ number_format((float) $ventasListaPrecio->sum('total_ventas'), 2) }}
+                            </td>
+                            <td class="px-4 py-2 text-right">
+                                {{ number_format((float) $ventasListaPrecio->sum('total_bultos'), 3) }}
+                            </td>
+                            <td class="px-4 py-2 text-right">
+                                {{ (int) $ventasListaPrecio->sum('documentos') }}
+                            </td>
+                            <td class="px-4 py-2 text-right">
+                                {{ (int) $ventasListaPrecio->sum('clientes_unicos') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
+    </div>
+
+
 </div>
