@@ -97,6 +97,7 @@ class AvanceVentas extends Component
 
     /** ====== KPIs ====== */
 
+    /** ====== KPIs ====== */
     private function getKpis()
     {
         $qCab = $this->baseQueryCab();
@@ -106,26 +107,13 @@ class AvanceVentas extends Component
             $qCab->whereRaw('CAST(f.vendedor_id AS UNSIGNED) = ?', [(int) $this->vendedorFiltro]);
         }
 
-        $kpis = (clone $qCab)->selectRaw("
-            COALESCE(SUM(CAST(f.mtoImpVenta AS DECIMAL(15,2))), 0) AS total_ventas,
-            COUNT(DISTINCT f.cliente_id) AS clientes_unicos,
-            COALESCE(AVG(CAST(f.mtoImpVenta AS DECIMAL(15,2))), 0) AS ticket_prom
-        ")->first();
-
-        // Bultos (detalle)
-        $qDet = $this->baseQueryDet();
-        if ($this->vendedorFiltro !== 'ALL') {
-            $qDet->whereRaw('CAST(f.vendedor_id AS UNSIGNED) = ?', [(int) $this->vendedorFiltro]);
-        }
-
-        $totalBultos = (clone $qDet)->selectRaw("
-            COALESCE(SUM(CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3))), 0) AS total_bultos
-        ")->value('total_bultos');
-
-        $kpis->total_bultos = (float) $totalBultos;
-
-        return $kpis;
+        return (clone $qCab)->selectRaw("
+        COALESCE(SUM(CAST(f.mtoImpVenta AS DECIMAL(15,2))), 0) AS total_ventas,
+        COUNT(DISTINCT f.cliente_id) AS clientes_unicos,
+        COALESCE(AVG(CAST(f.mtoImpVenta AS DECIMAL(15,2))), 0) AS ticket_prom
+    ")->first();
     }
+
 
     /** ====== RANKING POR VENDEDOR (TOTAL) ====== */
 
@@ -205,12 +193,10 @@ class AvanceVentas extends Component
     {
         $q = $this->baseQueryDet();
 
-        // Si aplicas filtro de vendedor, que también afecte este ranking
         if ($this->vendedorFiltro !== 'ALL') {
             $q->whereRaw('CAST(f.vendedor_id AS UNSIGNED) = ?', [(int) $this->vendedorFiltro]);
         }
 
-        // ✅ OPCIONAL: si tienes tabla de listas de precio, descomenta/ajusta:
         $q->leftJoin(
             'lista_precios as lp',
             DB::raw('lp.id'),
@@ -218,10 +204,8 @@ class AvanceVentas extends Component
             DB::raw('CAST(d.ref_producto_lista_precio AS UNSIGNED)')
         );
 
-        // Expresiones para agrupar (maneja NULL)
         $listaIdExpr = "COALESCE(CAST(NULLIF(d.ref_producto_lista_precio,'') AS UNSIGNED), 0)";
 
-        // Si NO tienes tabla lp, usa solo "CONCAT('Lista ', ...)" y quita el join.
         $listaNameExpr = "
         CASE
             WHEN d.ref_producto_lista_precio IS NULL OR d.ref_producto_lista_precio = '' THEN 'SIN LISTA'
@@ -230,26 +214,23 @@ class AvanceVentas extends Component
     ";
 
         return $q->selectRaw("
-            {$listaIdExpr} AS lista_id,
-            {$listaNameExpr} AS lista_precio,
+        {$listaIdExpr} AS lista_id,
+        {$listaNameExpr} AS lista_precio,
 
-            COALESCE(SUM(
-                CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3)) *
-                CAST(REPLACE(d.mtoPrecioUnitario, ',', '.') AS DECIMAL(15,3))
-            ), 0) AS total_ventas,
+        COALESCE(SUM(
+            CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3)) *
+            CAST(REPLACE(d.mtoPrecioUnitario, ',', '.') AS DECIMAL(15,3))
+        ), 0) AS total_ventas,
 
-            COALESCE(SUM(
-                CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3))
-            ), 0) AS total_bultos,
-
-            COUNT(DISTINCT f.id) AS documentos,
-            COUNT(DISTINCT f.cliente_id) AS clientes_unicos
-        ")
+        COUNT(DISTINCT f.id) AS documentos,
+        COUNT(DISTINCT f.cliente_id) AS clientes_unicos
+    ")
             ->groupByRaw("{$listaIdExpr}")
             ->groupByRaw("{$listaNameExpr}")
             ->orderByDesc('total_ventas')
             ->get();
     }
+
 
     public function render()
     {

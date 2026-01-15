@@ -270,7 +270,6 @@
                         <th class="px-4 py-2">ID</th>
                         <th class="px-4 py-2">Lista</th>
                         <th class="px-4 py-2 text-right">Ventas</th>
-                        <th class="px-4 py-2 text-right">Bultos</th>
                         <th class="px-4 py-2 text-right">Docs</th>
                         <th class="px-4 py-2 text-right">Clientes</th>
                     </tr>
@@ -287,9 +286,6 @@
                             </td>
                             <td class="px-4 py-1.5 text-right">
                                 S/ {{ number_format((float) $r->total_ventas, 2) }}
-                            </td>
-                            <td class="px-4 py-1.5 text-right">
-                                {{ number_format((float) $r->total_bultos, 3) }}
                             </td>
                             <td class="px-4 py-1.5 text-right">
                                 {{ (int) $r->documentos }}
@@ -314,9 +310,6 @@
                             <td colspan="2" class="px-4 py-2 text-right">Totales</td>
                             <td class="px-4 py-2 text-right">
                                 S/ {{ number_format((float) $ventasListaPrecio->sum('total_ventas'), 2) }}
-                            </td>
-                            <td class="px-4 py-2 text-right">
-                                {{ number_format((float) $ventasListaPrecio->sum('total_bultos'), 3) }}
                             </td>
                             <td class="px-4 py-2 text-right">
                                 {{ (int) $ventasListaPrecio->sum('documentos') }}
