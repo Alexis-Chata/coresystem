@@ -33,13 +33,14 @@ class AvanceVentas extends Component
         }
     }
 
-private function checkIsAdmin(): bool
-{
-    Permission::firstOrCreate(['name' => 'view avance']);
-    $user = auth()->user();
+    private function checkIsAdmin(): bool
+    {
+        Permission::firstOrCreate(['name' => 'view avance']);
+        Permission::firstOrCreate(['name' => 'admin avance']);
+        $user = auth()->user();
 
-    return $user && $user->can('view avance');
-}
+        return $user && $user->can('admin avance');
+    }
 
     private function getEmpleadoIdDelUsuario(): ?int
     {
@@ -200,13 +201,64 @@ private function checkIsAdmin(): bool
             ->get();
     }
 
+    private function getVentasPorListaPrecio()
+    {
+        $q = $this->baseQueryDet();
+
+        // Si aplicas filtro de vendedor, que también afecte este ranking
+        if ($this->vendedorFiltro !== 'ALL') {
+            $q->whereRaw('CAST(f.vendedor_id AS UNSIGNED) = ?', [(int) $this->vendedorFiltro]);
+        }
+
+        // ✅ OPCIONAL: si tienes tabla de listas de precio, descomenta/ajusta:
+        $q->leftJoin(
+            'lista_precios as lp',
+            DB::raw('lp.id'),
+            '=',
+            DB::raw('CAST(d.ref_producto_lista_precio AS UNSIGNED)')
+        );
+
+        // Expresiones para agrupar (maneja NULL)
+        $listaIdExpr = "COALESCE(CAST(NULLIF(d.ref_producto_lista_precio,'') AS UNSIGNED), 0)";
+
+        // Si NO tienes tabla lp, usa solo "CONCAT('Lista ', ...)" y quita el join.
+        $listaNameExpr = "
+        CASE
+            WHEN d.ref_producto_lista_precio IS NULL OR d.ref_producto_lista_precio = '' THEN 'SIN LISTA'
+            ELSE COALESCE(lp.name, CONCAT('Lista ', d.ref_producto_lista_precio))
+        END
+    ";
+
+        return $q->selectRaw("
+            {$listaIdExpr} AS lista_id,
+            {$listaNameExpr} AS lista_precio,
+
+            COALESCE(SUM(
+                CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3)) *
+                CAST(REPLACE(d.mtoPrecioUnitario, ',', '.') AS DECIMAL(15,3))
+            ), 0) AS total_ventas,
+
+            COALESCE(SUM(
+                CAST(REPLACE(d.cantidad, ',', '.') AS DECIMAL(15,3))
+            ), 0) AS total_bultos,
+
+            COUNT(DISTINCT f.id) AS documentos,
+            COUNT(DISTINCT f.cliente_id) AS clientes_unicos
+        ")
+            ->groupByRaw("{$listaIdExpr}")
+            ->groupByRaw("{$listaNameExpr}")
+            ->orderByDesc('total_ventas')
+            ->get();
+    }
+
     public function render()
     {
         return view('livewire.avance-ventas', [
-            'kpis'         => $this->getKpis(),
-            'ranking'      => $this->getRankingVendedores(),
-            'rankingMarca' => $this->getRankingVendedorMarca(),
-            'vendedores'   => $this->getVendedoresSelect(),
+            'kpis'             => $this->getKpis(),
+            'ranking'          => $this->getRankingVendedores(),
+            'rankingMarca'     => $this->getRankingVendedorMarca(),
+            'ventasListaPrecio' => $this->getVentasPorListaPrecio(),
+            'vendedores'       => $this->getVendedoresSelect(),
         ]);
     }
 }
