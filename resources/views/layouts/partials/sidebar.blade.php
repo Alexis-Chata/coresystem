@@ -49,7 +49,7 @@
                         'name' => 'Productos', // Productos
                         'sublinks' => [
                             [
-                                'permission' => 'edit producto',
+                                'permission' => 'view producto',
                                 'route' => 'producto.index',
                                 'name' => 'Lista de Productos',
                             ],

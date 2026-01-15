@@ -101,6 +101,7 @@
         this.editingComponents = this.editingComponents.filter(c => c.id !== componentId);
     }
 }" class="relative mb-3">
+    @can('create producto')
     <button @click="open = !open" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         {{ $showCreateForm ? 'Cerrar' : 'Crear Nuevo Producto' }}
     </button>
@@ -377,7 +378,9 @@
             </div>
         </form>
     </div>
+    @endcan
 
+    @can('edit producto')
     <div x-show="showEditComponents" @click.away="showEditComponents = false"
         class="absolute z-10 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 p-4" x-cloak>
         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Editar Componentes</h3>
@@ -476,6 +479,7 @@
             </button>
         </div>
     </div>
+    @endcan
 
     <button wire:click="descargar_productos"
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"> Descargar Productos </button>

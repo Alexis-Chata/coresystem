@@ -51,13 +51,21 @@ final class ProductoTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        //$this->showCheckBox();
+        $header = PowerGrid::header()
+            ->showSearchInput();
+
+        // Mostrar el formulario "crear" solo si puede crear
+        if ($this->canCreateProducto() || $this->canEditProducto()) {
+            $header->includeViewOnTop('components.create-producto-form');
+        }
+
+        // Mostrar soft-deletes solo si puede eliminar/restaurar
+        if ($this->canDeleteProducto()) {
+            $header->showSoftDeletes(showMessage: true);
+        }
 
         return [
-            PowerGrid::header()
-                ->showSearchInput()
-                ->includeViewOnTop('components.create-producto-form')
-                ->showSoftDeletes(showMessage: true),
+            $header,
             PowerGrid::footer()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -92,6 +100,8 @@ final class ProductoTable extends PowerGridComponent
 
     public function fields(): PowerGridFields
     {
+        $canEdit = $this->canEditProducto();
+
         $empresaOptions = $this->empresaSelectOptions();
         $marcaOptions = $this->marcaSelectOptions();
         $categoriaOptions = $this->categoriaSelectOptions();
@@ -100,28 +110,44 @@ final class ProductoTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('name')
-            ->add('peso', function ($producto) {
-                return number_format($producto->peso ?? '0', 3, '.', '');
+            ->add('peso', fn($producto) => number_format($producto->peso ?? '0', 3, '.', ''))
+
+            ->add('empresa_id', function ($producto) use ($empresaOptions, $canEdit) {
+                return $canEdit
+                    ? $this->selectComponent('empresa_id', $producto->id, $producto->empresa_id, $empresaOptions)
+                    : ($empresaOptions->get($producto->empresa_id) ?? '');
             })
-            ->add('empresa_id', function ($producto) use ($empresaOptions) {
-                return $this->selectComponent('empresa_id', $producto->id, $producto->empresa_id, $empresaOptions);
+
+            ->add('marca_id', function ($producto) use ($marcaOptions, $canEdit) {
+                return $canEdit
+                    ? $this->selectComponent('marca_id', $producto->id, $producto->marca_id, $marcaOptions)
+                    : ($marcaOptions->get($producto->marca_id) ?? '');
             })
-            ->add('marca_id', function ($producto) use ($marcaOptions) {
-                return $this->selectComponent('marca_id', $producto->id, $producto->marca_id, $marcaOptions);
+
+            ->add('categoria_id', function ($producto) use ($categoriaOptions, $canEdit) {
+                return $canEdit
+                    ? $this->selectComponent('categoria_id', $producto->id, $producto->categoria_id, $categoriaOptions)
+                    : ($categoriaOptions->get($producto->categoria_id) ?? '');
             })
-            ->add('categoria_id', function ($producto) use ($categoriaOptions) {
-                return $this->selectComponent('categoria_id', $producto->id, $producto->categoria_id, $categoriaOptions);
+
+            ->add('f_tipo_afectacion_id', function ($producto) use ($tipoAfectacionOptions, $canEdit) {
+                return $canEdit
+                    ? $this->selectComponent('f_tipo_afectacion_id', $producto->id, $producto->f_tipo_afectacion_id, $tipoAfectacionOptions)
+                    : ($tipoAfectacionOptions->get($producto->f_tipo_afectacion_id) ?? '');
             })
-            ->add('f_tipo_afectacion_id', function ($producto) use ($tipoAfectacionOptions) {
-                return $this->selectComponent('f_tipo_afectacion_id', $producto->id, $producto->f_tipo_afectacion_id, $tipoAfectacionOptions);
-            })
+
             ->add('porcentaje_igv')
             ->add('created_at_formatted', fn(Producto $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'))
-            ->add('tipo', function ($producto) {
-                return $this->selectComponent('tipo', $producto->id, $producto->tipo, collect([
+
+            ->add('tipo', function ($producto) use ($canEdit) {
+                $labels = collect([
                     'estandar' => 'Estandar',
                     'compuesto' => 'Compuesto',
-                ]));
+                ]);
+
+                return $canEdit
+                    ? $this->selectComponent('tipo', $producto->id, $producto->tipo, $labels)
+                    : ($labels->get($producto->tipo) ?? '');
             });
     }
 
@@ -141,45 +167,48 @@ final class ProductoTable extends PowerGridComponent
 
     public function columns(): array
     {
+        $canEdit = $this->canEditProducto();
+
+        $colNombre = Column::make('Nombre', 'name')->sortable()->searchable();
+        if ($canEdit) $colNombre->editOnClick();
+
+        $colIgv = Column::make('Porcentaje IGV', 'porcentaje_igv')->sortable()->searchable();
+        if ($canEdit) $colIgv->editOnClick();
+
+        $colCantidad = Column::make('Cantidad', 'cantidad')->sortable()->searchable();
+        if ($canEdit) $colCantidad->editOnClick();
+
+        $colSubCantidad = Column::make('Sub Cantidad', 'sub_cantidad')->sortable()->searchable();
+        if ($canEdit) $colSubCantidad->editOnClick();
+
+        $colPeso = Column::make('Peso (Kg)', 'peso');
+        if ($canEdit) $colPeso->editOnClick();
+
+        $colTipoUnidad = Column::make('Tipo Unidad', 'tipo_unidad')->sortable()->searchable();
+        if ($canEdit) $colTipoUnidad->editOnClick();
+
         return [
-            Column::make('Id', 'id')
-                ->sortable()
-                ->searchable(),
-            Column::make('Nombre', 'name')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            //Column::make('Empresa', 'empresa_id'),
+            Column::make('Id', 'id')->sortable()->searchable(),
+            $colNombre,
             Column::make('Marca', 'marca_id'),
             Column::make('Categoría', 'categoria_id'),
             Column::make('Tipo de afectación', 'f_tipo_afectacion_id'),
-            Column::make('Porcentaje IGV', 'porcentaje_igv')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Cantidad', 'cantidad')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Sub Cantidad', 'sub_cantidad')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::make('Peso (Kg)', 'peso')
-                ->editOnClick(),
-            Column::make('Tipo', 'tipo')
-                ->sortable()
-                ->searchable(),
-            Column::make('Tipo Unidad', 'tipo_unidad')
-                ->sortable()
-                ->searchable()
-                ->editOnClick(),
-            Column::action('Acción')
+            $colIgv,
+            $colCantidad,
+            $colSubCantidad,
+            $colPeso,
+            Column::make('Tipo', 'tipo')->sortable()->searchable(),
+            $colTipoUnidad,
+            Column::action('Acción'),
         ];
     }
 
     public function onUpdatedEditable(string|int $id, string $field, string $value): void
     {
+        if (!$this->canEditProducto()) {
+            session()->flash('error', 'No autorizado para editar productos.');
+            return;
+        }
         $producto = Producto::withTrashed()->find($id);
 
         if (!$producto) {
@@ -251,7 +280,8 @@ final class ProductoTable extends PowerGridComponent
     {
         $actions = [];
 
-        if ($row->tipo === 'compuesto') {
+        // Editar componentes -> solo si puede editar
+        if ($row->tipo === 'compuesto' && $this->canEditProducto()) {
             $actions[] = Button::add('edit-components')
                 ->slot('Editar Componentes')
                 ->id()
@@ -259,20 +289,15 @@ final class ProductoTable extends PowerGridComponent
                 ->dispatch('editProductoComponents', ['productoId' => $row->id]);
         }
 
-        $user = Auth::user();
-        $canDelete = $user?->can('delete producto'); // 👈 permiso exacto
-
-        if ($row->deleted_at) {
-            // Si quieres que restaurar use el mismo permiso delete:
-            if ($canDelete) {
+        // Eliminar / Restaurar -> solo si puede eliminar
+        if ($this->canDeleteProducto()) {
+            if ($row->deleted_at) {
                 $actions[] = Button::add('restore')
                     ->slot('Restaurar')
                     ->id()
                     ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                     ->dispatch('restoreProducto', ['productoId' => $row->id]);
-            }
-        } else {
-            if ($canDelete) {
+            } else {
                 $actions[] = Button::add('delete')
                     ->slot('Eliminar')
                     ->id()
@@ -284,11 +309,28 @@ final class ProductoTable extends PowerGridComponent
         return $actions;
     }
 
+    private function canCreateProducto(): bool
+    {
+        return auth()->check() && auth()->user()->can('create producto');
+    }
+
+    private function canEditProducto(): bool
+    {
+        return auth()->check() && auth()->user()->can('edit producto');
+    }
+
+    private function canDeleteProducto(): bool
+    {
+        return auth()->check() && auth()->user()->can('delete producto');
+    }
 
     #[On('deleteProducto')]
     public function deleteProducto($productoId): void
     {
-        abort_unless(Auth::user()?->can('delete producto'), 403, 'No autorizado.');
+        if (!$this->canDeleteProducto()) {
+            session()->flash('error', 'No autorizado para eliminar productos.');
+            return;
+        }
 
         $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
@@ -301,7 +343,10 @@ final class ProductoTable extends PowerGridComponent
     #[On('restoreProducto')]
     public function restoreProducto($productoId): void
     {
-        abort_unless(Auth::user()?->can('delete producto'), 403, 'No autorizado.');
+        if (!$this->canDeleteProducto()) {
+            session()->flash('error', 'No autorizado para restaurar productos.');
+            return;
+        }
 
         $producto = Producto::withTrashed()->find($productoId);
         if ($producto) {
@@ -310,7 +355,6 @@ final class ProductoTable extends PowerGridComponent
             $this->dispatch('producto-restored', 'Producto restaurado exitosamente');
         }
     }
-
 
     public function openCreateForm()
     {
@@ -371,6 +415,10 @@ final class ProductoTable extends PowerGridComponent
 
     public function createProducto()
     {
+        if (!$this->canEditProducto()) {
+            session()->flash('error', 'No autorizado para crear productos.');
+            return;
+        }
         try {
             DB::beginTransaction();
 

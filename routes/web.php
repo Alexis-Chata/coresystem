@@ -85,7 +85,7 @@ Route::middleware([
     Route::prefix('producto')->group(function () {
         Route::get('/', function () {
             return view('producto');
-        })->middleware('can:edit producto')
+        })->middleware('can:view producto')
             ->name('producto.index');
 
         Route::get('/precios-mayorista', function () {
