@@ -43,7 +43,7 @@ Route::get('/test-email', function () {
 // Grupo de rutas protegidas por autenticación
 Route::middleware([
     \App\Http\Middleware\StoreRouteName::class,
-    'auth:sanctum',
+    'auth',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
@@ -282,7 +282,7 @@ Route::middleware([
 });
 
 Route::middleware([
-    'auth:sanctum',
+    'auth',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
