@@ -41,7 +41,7 @@ class ClienteSelect extends Component
         $rutasDelVendedor = Ruta::where('vendedor_id', $this->vendedor_id)->pluck('id');
         //Log::info('Rutas del vendedor', ['rutas' => $rutasDelVendedor]);
 
-        $query = Cliente::whereIn('ruta_id', $rutasDelVendedor);
+        $query = Cliente::with('listaPrecio')->whereIn('ruta_id', $rutasDelVendedor);
 
         if (!empty($this->search)) {
             $query->where(function ($q) {

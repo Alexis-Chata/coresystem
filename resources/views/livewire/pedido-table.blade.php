@@ -37,7 +37,7 @@
 
             <!-- Cliente -->
             <div class="relative">
-                <livewire:cliente-select :vendedor_id="$vendedor_id" :key="'cliente-select-' . $vendedor_id" wire:model="cliente_id" />
+                <livewire:cliente-select :vendedor_id="$vendedor_id" :key="'cliente-select-' . $vendedor_id" wire:model.live="cliente_id" />
             </div>
 
             <!-- Tipo de Comprobante -->
@@ -134,11 +134,11 @@
 
     <!-- Nueva sección de búsqueda y detalles -->
     <div class="mb-2" wire:loading
-        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id">
         Cargando...
     </div>
     <div class="mt-6" wire:loading.class="hidden"
-        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto">
+        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id">
         <div wire:loading wire:target="search">
             Buscando...
         </div>
@@ -306,8 +306,9 @@
             </div>
 
             <!-- Botón para enviar todo a Livewire -->
-            <button type="button" @click="guardar" :disabled="cargando"
-                :class="cargando ? 'opacity-50 cursor-not-allowed' : ''"
+            <button type="button" @click="guardar" :disabled="cargando" wire:loading.attr="disabled"
+                wire:dirty.attr="disabled" wire:target="cliente_id"
+                :class="(cargando ? 'opacity-50 cursor-not-allowed' : '')"
                 class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 <span x-show="!cargando">Guardar Pedido</span>
                 <span x-show="cargando">Guardando...</span>

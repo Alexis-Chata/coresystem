@@ -126,14 +126,10 @@ class PedidoTable extends Component
 
     private function loadTipoComprobantes()
     {
-        if ($this->user->hasRole("admin")) {
-            $this->tipoComprobantes = FTipoComprobante::all();
-        } else {
-            $this->tipoComprobantes = FTipoComprobante::where(
-                "estado",
-                true
-            )->get();
-        }
+        $this->tipoComprobantes = FTipoComprobante::where(
+            "estado",
+            true
+        )->get();
     }
 
     public function updatedClienteId($value)
@@ -370,12 +366,23 @@ class PedidoTable extends Component
         }
 
         $this->pedido_detalles = [];
+
+        $cliente = Cliente::with(['tipoDocumento'])->find($this->cliente_id);
+        $tipo_comprobantes = FtipoComprobante::all();
+        if ($cliente) {
+            $this->lista_precio = $cliente->lista_precio_id;
+            if ($cliente->tipoDocumento->codigo == 6) { // RUC
+                $f_tipo_cmprbnt = $tipo_comprobantes->where('tipo_comprobante', '01')->first(); // Factura
+                $this->f_tipo_comprobante_id = $f_tipo_cmprbnt->id;
+            }
+        } else {
+            logger("Error PedidoTable: cliente no encontrado", ["cliente_id" => $this->cliente_id]);
+        }
         $this->agregarProducto($items);
 
         // dd($items, $this->pedido_detalles);
         $this->guardarPedido();
     }
-
 
     public function guardarPedido()
     {
