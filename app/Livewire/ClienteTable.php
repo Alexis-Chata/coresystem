@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exports\ClientesAllExport;
 use App\Exports\ClientesExport;
 use App\Models\Cliente;
 use App\Models\Empresa;
@@ -322,5 +323,10 @@ final class ClienteTable extends PowerGridComponent
     public function descargar_clientes()
     {
         return Excel::download(new ClientesExport, 'Clientes.xlsx');
+    }
+
+    public function descargar_all_clientes()
+    {
+        return Excel::download(new ClientesAllExport, 'Clientes.xlsx');
     }
 }

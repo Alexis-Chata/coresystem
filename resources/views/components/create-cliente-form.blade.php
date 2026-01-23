@@ -130,4 +130,10 @@
 
     <button wire:click="descargar_clientes"
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"> Descargar Clientes </button>
+
+    @can('descarga_all cliente')
+        <button wire:click="descargar_all_clientes"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"> Descargar Todos Los Clientes
+        </button>
+    @endcan
 </div>

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Permission;
 
 // Rutas públicas (si las hay)
 // ...
@@ -76,6 +77,7 @@ Route::middleware([
 
     // Rutas de vistas
     Route::get('/cliente', function () {
+        Permission::firstOrCreate(['name' => 'descarga_all cliente']);
         return view('cliente');
     })->middleware('can:view cliente')->name('cliente.index');
 
