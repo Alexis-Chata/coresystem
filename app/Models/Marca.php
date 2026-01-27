@@ -14,6 +14,12 @@ class Marca extends Model
         'name',
         'empresa_id',
         'nro_orden',
+        'resaltar_cobertura',
+        'color_identificador',
+    ];
+
+    protected $casts = [
+        'resaltar_cobertura' => 'boolean',
     ];
 
     public function empresa()
