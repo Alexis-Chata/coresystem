@@ -41,7 +41,21 @@ class ClienteSelect extends Component
         $rutasDelVendedor = Ruta::where('vendedor_id', $this->vendedor_id)->pluck('id');
         //Log::info('Rutas del vendedor', ['rutas' => $rutasDelVendedor]);
 
-        $query = Cliente::with('listaPrecio')->whereIn('ruta_id', $rutasDelVendedor);
+        $inicioMes = now()->startOfMonth();
+        $finMes    = now()->endOfMonth();
+
+        $query = Cliente::query()
+            ->with([
+                'listaPrecio',
+                // AJUSTA el nombre de la relación si la tuya es distinta (fComprobanteSunats/FComprobantesSunats/etc.)
+                'fComprobanteSunats' => function ($q) use ($inicioMes, $finMes) {
+                    $q->where('estado_reporte', 1)
+                        ->whereBetween('pedido_fecha_factuacion', [$inicioMes, $finMes])
+                        // AJUSTA si tu relación se llama detalle o detalles
+                        ->with(['detalle.producto.marca:id,name,resaltar_cobertura,color_identificador']);
+                },
+            ])
+            ->whereIn('ruta_id', $rutasDelVendedor);
 
         if (!empty($this->search)) {
             $query->where(function ($q) {
