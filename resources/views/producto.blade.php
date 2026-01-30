@@ -7,9 +7,6 @@
     <br>
     <br>
     <br>
-    @php
-        Spatie\Permission\Models\Permission::findOrCreate('precio producto');
-    @endphp
     @can('precio producto')
         <livewire:producto-lista-precio-table />
     @endcan

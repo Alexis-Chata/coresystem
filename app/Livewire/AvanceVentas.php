@@ -36,9 +36,6 @@ class AvanceVentas extends Component
 
     private function checkIsAdmin(): bool
     {
-        $role = Role::findOrCreate('admin');
-        Permission::firstOrCreate(['name' => 'view avance'])->assignRole($role);
-        Permission::firstOrCreate(['name' => 'admin avance'])->assignRole($role);
         $user = auth()->user();
 
         return $user && $user->can('admin avance');

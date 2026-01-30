@@ -54,6 +54,12 @@ Route::middleware([
     })->middleware('can:view avance')->name('avance.view');
 
     Route::get('/dashboard', function () {
+        $role = Role::findOrCreate('admin');
+        Permission::findOrCreate('view liquidacion')->assignRole($role);
+        Permission::findOrCreate('view avance')->assignRole($role);
+        Permission::findOrCreate('admin avance')->assignRole($role);
+        Permission::findOrCreate('precio producto')->assignRole($role);
+        Permission::findOrCreate('descarga_all cliente')->assignRole($role);
         return view('dashboard');
     })->name('dashboard');
 
@@ -78,7 +84,6 @@ Route::middleware([
 
     // Rutas de vistas
     Route::get('/cliente', function () {
-        Permission::firstOrCreate(['name' => 'descarga_all cliente']);
         return view('cliente');
     })->middleware('can:view cliente')->name('cliente.index');
 
@@ -232,8 +237,6 @@ Route::middleware([
     })->middleware('can:view reporte')->name('reporte.view');
 
     Route::get('/liquidacion', function () {
-        $role = Role::findOrCreate('admin');
-        Permission::firstOrCreate(['name' => 'view liquidacion'])->assignRole($role);
         return view('liquidacion-view');
     })->middleware('can:view liquidacion')->name('liquidacion.view');
 
