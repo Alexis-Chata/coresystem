@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AvanceVentas extends Component
 {
@@ -35,8 +36,9 @@ class AvanceVentas extends Component
 
     private function checkIsAdmin(): bool
     {
-        Permission::firstOrCreate(['name' => 'view avance']);
-        Permission::firstOrCreate(['name' => 'admin avance']);
+        $role = Role::findOrCreate('admin');
+        Permission::firstOrCreate(['name' => 'view avance'])->assignRole($role);
+        Permission::firstOrCreate(['name' => 'admin avance'])->assignRole($role);
         $user = auth()->user();
 
         return $user && $user->can('admin avance');
