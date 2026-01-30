@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 // Rutas públicas (si las hay)
 // ...
@@ -231,8 +232,10 @@ Route::middleware([
     })->middleware('can:view reporte')->name('reporte.view');
 
     Route::get('/liquidacion', function () {
+        $role = Role::findOrCreate('admin');
+        Permission::firstOrCreate(['name' => 'view liquidacion'])->assignRole($role);
         return view('liquidacion-view');
-    })->middleware('can:view reporte')->name('liquidacion.view');
+    })->middleware('can:view liquidacion')->name('liquidacion.view');
 
     Route::get('/permisos-usuario', function () {
         return view('permisos-usuario');
