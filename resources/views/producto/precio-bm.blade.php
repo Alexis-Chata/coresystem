@@ -32,6 +32,7 @@
                     <th>Precio Cj M</th>
                 @endif
                 <th>deleted_at</th>
+                <th>peso</th>
                 <th>stock_fisico</th>
                 <th>stock_disponible</th>
             </tr>
@@ -51,6 +52,7 @@
                         <td>{{ $producto->precios->{2} }}</td>
                     @endif
                     <td>{{ $producto->deleted_at?->format('d-m-Y | H:i:s') ?? '*' }}</td>
+                    <td>{{ $producto->peso }}</td>
                     <td>{{ number_format($producto->stock_fisico, calcular_digitos($producto->cantidad)) }}</td>
                     <td>{{ number_format($producto->stock_disponible, calcular_digitos($producto->cantidad)) }}</td>
                 </tr>
@@ -69,6 +71,7 @@
                     <th>Precio Cj M</th>
                 @endif
                 <th>deleted_at</th>
+                <th>peso</th>
                 <th>stock_fisico</th>
                 <th>stock_disponible</th>
             </tr>

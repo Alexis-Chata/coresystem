@@ -114,6 +114,7 @@ Route::middleware([
                 'marcas.id as marca_id',
                 'marcas.name as marca_name',
                 'productos.deleted_at',
+                'productos.peso',
                 'almacen_productos.stock_fisico',
                 'almacen_productos.stock_disponible',
             )
@@ -144,6 +145,7 @@ Route::middleware([
                     'deleted_at' => $producto->deleted_at,
                     'stock_fisico' => $producto->stock_fisico,
                     'stock_disponible' => $producto->stock_disponible,
+                    'peso' => number_format($producto->peso, 3, '.', ','),
                     'precios' => (object) $precios,
                 ];
             })->values(); // Convertir a colección indexada
