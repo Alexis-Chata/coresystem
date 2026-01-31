@@ -7,7 +7,8 @@
         <table class="w-full border border-gray-200 rounded-lg text-sm hidden md:table">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="p-2 text-left">Nombre</th>
+                    <th class="p-2 text-left">Cod</th>
+                    <th class="p-2 text-left">Nombre Usuario</th>
                     <th class="p-2 text-left">Email</th>
                     <th class="p-2 text-left">Cod-Vendedor</th>
                     <th class="p-2 text-left">Roles - Permisos</th>
@@ -17,6 +18,7 @@
             <tbody>
                 @foreach ($users as $user)
                     <tr class="border-t">
+                        <td class="px-2 md:px-3 py-2">{{ $user->id }}</td>
                         <td class="px-2 md:px-3 py-2">{{ $user->name }}</td>
                         <td class="px-2 md:px-3 py-2 truncate whitespace-nowrap">{{ $user->email }}</td>
                         <td class="px-2 md:px-3 py-2">
