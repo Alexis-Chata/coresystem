@@ -63,7 +63,7 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    // Rutas de UserRoleController
+    // Rutas de UserRoleController *** SIN USO ***
     Route::get('/user-roles', [UserRoleController::class, 'index'])
         ->middleware('can:view roles')
         ->name('user-roles.index');

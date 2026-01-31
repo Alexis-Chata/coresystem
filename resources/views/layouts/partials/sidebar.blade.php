@@ -227,13 +227,13 @@
                         'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
                         'name' => 'Gestión de Usuarios',
                     ],
-                    [
-                        'link_descripcion' => 'Gestión de Roles', //opcional
-                        'permission' => 'view roles',
-                        'route' => 'user-roles.index',
-                        'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
-                        'name' => 'Gestión de Roles',
-                    ],
+                    // [
+                    //     'link_descripcion' => 'Gestión de Roles', //opcional
+                    //     'permission' => 'view roles',
+                    //     'route' => 'user-roles.index',
+                    //     'icon' => 'svg_user', // icono es un componente blade simple <x-svg_user />
+                    //     'name' => 'Gestión de Roles',
+                    // ],
                     [
                         'link_descripcion' => 'Gestión de Permisos', //opcional
                         'permission' => 'view roles',
