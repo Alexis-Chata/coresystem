@@ -73,7 +73,7 @@
                 placeholder="{{ $placeholder }}"
             >
             <div x-show="open"
-                class="{{ $class_list }} z-50 w-full mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
+                class="{{ $class_list }} z-9999 w-full mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
                 <template x-for="option in filteredOptions()" :key="option.id">
                     <div
                         @click="selectOption(option)"
