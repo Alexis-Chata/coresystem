@@ -80,6 +80,7 @@ class ReportesExport implements FromCollection, WithHeadings
 
         $collect_by = collect([
             ["by" => "f_comprobante_sunats.ruta_id", "estado" => $ruta],
+            ["by" => "rutas.name", "estado" => $ruta],
             ["by" => "pedidos.user_id", "estado" => $usuario],
             ["by" => "users.name", "estado" => $usuario],
             ["by" => "f_comprobante_sunats.tipoDoc", "estado" => $tipo_documento],
