@@ -47,7 +47,7 @@ class Producto extends Model
     public function listaPrecios()
     {
         return $this->belongsToMany(ListaPrecio::class, 'producto_lista_precios')
-            ->withPivot('precio')
+            ->withPivot(['precio', 'activo'])
             ->withTimestamps();
     }
 
@@ -59,7 +59,7 @@ class Producto extends Model
     public function componentProducts()
     {
         return $this->belongsToMany(Producto::class, 'producto_components', 'producto_id', 'component_id')
-                    ->withPivot('cantidad', 'subcantidad', 'cantidad_total');
+            ->withPivot('cantidad', 'subcantidad', 'cantidad_total');
     }
 
     public function almacenProductos()

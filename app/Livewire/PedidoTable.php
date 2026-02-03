@@ -601,36 +601,53 @@ class PedidoTable extends Component
 
     public function cargarProductos()
     {
-        $lista_precio = $this->lista_precio;
-        if (!$lista_precio) {
+        $lista_precio_id = $this->lista_precio;
+        if (! $lista_precio_id) {
+            $this->listado_productos = [];
             return;
         }
         $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
-        $almacenes = Almacen::whereIn('f_sede_id', $sedes_id)->get();
-        $this->listado_productos =  Producto::with([
-            'tipoAfectacion',
-            "marca:id,name", // optimizamos cargando solo 'nombre'
-            "listaPrecios" => function ($query) use ($lista_precio) {
-                $query->where("lista_precio_id", $lista_precio)->select('producto_id', 'precio');
-            },
-            "almacenProductos" => function ($query) use ($almacenes) {
-                $query->whereIn("almacen_id", $almacenes->pluck("id"))->select('producto_id', 'stock_disponible');
-            },
-        ])
-            ->get() //;dd($this->listado_productos->first());
-            ->map(function ($producto) use ($lista_precio) {
-                return [
-                    'id' => $producto->id,
-                    'nombre' => $producto->name,
-                    'factor' => $producto->cantidad,
-                    'marca' => $producto->marca->name ?? 'SIN MARCA',
-                    'precio' => optional($producto->listaPrecios->first())->precio ?? 0,
-                    'stock' => optional($producto->almacenProductos->first())->stock ?? 0,
-                    'deleted_at' => $producto->deleted_at,
-                    'lista_precio' => $lista_precio,
-                    'f_tipo_afectacion_id' => $producto->f_tipo_afectacion_id,
-                    'f_tipo_afectacion_name' => $producto->tipoAfectacion->name ?? 'null',
-                ];
-            })->values()->all();
+        $almacenesIds = Almacen::whereIn('f_sede_id', $sedes_id)->pluck('id');
+
+        $productos = Producto::query()
+            // ✅ SOLO productos que están activos en ESTA lista de precios
+            ->whereHas('listaPrecios', function ($q) use ($lista_precio_id) {
+                $q->where('lista_precios.id', $lista_precio_id)
+                    ->where('producto_lista_precios.activo', 1);
+            })
+            ->with([
+                'tipoAfectacion',
+                'marca:id,name',
+                // ✅ Traer SOLO el pivot de esta lista y activo
+                'listaPrecios' => function ($q) use ($lista_precio_id) {
+                    $q->where('lista_precios.id', $lista_precio_id)
+                        ->where('producto_lista_precios.activo', 1);
+                },
+                'almacenProductos' => function ($query) use ($almacenesIds) {
+                    $query->whereIn('almacen_id', $almacenesIds)->select('producto_id', 'almacen_id', 'stock_disponible');
+                },
+            ])
+            ->get(); //;dd($this->listado_productos->first());
+
+        $this->listado_productos = $productos->map(function ($producto) use ($lista_precio_id) {
+            $pivot = $producto->listaPrecios->first()?->pivot;
+
+            // Si tienes varios almacenes, usualmente conviene sumar:
+            $stockTotal = $producto->almacenProductos->sum('stock_disponible');
+
+            return [
+                'id' => $producto->id,
+                'nombre' => $producto->name,
+                'factor' => $producto->cantidad,
+                'marca' => $producto->marca->name ?? 'SIN MARCA',
+                'precio' => $pivot?->precio ?? 0,
+                'stock' => $stockTotal,
+                'deleted_at' => $producto->deleted_at, // sigue siendo borrado global si lo usas
+                'lista_precio' => $lista_precio_id,
+                'activo_lista' => (bool) ($pivot?->activo ?? false),
+                'f_tipo_afectacion_id' => $producto->f_tipo_afectacion_id,
+                'f_tipo_afectacion_name' => $producto->tipoAfectacion->name ?? null,
+            ];
+        })->values()->all();
     }
 }

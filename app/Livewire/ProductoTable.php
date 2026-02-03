@@ -8,6 +8,7 @@ use App\Models\Empresa;
 use App\Models\Marca;
 use App\Models\Categoria;
 use App\Models\FTipoAfectacion;
+use App\Models\ListaPrecio;
 use App\Models\ProductoComponent;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,6 +31,8 @@ final class ProductoTable extends PowerGridComponent
     public bool $showCreateForm = false;
     public string $sortField = 'id';
     public string $sortDirection = 'desc';
+    public ?int $lista_precio_id = null;
+    public $listasPrecio; // opciones para el select
 
     public $newProducto = [
         'name' => '',
@@ -51,18 +54,14 @@ final class ProductoTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        $header = PowerGrid::header()
-            ->showSearchInput();
+        $this->listasPrecio = ListaPrecio::orderBy('name')->pluck('name', 'id'); // ajusta campo
+        $this->lista_precio_id = $this->lista_precio_id ?? $this->listasPrecio->keys()->first();
 
-        // Mostrar el formulario "crear" solo si puede crear
-        if ($this->canCreateProducto() || $this->canEditProducto()) {
-            $header->includeViewOnTop('components.create-producto-form');
-        }
+        $header = PowerGrid::header()->showSearchInput();
 
-        // Mostrar soft-deletes solo si puede eliminar/restaurar
-        if ($this->canDeleteProducto()) {
-            $header->showSoftDeletes(showMessage: true);
-        }
+        $header->includeViewOnTop('components.create-producto-form');
+
+        $header->showSoftDeletes(showMessage: true);
 
         return [
             $header,
@@ -74,17 +73,27 @@ final class ProductoTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        $lp = $this->lista_precio_id ?? -1; // si no hay lista, no matchea nada
+
         return Producto::query()
             ->join('empresas', 'productos.empresa_id', '=', 'empresas.id')
             ->join('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
             ->join('f_tipo_afectacions', 'productos.f_tipo_afectacion_id', '=', 'f_tipo_afectacions.id')
+
+            // pivote por lista seleccionada
+            ->leftJoin('producto_lista_precios as plp', function ($join) use ($lp) {
+                $join->on('plp.producto_id', '=', 'productos.id')
+                    ->where('plp.lista_precio_id', '=', $lp);
+            })
             ->select(
                 'productos.*',
                 'empresas.razon_social as empresa_nombre',
                 'marcas.name as marca_nombre',
                 'categorias.nombre as categoria_nombre',  // Cambiado de 'name' a 'nombre'
-                'f_tipo_afectacions.name as tipo_afectacion_nombre'
+                'f_tipo_afectacions.name as tipo_afectacion_nombre',
+                DB::raw('plp.precio as precio_lista'),
+                DB::raw('plp.activo as activo_lista')
             );
     }
 
@@ -148,6 +157,11 @@ final class ProductoTable extends PowerGridComponent
                 return $canEdit
                     ? $this->selectComponent('tipo', $producto->id, $producto->tipo, $labels)
                     : ($labels->get($producto->tipo) ?? '');
+            })
+
+            ->add('activo_lista', function ($p) {
+                if (is_null($p->activo_lista)) return 'NO ASIGNADO';
+                return $p->activo_lista ? 'ACTIVO' : 'INACTIVO';
             });
     }
 
@@ -199,6 +213,7 @@ final class ProductoTable extends PowerGridComponent
             $colPeso,
             Column::make('Tipo', 'tipo')->sortable()->searchable(),
             $colTipoUnidad,
+            Column::make('Estado Lista', 'activo_lista'),
             Column::action('Acción'),
         ];
     }
@@ -304,10 +319,49 @@ final class ProductoTable extends PowerGridComponent
                     ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
                     ->dispatch('deleteProducto', ['productoId' => $row->id]);
             }
+
+            if (!is_null($row->activo_lista)) {
+                $actions[] = Button::add('toggle-lp')
+                    ->slot('Activar/Desactivar Lista')
+                    ->id()
+                    ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600')
+                    ->dispatch('toggleProductoListaPrecio', ['productoId' => $row->id]);
+            }
         }
 
         return $actions;
     }
+
+    #[On('toggleProductoListaPrecio')]
+    public function toggleProductoListaPrecio(int $productoId): void
+    {
+        if (! $this->canDeleteProducto()) {
+            session()->flash('error', 'No autorizado.');
+            return;
+        }
+
+        if (! $this->lista_precio_id) {
+            session()->flash('error', 'Seleccione una lista de precio.');
+            return;
+        }
+
+        $pivot = DB::table('producto_lista_precios')
+            ->where('producto_id', $productoId)
+            ->where('lista_precio_id', $this->lista_precio_id)
+            ->first();
+
+        // ✅ si NO existe pivote: no crear nada
+        if (! $pivot) return;
+
+        Producto::withTrashed()->findOrFail($productoId)
+            ->listaPrecios()
+            ->updateExistingPivot($this->lista_precio_id, [
+                'activo' => $pivot->activo ? 0 : 1
+            ]);
+
+        $this->dispatch("pg:eventRefresh-{$this->tableName}");
+    }
+
 
     private function canCreateProducto(): bool
     {
@@ -415,7 +469,7 @@ final class ProductoTable extends PowerGridComponent
 
     public function createProducto()
     {
-        if (!$this->canEditProducto()) {
+        if (!$this->canCreateProducto()) {
             session()->flash('error', 'No autorizado para crear productos.');
             return;
         }
