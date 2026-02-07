@@ -10,7 +10,7 @@ class FTipoDocumento extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['tipo_documento', 'name'];
+    protected $fillable = ['codigo', 'tipo_documento', 'name'];
 
     protected function tipoDocumento(): Attribute
     {

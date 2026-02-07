@@ -138,19 +138,23 @@ class PedidoTable extends Component
         $this->pedido_detalles = [];
         $this->importe_total = 0;
 
+        // Al cambiar cliente, dejamos vacío para que la regla aplique default (boleta) o fuerce factura
+        $this->f_tipo_comprobante_id = "";
+
         if (!$value) {
             $this->resetClienteData();
+            $this->loadTipoComprobantes(); // opcional: volver a todos
             return;
         }
 
-        $cliente = Cliente::with([
-            "ruta",
-            "listaPrecio",
-            "tipoDocumento",
-        ])->find($value);
+        $cliente = Cliente::with(["ruta", "listaPrecio", "tipoDocumento"])->find($value);
+
+        // Cargar opciones permitidas en el combo según el cliente
+        $this->loadTipoComprobantesPorCliente($cliente);
 
         if ($cliente) {
             $this->updateClienteData($cliente);
+            $this->aplicarReglaComprobante($cliente);
         }
     }
 
@@ -173,17 +177,20 @@ class PedidoTable extends Component
             " - " .
             $cliente->numero_documento;
 
-        // Si el tipo de documento es RUC, establecer automáticamente Factura
-        if ($cliente->tipoDocumento->tipo_documento === "RUC") {
-            $facturaComprobante = FTipoComprobante::where(
-                "tipo_comprobante",
-                "01"
-            )->first();
-            if ($facturaComprobante) {
-                $this->f_tipo_comprobante_id = $facturaComprobante->id;
-            }
-        }
         $this->cargarProductos();
+    }
+
+    private function loadTipoComprobantesPorCliente(?Cliente $cliente): void
+    {
+        $codigoDoc = $cliente?->tipoDocumento?->codigo ?? null;
+
+        $permitidos = ($codigoDoc == 6)
+            ? ['01']         // RUC => solo Factura
+            : ['03', '00'];  // No RUC => Boleta o Nota
+
+        $this->tipoComprobantes = FTipoComprobante::where('estado', true)
+            ->whereIn('tipo_comprobante', $permitidos)
+            ->get();
     }
 
     public function getRutaNameProperty()
@@ -355,12 +362,12 @@ class PedidoTable extends Component
         // Validar todos los ítems antes de hacer nada más
         foreach ($items as $item) {
             if (empty($item['cantidad']) || floatval($item['cantidad']) <= 0) {
-                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene una cantidad inválida.");
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido<br>El producto {$item['nombre']} tiene una cantidad inválida.");
                 return;
             }
 
             if (!isset($item['unidades']) || intval($item['unidades']) <= 0) {
-                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido" . "<br>" . "El producto {$item['nombre']} tiene unidades inválidas.");
+                $this->dispatch("error-guardando-pedido", "Error al guardar el pedido<br>El producto {$item['nombre']} tiene unidades inválidas.");
                 return;
             }
         }
@@ -368,20 +375,40 @@ class PedidoTable extends Component
         $this->pedido_detalles = [];
 
         $cliente = Cliente::with(['tipoDocumento'])->find($this->cliente_id);
-        $tipo_comprobantes = FtipoComprobante::all();
+
         if ($cliente) {
             $this->lista_precio = $cliente->lista_precio_id;
-            if ($cliente->tipoDocumento->codigo == 6) { // RUC
-                $f_tipo_cmprbnt = $tipo_comprobantes->where('tipo_comprobante', '01')->first(); // Factura
-                $this->f_tipo_comprobante_id = $f_tipo_cmprbnt->id;
-            }
-        } else {
-            logger("Error PedidoTable: cliente no encontrado", ["cliente_id" => $this->cliente_id]);
         }
+
+        $this->aplicarReglaComprobante($cliente);
+
         $this->agregarProducto($items);
 
         // dd($items, $this->pedido_detalles);
         $this->guardarPedido();
+    }
+
+    private function aplicarReglaComprobante(?Cliente $cliente): void
+    {
+        $facturaId = FTipoComprobante::where('estado', true)->where('tipo_comprobante', '01')->value('id');
+        $boletaId  = FTipoComprobante::where('estado', true)->where('tipo_comprobante', '03')->value('id');
+        $notaId    = FTipoComprobante::where('estado', true)->where('tipo_comprobante', '00')->value('id');
+
+        $codigoDoc = $cliente?->tipoDocumento?->codigo ?? null;
+
+        // RUC => siempre Factura
+        if ($codigoDoc == 6) {
+            $this->f_tipo_comprobante_id = $facturaId ? (string)$facturaId : "";
+            return;
+        }
+
+        // No RUC => permitir Boleta o Nota; si no eligió o eligió inválido => Boleta
+        $permitidos = array_filter([(string)$boletaId, (string)$notaId]);
+        $actual = (string)($this->f_tipo_comprobante_id ?? "");
+
+        if ($actual === "" || !in_array($actual, $permitidos, true)) {
+            $this->f_tipo_comprobante_id = $boletaId ? (string)$boletaId : "";
+        }
     }
 
     public function guardarPedido()
@@ -562,18 +589,18 @@ class PedidoTable extends Component
             ]
         );
 
-        logger("Cálculo de importe:", [
-            "producto_id" => $producto->id,
-            "precioCaja" => $precioCaja,
-            "cantidadProducto" => $cantidadPorCaja,
-            "cantidadIngresada" => $cantidad,
-            "cajas" => $cajas,
-            "paquetes" => $paquetes,
-            "cantidadPaquetes" => $cantidadPaquetes,
-            "precioPorPaquete" => $precioCaja / $cantidadPorCaja,
-            "importeCalculado" => $importe,
-            "peso" => $peso,
-        ]);
+        // logger("Cálculo de importe:", [
+        //     "producto_id" => $producto->id,
+        //     "precioCaja" => $precioCaja,
+        //     "cantidadProducto" => $cantidadPorCaja,
+        //     "cantidadIngresada" => $cantidad,
+        //     "cajas" => $cajas,
+        //     "paquetes" => $paquetes,
+        //     "cantidadPaquetes" => $cantidadPaquetes,
+        //     "precioPorPaquete" => $precioCaja / $cantidadPorCaja,
+        //     "importeCalculado" => $importe,
+        //     "peso" => $peso,
+        // ]);
     }
 
     // Método que se ejecuta cuando cambia el vendedor_id
