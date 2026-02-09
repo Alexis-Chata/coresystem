@@ -5,11 +5,7 @@
             <!-- Fecha -->
             <div class="relative">
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-                    </svg>
+                    <x-svg_calendar class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </div>
                 <input type="text"
                     class="block ps-10 px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -36,36 +32,82 @@
             </div>
 
             <!-- Cliente -->
-            <div class="relative">
+            {{-- <div class="relative">
                 <livewire:cliente-select :vendedor_id="$vendedor_id" :key="'cliente-select-' . $vendedor_id" wire:model.live="cliente_id" />
+            </div> --}}
+            <!-- Cliente (unificado en PedidoTable) -->
+            <div class="relative" x-data="clienteSelect({
+                vendedorIdEntangle: $wire.entangle('vendedor_id').live,
+                clienteIdEntangle: $wire.entangle('cliente_id').live
+            })" @click.outside="open=false">
+
+                <div class="relative">
+                    <input type="text" x-model="search" @focus="open=true; asegurarCarga()" @input="open=true"
+                        @keydown.arrow-down.prevent="mover(1)" @keydown.arrow-up.prevent="mover(-1)"
+                        @keydown.enter.prevent="seleccionar(filtrados[cursor])" @keydown.escape="open=false"
+                        class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer {{ !$vendedor_id ? 'bg-gray-100' : '' }}"
+                        placeholder=" " {{ !$vendedor_id ? 'disabled' : '' }} />
+
+                    <label
+                        class="pointer-events-none absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 start-1">
+                        Cliente
+                    </label>
+
+                    <!-- Botones -->
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+                        <button type="button" class="text-gray-500 hover:text-black" title="Recargar"
+                            @click="recargarClientes()">🔄</button>
+
+                        <button type="button" class="text-gray-500 hover:text-red-600" title="Limpiar"
+                            @click="limpiar()" x-show="selectedId">✖</button>
+                    </div>
+                </div>
+
+                <!-- Dropdown -->
+                <ul x-show="open"
+                    class="absolute z-20 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm max-h-72">
+                    <template x-for="(c, index) in filtrados" :key="c.id ?? index">
+
+                        <li class="px-3 py-2 cursor-pointer"
+                            :class="index === cursor ? 'bg-gray-200' : 'hover:bg-gray-100'" @mousedown.prevent
+                            @click="seleccionar(c)">
+                            <div class="font-semibold" x-text="`${c.id} - ${c.name}`"></div>
+
+                            <div class="text-xs text-gray-600" x-show="c.listaPrecio">
+                                <span x-text="`Lista: ${c.listaPrecio}`"></span>
+                            </div>
+
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                <template x-for="(m, idx) in (c.marcas || [])" :key="m.id ?? idx">
+                                    <span class="px-2 py-0.5 rounded text-white text-[11px]"
+                                        :style="`background:${m.color}`" x-text="m.name"></span>
+                                </template>
+                            </div>
+                        </li>
+                    </template>
+
+                    <li x-show="filtrados.length === 0" class="px-3 py-2 text-gray-500">Sin resultados</li>
+                </ul>
             </div>
 
             <!-- Tipo de Comprobante -->
             <div class="relative">
-                <select wire:model.live="f_tipo_comprobante_id"
-                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    @disabled(str_starts_with($documento, 'RUC'))>
+                <select wire:model.defer="f_tipo_comprobante_id"
+                    wire:key="tipo-comp-{{ $cliente_id }}-{{ count($tipoComprobantes) }}"
+                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none peer">
                     <option value="">Selecciona un Tipo de Comprobante</option>
+
                     @foreach ($tipoComprobantes as $tipo)
-                        @if (str_starts_with($documento, 'RUC') && $tipo->id == 2)
-                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}
-                            </option>
-                        @elseif (!str_starts_with($documento, 'RUC') && $tipo->id != 2)
-                            <option value="{{ $tipo->id }}" @selected($tipo->id == $f_tipo_comprobante_id)>{{ $tipo->name }}
-                            </option>
-                        @endif
+                        <option value="{{ $tipo->id }}">{{ $tipo->name }}</option>
                     @endforeach
                 </select>
+
                 <label
                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-8 top-2 z-10 origin-[0] bg-[#f1f5f9] dark:bg-[#1A222C] px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-8 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1">
                     Tipo de Comprobante
                 </label>
-                <svg class="-translate-y-1/2 absolute dark:text-gray-500 h-5 pointer-events-none right-3 text-gray-400 top-1/2 w-5"
-                    fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path clip-rule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06-.02L10 10.585l3.71-3.395a.75.75 0 011.04 1.08l-4 3.75a.75.75 0 01-1.04 0l-4-3.75a.75.75 0 01-.02-1.06z"
-                        fill-rule="evenodd" />
-                </svg>
+                <x-svg_chevron_down
+                    class="h-5 w-5 text-gray-400 dark:text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
             @error('f_tipo_comprobante_id')
                 <p class="!mt-0 text-sm text-red-600">{{ $message }}</p>
@@ -133,18 +175,18 @@
     </div>
 
     <!-- Nueva sección de búsqueda y detalles -->
-    <div class="mb-2" wire:loading
-        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id">
+    <div class="my-2" wire:loading
+        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id, selectCliente, clearClienteSelection, loadClientesOptions">
         Cargando...
     </div>
     <div class="mt-6" wire:loading.class="hidden"
-        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id">
+        wire:target="guardar_pedido_items, guardarPedido, ajustarCantidad, eliminarDetalle, agregarProducto, cliente_id, selectCliente, clearClienteSelection, loadClientesOptions">
         <div wire:loading wire:target="search">
             Buscando...
         </div>
 
         <!-- Buscador de Productos -->
-        <div x-data="selectProductos(@entangle('listado_productos'))" class="relative">
+        <div x-data="selectProductos({ clienteIdEntangle: $wire.entangle('cliente_id').live })" class="relative">
 
             <div class="mb-4 relative">
                 <input type="number" x-model="cantidad_ofrecida" min="0.01" step="0.01"
@@ -250,12 +292,7 @@
                         <tr>
                             <th scope="col">Código - Producto</th>
                             <th scope="col">Cantidad</th>
-                            <th scope="col">Importe <svg width="25" height="25" viewBox="0 0 16 16"
-                                    class="inline-block" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
-                                        fill="currentColor"></path>
-                                </svg></th>
+                            <th scope="col">Importe <x-svg_tacho /></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -272,12 +309,7 @@
                                     <span x-text="`S/. ${item.importe}`"></span>
                                     <button type="button" @click="eliminar_item(index)"
                                         class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                        <svg width="20" height="20" viewBox="0 0 17 17"
-                                            class="inline-block w-4" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M12.566,8 L15.611,4.956 C16.031,4.535 16.031,3.853 15.611,3.434 L12.566,0.389 C12.146,-0.031 11.464,-0.031 11.043,0.389 L7.999,3.433 L4.955,0.389 C4.534,-0.031 3.852,-0.031 3.432,0.389 L0.388,3.434 C-0.034,3.854 -0.034,4.536 0.387,4.956 L3.431,8 L0.387,11.044 C-0.034,11.465 -0.034,12.147 0.388,12.567 L3.432,15.611 C3.852,16.032 4.534,16.032 4.955,15.611 L7.999,12.567 L11.043,15.611 C11.464,16.032 12.146,16.032 12.566,15.611 L15.611,12.567 C16.031,12.146 16.031,11.464 15.611,11.044 L12.566,8 Z"
-                                                fill="currentColor"></path>
-                                        </svg>
+                                        <x-svg_equis />
                                     </button>
                                 </td>
                             </tr>
@@ -307,8 +339,9 @@
 
             <!-- Botón para enviar todo a Livewire -->
             <button type="button" @click="guardar" :disabled="cargando" wire:loading.attr="disabled"
-                wire:dirty.attr="disabled" wire:target="cliente_id"
-                :class="(cargando ? 'opacity-50 cursor-not-allowed' : '')"
+                wire:dirty.attr="disabled"
+                wire:target="cliente_id, selectCliente, clearClienteSelection, loadClientesOptions, guardarPedido"
+                wire:loading.class :class="(cargando ? 'opacity-50 cursor-not-allowed' : '')"
                 class="mt-4 mb-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 <span x-show="!cargando">Guardar Pedido</span>
                 <span x-show="cargando">Guardando...</span>
@@ -337,20 +370,52 @@
 
 @script
     <script>
-        window.selectProductos = function(productosIniciales) {
+        window.selectProductos = function({
+            clienteIdEntangle
+        }) {
             return {
                 cargando: false,
                 open: false,
                 search: '',
                 cursor: 0,
                 cantidad_ofrecida: '0.01',
-                productos: productosIniciales,
+
+                productos: [],
+                listaPrecioId: null,
+
                 seleccionados: [],
                 items: [],
                 subtotal: 0,
                 igv: 0,
                 total: 0,
 
+                clienteIdEntangle,
+
+                // =========================
+                // Cache helpers
+                // =========================
+                cacheKeyProductos(listaPrecioId) {
+                    return `PedidoTable:productos:v1:${listaPrecioId ?? 'null'}`;
+                },
+
+                leerCacheProductos(listaPrecioId) {
+                    try {
+                        const raw = localStorage.getItem(this.cacheKeyProductos(listaPrecioId));
+                        return raw ? JSON.parse(raw) : null;
+                    } catch (e) {
+                        return null;
+                    }
+                },
+
+                guardarCacheProductos(listaPrecioId, data) {
+                    try {
+                        localStorage.setItem(this.cacheKeyProductos(listaPrecioId), JSON.stringify(data));
+                    } catch (e) {}
+                },
+
+                // =========================
+                // Computed / UI
+                // =========================
                 get productosFiltrados() {
                     const texto = this.search.trim().toLowerCase();
                     const palabras = texto.split(/\s+/).filter(Boolean);
@@ -370,10 +435,21 @@
 
                 recargarProductos() {
                     this.open = false;
+
+                    // ✅ si sabes la lista, borras cache para forzar reload real
+                    if (this.listaPrecioId) {
+                        try {
+                            localStorage.removeItem(this.cacheKeyProductos(this.listaPrecioId));
+                        } catch (e) {}
+                    }
+
+                    // llama al backend para que dispare 'productos-cargados'
                     Livewire.dispatch('recargar-productos');
                 },
 
-                // helper: obtiene la cantidad de dígitos para representar (factor - 1), mínimo 2
+                // =========================
+                // helpers existentes (tuyos)
+                // =========================
                 calcularDigitos(factor) {
                     const f = Math.max(1, Number(factor) || 0);
                     const maxUnits = Math.max(0, f - 1); // p.ej. factor=1000 -> maxUnits=999
@@ -392,14 +468,11 @@
 
                 agregar_producto_item(producto) {
                     let ofrecidaStr = String(this.cantidad_ofrecida ?? '').trim();
-                    console.log(ofrecidaStr, ofrecidaStr === '', ofrecidaStr === '.', ofrecidaStr === '0.');
                     if (ofrecidaStr === '' || ofrecidaStr === '.' || ofrecidaStr === '0.') {
                         ofrecidaStr = '0.01'; // valor mínimo seguro
                     }
 
                     let ofrecida = parseFloat(ofrecidaStr);
-                    console.log(ofrecida);
-
                     if (isNaN(ofrecida) || ofrecida <= 0) {
                         alert('Ingrese una cantidad válida');
                         return;
@@ -414,7 +487,6 @@
                         total_unidades,
                         importe
                     } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
-                    //console.log(cantidad_convertida, total_unidades, importe);
 
                     const existe = this.items.find(i => i.id === producto.id);
                     if (!existe) {
@@ -433,7 +505,6 @@
                     this.open = false;
                 },
                 convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id) {
-                    // 1) digitos según factor (corrige el error para factores tipo 1000)
                     const digitos = this.calcularDigitos(factor);
 
                     // 2) normalizar input como string y arreglar casos como ".015" o "" o null
@@ -463,21 +534,20 @@
 
                     const cantidad_convertida = `${nuevos_bultos}.${nuevas_unidades.toString().padStart(digitos, "0")}`;
 
-                    const importe = parseFloat(((precio * total_unidades) / factor).toFixed(2));
+                    const importeCalc = parseFloat(((precio * total_unidades) / factor).toFixed(2));
 
                     if (f_tipo_afectacion_id === 21) {
-                        // Si es tipo de afectación 21, no se aplica IGV
                         return {
-                            cantidad_convertida: cantidad_convertida,
+                            cantidad_convertida,
                             total_unidades: total_unidades.toFixed(2),
                             importe: parseFloat((0).toFixed(2))
                         };
                     }
 
                     return {
-                        cantidad_convertida: cantidad_convertida,
+                        cantidad_convertida,
                         total_unidades: total_unidades.toFixed(2),
-                        importe: importe.toFixed(2)
+                        importe: importeCalc.toFixed(2)
                     };
                 },
 
@@ -488,14 +558,12 @@
                 actualizar_importe_items(index) {
                     const item = this.items[index];
                     let digitos = this.calcularDigitos(item.factor);
-                    cant = this.actualizar_importe(index)
+                    const cant = this.actualizar_importe(index);
                     if (cant !== undefined && !isNaN(parseFloat(cant))) {
                         item.cantidad = parseFloat(cant).toFixed(digitos);
                     }
-                    //console.log("actualizar_importe_items", item);
                 },
                 actualizar_importe(index) {
-                    //console.log("actualizar_importe");
                     const item = this.items[index];
                     const cantidadStr = item.cantidad?.toString() || '';
 
@@ -517,7 +585,9 @@
                     const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
 
                     const [bultosStr, unidadesStr] = cantidad.split('.');
-                    const ofrecida = (parseInt(bultosStr) || 0) + (parseInt(unidadesStr || '0') / (10 ** this.calcularDigitos(factor)));
+                    const ofrecida =
+                        (parseInt(bultosStr) || 0) +
+                        (parseInt(unidadesStr || '0') / (10 ** this.calcularDigitos(factor)));
 
                     const {
                         cantidad_convertida,
@@ -578,19 +648,14 @@
                         alert("El total del pedido debe ser mayor a cero.");
                         return;
                     }
+
                     this.cargando = true;
 
-                    $wire.call('guardar_pedido_items', this.items).catch(error => {
-                        alert(error.message); // O mostrar en tu interfaz personalizada
-                    }).finally(() => {
-                        this.cargando = false;
-                    }); // ✅ re-habilita el botón;
-                    //$wire.guardar_pedido_items(this.items);
-                },
-                init() {
-                    $wire.on('pedido-guardado', () => {
-                        this.limpiarFormulario();
-                    });
+                    $wire.call('guardar_pedido_items', this.items)
+                        .catch(error => alert(error.message))
+                        .finally(() => {
+                            this.cargando = false;
+                        });
                 },
                 limpiarFormulario() {
                     this.items = [];
@@ -602,20 +667,200 @@
                 },
                 agregar_seleccionados() {
                     const seleccionados_ids = this.seleccionados;
-                    const seleccionados_productos = this.productosFiltrados.filter(p => seleccionados_ids.includes(p
-                        .id));
-                    console.log("seleccionados:", this.seleccionados); // qué valores tienes
-                    console.log("tipos:", this.seleccionados.map(s => typeof s));
-                    console.log("producto ids:", this.productosFiltrados.map(p => p.id));
+                    const seleccionados_productos = this.productosFiltrados.filter(p => seleccionados_ids.includes(p.id));
                     const ofrecida = this.cantidad_ofrecida;
                     seleccionados_productos.forEach(producto => {
                         this.cantidad_ofrecida = ofrecida;
                         this.agregar_producto_item(producto);
                     });
-                    this.seleccionados = []; // limpiar selección
+                    this.seleccionados = [];
                     this.open = false;
-                }
+                },
 
+                // ✅ UN SOLO init, con TODO dentro
+                init() {
+                    // 1) cuando backend manda productos
+                    $wire.on('productos-cargados', ({
+                        productos,
+                        lista_precio_id
+                    }) => {
+                        this.listaPrecioId = lista_precio_id ?? null;
+
+                        if (this.listaPrecioId) {
+                            this.guardarCacheProductos(this.listaPrecioId, productos || []);
+                        }
+
+                        this.productos = productos || [];
+                    });
+
+                    // 2) limpiar productos si se limpia cliente
+                    this.$watch('clienteIdEntangle', (val) => {
+                        if (!val) {
+                            this.productos = [];
+                            this.listaPrecioId = null;
+                        }
+                    });
+
+                    // 3) evento que ya tenías
+                    $wire.on('pedido-guardado', () => {
+                        this.limpiarFormulario();
+                    });
+                },
+            }
+        }
+
+        window.clienteSelect = function({
+            vendedorIdEntangle,
+            clienteIdEntangle
+        }) {
+            return {
+                open: false,
+                cursor: 0,
+
+                clientes: [],
+                search: '',
+                selectedId: null,
+
+                vendedorIdEntangle,
+                clienteIdEntangle,
+
+                cacheKeyClientes(vendedorId) {
+                    return `PedidoTable:clientes:v1:${vendedorId ?? 'null'}`;
+                },
+
+                leerCacheClientes(vendedorId) {
+                    try {
+                        const raw = localStorage.getItem(this.cacheKeyClientes(vendedorId));
+                        return raw ? JSON.parse(raw) : null;
+                    } catch (e) {
+                        return null;
+                    }
+                },
+
+                guardarCacheClientes(vendedorId, data) {
+                    try {
+                        localStorage.setItem(this.cacheKeyClientes(vendedorId), JSON.stringify(data));
+                    } catch (e) {}
+                },
+
+                // SOLO UI (sin backend)
+                resetUi() {
+                    this.selectedId = null;
+                    this.search = '';
+                    this.open = false;
+                    this.cursor = 0;
+                },
+
+                asegurarCarga() {
+                    const vendedorId = this.vendedorIdEntangle;
+                    if (!vendedorId) {
+                        this.clientes = [];
+                        return;
+                    }
+
+                    const cached = this.leerCacheClientes(vendedorId);
+                    if (cached && Array.isArray(cached) && cached.length) {
+                        this.clientes = cached;
+                        return;
+                    }
+
+                    // 🔥 primera carga (UNA sola vez)
+                    this.$wire.loadClientesOptions();
+                },
+
+                get filtrados() {
+                    const texto = (this.search || '').trim().toLowerCase();
+                    const palabras = texto.split(/\s+/).filter(Boolean);
+
+                    if (!palabras.length) return this.clientes;
+
+                    return this.clientes.filter(c => {
+                        const campo = `${c.id} ${c.name} ${c.listaPrecio ?? ''}`.toLowerCase();
+                        return palabras.every(w => campo.includes(w));
+                    });
+                },
+
+                mover(dir) {
+                    const total = this.filtrados.length;
+                    if (!total) return;
+                    this.cursor = (this.cursor + dir + total) % total;
+                },
+
+                seleccionar(c) {
+                    if (!c) return;
+
+                    this.selectedId = c.id;
+                    this.search = c.name;
+                    this.open = false;
+
+                    // setea en Livewire solo al seleccionar (no en cada tecla)
+                    this.clienteIdEntangle = c.id;
+                    this.$wire.selectCliente(c.id);
+                },
+
+                limpiar() {
+                    // UI primero
+                    this.resetUi();
+                    this.open = true;
+
+                    // Livewire
+                    this.clienteIdEntangle = "";
+                    this.$wire.clearClienteSelection();
+                },
+
+                recargarClientes() {
+                    this.open = false;
+
+                    const vendedorId = this.vendedorIdEntangle;
+                    if (vendedorId) {
+                        try {
+                            localStorage.removeItem(this.cacheKeyClientes(vendedorId));
+                        } catch (e) {}
+                    }
+
+                    this.$wire.loadClientesOptions();
+                },
+
+                init() {
+                    // ✅ payload desde backend
+                    $wire.on('clientes-cargados', ({
+                        clientes,
+                        vendedor_id
+                    }) => {
+                        const vid = vendedor_id ?? this.vendedorIdEntangle ?? null;
+                        const list = clientes || [];
+
+                        if (vid) this.guardarCacheClientes(vid, list);
+                        this.clientes = list;
+                    });
+
+                    // CLAVE: si Livewire limpia cliente_id (por ejemplo tras guardar), limpia el input visible
+                    this.$watch('clienteIdEntangle', (val) => {
+                        if (!val) {
+                            this.resetUi(); // ⬅aquí se quita "JUNIOR MECHATO"
+                        }
+                    });
+
+                    // cuando cambia vendedor, solo UI + recarga (sin doble llamada a clearClienteSelection)
+                    this.$watch('vendedorIdEntangle', (newVal) => {
+                        this.resetUi();
+                        this.clienteIdEntangle = "";
+                        this.clientes = [];
+
+                        if (!newVal) return;
+
+                        const cached = this.leerCacheClientes(newVal);
+                        if (cached && Array.isArray(cached) && cached.length) {
+                            this.clientes = cached;
+                            return;
+                        }
+
+                        this.$wire.loadClientesOptions();
+                    });
+
+                    // si ya hay vendedor al cargar, intenta cache
+                    this.asegurarCarga();
+                },
             }
         }
     </script>

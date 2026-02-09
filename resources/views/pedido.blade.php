@@ -31,3 +31,9 @@
         });
     </script>
 @endsection
+
+@push('scripts-body')
+    <script>
+        console.log("window Alpine:", window.Alpine?.version);
+    </script>
+@endpush

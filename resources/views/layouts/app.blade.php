@@ -184,5 +184,7 @@
                 });
             });
         </script>
+        {{-- Scripts apilados desde vistas con @push('scripts-body') --}}
+        @stack('scripts-body')
     </body>
 </html>

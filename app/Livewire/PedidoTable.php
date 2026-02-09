@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PedidoTable extends Component
@@ -43,7 +44,7 @@ class PedidoTable extends Component
     public $f_tipo_comprobante_id = "";
     public $tipoComprobantes = [];
     public $comentarios = "";
-    public $listado_productos = [];
+    // public $listado_productos = [];
     public string $pedido_uuid;
     public $totales = [
         "valorVenta" => 0,
@@ -51,6 +52,9 @@ class PedidoTable extends Component
         "subTotal" => 0,
     ];
     public $cantidad_ofrecida = 0.01;
+
+    // public array $clientesOptions = [];
+    // public string $cliente_search = '';
 
     // Propiedades para listas y usuario
     public $clientes = [];
@@ -75,8 +79,8 @@ class PedidoTable extends Component
     ];
 
     protected $listeners = [
-        "cliente-selected" => "handleClienteSelected",
         'recargar-productos' => 'cargarProductos',
+        'reset-cliente-select' => 'clearClienteSelection',
     ];
 
     public function mount()
@@ -92,6 +96,7 @@ class PedidoTable extends Component
         // Cargar datos según el rol
         $this->loadDataByRole();
         $this->loadTipoComprobantes();
+        // $this->loadClientesOptions();
     }
 
     private function initializeDefaultData()
@@ -607,15 +612,20 @@ class PedidoTable extends Component
     public function updatedVendedorId($value)
     {
         if ($this->user->can("admin pedido")) {
-            $this->cliente_id = null;
+            $this->clearClienteSelection();
             if ($value) {
-                $this->dispatch("vendedorSelected", $value);
+                $this->loadClientesOptions(); // ahora envía evento y listo
+            } else {
+                // manda vacío al frontend (no state)
+                $this->dispatch('clientes-cargados', clientes: [], vendedor_id: null);
             }
         }
     }
 
+    //sin uso, pero por si acaso
     public function handleClienteSelected($clienteId)
     {
+        // dd($clienteId);
         $this->resetValidation('cliente_id');
         if ($clienteId) {
             $this->cliente_id = $clienteId;
@@ -626,18 +636,20 @@ class PedidoTable extends Component
         }
     }
 
-    public function cargarProductos()
+    public function cargarProductos(): void
     {
         $lista_precio_id = $this->lista_precio;
+
         if (! $lista_precio_id) {
-            $this->listado_productos = [];
+            $this->dispatch('productos-cargados', productos: [], lista_precio_id: null);
             return;
         }
+
         $sedes_id = auth_user()->user_empleado->empleado->fSede->empresa->sedes->pluck('id');
         $almacenesIds = Almacen::whereIn('f_sede_id', $sedes_id)->pluck('id');
 
-        $productos = Producto::query()
-            // ✅ SOLO productos que están activos en ESTA lista de precios
+        $productosRows = Producto::query()
+            // SOLO productos que están activos en ESTA lista de precios
             ->whereHas('listaPrecios', function ($q) use ($lista_precio_id) {
                 $q->where('lista_precios.id', $lista_precio_id)
                     ->where('producto_lista_precios.activo', 1);
@@ -645,36 +657,134 @@ class PedidoTable extends Component
             ->with([
                 'tipoAfectacion',
                 'marca:id,name',
-                // ✅ Traer SOLO el pivot de esta lista y activo
                 'listaPrecios' => function ($q) use ($lista_precio_id) {
                     $q->where('lista_precios.id', $lista_precio_id)
                         ->where('producto_lista_precios.activo', 1);
                 },
                 'almacenProductos' => function ($query) use ($almacenesIds) {
-                    $query->whereIn('almacen_id', $almacenesIds)->select('producto_id', 'almacen_id', 'stock_disponible');
+                    $query->whereIn('almacen_id', $almacenesIds)
+                        ->select('producto_id', 'almacen_id', 'stock_disponible');
                 },
             ])
-            ->get(); //;dd($this->listado_productos->first());
+            ->get();
 
-        $this->listado_productos = $productos->map(function ($producto) use ($lista_precio_id) {
-            $pivot = $producto->listaPrecios->first()?->pivot;
-
-            // Si tienes varios almacenes, usualmente conviene sumar:
-            $stockTotal = $producto->almacenProductos->sum('stock_disponible');
+        $productosPayload = $productosRows->map(function ($p) use ($lista_precio_id) {
+            $pivot = $p->listaPrecios->first()?->pivot;
+            $stockTotal = $p->almacenProductos->sum('stock_disponible');
 
             return [
-                'id' => $producto->id,
-                'nombre' => $producto->name,
-                'factor' => $producto->cantidad,
-                'marca' => $producto->marca->name ?? 'SIN MARCA',
+                'id' => $p->id,
+                'nombre' => $p->name,
+                'factor' => $p->cantidad,
+                'marca' => $p->marca->name ?? 'SIN MARCA',
                 'precio' => $pivot?->precio ?? 0,
                 'stock' => $stockTotal,
-                'deleted_at' => $producto->deleted_at, // sigue siendo borrado global si lo usas
+                'deleted_at' => $p->deleted_at,
                 'lista_precio' => $lista_precio_id,
                 'activo_lista' => (bool) ($pivot?->activo ?? false),
-                'f_tipo_afectacion_id' => $producto->f_tipo_afectacion_id,
-                'f_tipo_afectacion_name' => $producto->tipoAfectacion->name ?? null,
+                'f_tipo_afectacion_id' => $p->f_tipo_afectacion_id,
+                'f_tipo_afectacion_name' => $p->tipoAfectacion->name ?? null,
             ];
         })->values()->all();
+
+        // ✅ SOLO evento (sin state)
+        $this->dispatch('productos-cargados', productos: $productosPayload, lista_precio_id: (int) $lista_precio_id);
+
+        Log::info('Productos cargados (frontend cache)', [
+            'lista_precio_id' => $lista_precio_id,
+            'count' => count($productosPayload),
+        ]);
+    }
+
+    public function loadClientesOptions(): void
+    {
+        if (! $this->vendedor_id) {
+            // manda vacío al frontend, pero NO guarda nada en state
+            $this->dispatch('clientes-cargados', clientes: [], vendedor_id: null);
+            return;
+        }
+
+        $rutasDelVendedor = Ruta::where('vendedor_id', $this->vendedor_id)->pluck('id');
+
+        $inicioMes = now()->startOfMonth();
+        $finMes    = now()->endOfMonth();
+
+        $clientesRows = Cliente::query()
+            ->with([
+                'listaPrecio:id,name',
+                'fComprobanteSunats' => function ($q) use ($inicioMes, $finMes) {
+                    $q->where('estado_reporte', 1)
+                        ->whereBetween('pedido_fecha_factuacion', [$inicioMes, $finMes])
+                        ->with(['detalle.producto.marca:id,name,resaltar_cobertura,color_identificador']);
+                },
+            ])
+            ->whereIn('ruta_id', $rutasDelVendedor)
+            ->orderBy('razon_social')
+            ->get(['id', 'razon_social', 'lista_precio_id']);
+
+        $clientesPayload = $clientesRows->map(function ($c) {
+            $marcas = collect($c->fComprobanteSunats ?? [])
+                ->flatMap(fn($comp) => collect($comp->detalle ?? []))
+                ->map(fn($det) => $det->producto?->marca)
+                ->filter(fn($m) => $m && (int) $m->resaltar_cobertura === 1)
+                ->unique('id')
+                ->values()
+                ->map(function ($m) {
+                    $hex = $m->color_identificador ?: '#000000';
+                    if (!preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', $hex)) $hex = '#000000';
+
+                    return [
+                        'id'    => $m->id,
+                        'name'  => $m->name,
+                        'color' => $hex,
+                    ];
+                })
+                ->values()
+                ->all();
+
+            return [
+                'id'          => $c->id,
+                'name'        => $c->razon_social,
+                'listaPrecio' => $c->listaPrecio?->name ?? '',
+                'marcas'      => $marcas,
+            ];
+        })->values()->all();
+
+        // SOLO evento (sin state)
+        $this->dispatch('clientes-cargados', clientes: $clientesPayload, vendedor_id: (int) $this->vendedor_id);
+
+        Log::info('Clientes cargados (frontend cache)', [
+            'vendedor_id' => $this->vendedor_id,
+            'count' => count($clientesPayload),
+        ]);
+    }
+
+
+    public function selectCliente($clienteId): void
+    {
+        $cliente = Cliente::select('id')->find($clienteId);
+
+        if ($cliente) {
+            $this->cliente_id = $cliente->id;
+            //$this->cliente_search = $cliente->razon_social;
+
+            // Livewire dispara updatedClienteId() y ahí ya llamas cargarProductos()
+            $this->updatedClienteId($clienteId);
+        }
+    }
+
+    public function clearClienteSelection(): void
+    {
+        $this->cliente_id = "";
+        //$this->cliente_search = '';
+
+        $this->resetClienteData();
+        $this->pedido_detalles = [];
+        $this->importe_total = 0;
+
+        $this->loadTipoComprobantes();
+
+        // opcional: limpiar productos en frontend
+        $this->dispatch('productos-cargados', productos: [], lista_precio_id: null);
     }
 }
