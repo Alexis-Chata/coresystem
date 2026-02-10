@@ -73,7 +73,7 @@
     </div>
 
     {{-- Tabla --}}
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" wire:loading.class='hidden'>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -106,7 +106,7 @@
                                 {{ $it->descripcion ?? '-' }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-900 text-right font-semibold">
-                                {{ "S/. ".number_format((float) $it->ventas, 2) }}
+                                {{ 'S/. ' . number_format((float) $it->ventas, 2) }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700 text-right">
                                 {{ number_format((float) $it->clientes_unicos, 0) }}
@@ -125,7 +125,18 @@
 
         {{-- Paginación --}}
         <div class="p-4 border-t border-gray-200">
-            {{ $items->onEachSide(1)->links('pagination::tailwind') }}
+            {{ $items->onEachSide(1)->links() }}
+        </div>
+    </div>
+    <div class="p-4 border-t border-gray-200 flex items-center justify-between gap-3">
+        <div wire:loading.delay
+            class="flex items-center gap-2 text-gray-600">
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                    stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="text-xs">Cargando...</span>
         </div>
     </div>
 

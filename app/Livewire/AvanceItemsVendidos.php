@@ -11,6 +11,7 @@ use Livewire\WithPagination;
 class AvanceItemsVendidos extends Component
 {
     use WithPagination;
+    protected string $paginationTheme = 'tailwind';
 
     public string $desde;
     public string $hasta;
