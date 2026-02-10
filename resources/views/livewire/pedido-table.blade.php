@@ -64,7 +64,7 @@
                 </div>
 
                 <!-- Dropdown -->
-                <ul x-show="open"
+                <ul wire:ignore x-show="open"
                     class="absolute z-20 bg-white text-black w-full border mt-1 rounded shadow overflow-y-auto text-sm max-h-72">
                     <template x-for="(c, index) in filtrados" :key="c.id ?? index">
 
@@ -368,500 +368,503 @@
     @endif
 </div>
 
-@script
-    <script>
-        window.selectProductos = function({
-            clienteIdEntangle
-        }) {
-            return {
-                cargando: false,
-                open: false,
-                search: '',
-                cursor: 0,
-                cantidad_ofrecida: '0.01',
+@once
+    @script
+        <script>
+            window.selectProductos = function({
+                clienteIdEntangle
+            }) {
+                return {
+                    cargando: false,
+                    open: false,
+                    search: '',
+                    cursor: 0,
+                    cantidad_ofrecida: '0.01',
 
-                productos: [],
-                listaPrecioId: null,
+                    productos: [],
+                    listaPrecioId: null,
 
-                seleccionados: [],
-                items: [],
-                subtotal: 0,
-                igv: 0,
-                total: 0,
+                    seleccionados: [],
+                    items: [],
+                    subtotal: 0,
+                    igv: 0,
+                    total: 0,
 
-                clienteIdEntangle,
+                    clienteIdEntangle,
 
-                // =========================
-                // Cache helpers
-                // =========================
-                cacheKeyProductos(listaPrecioId) {
-                    return `PedidoTable:productos:v1:${listaPrecioId ?? 'null'}`;
-                },
+                    // =========================
+                    // Cache helpers
+                    // =========================
+                    cacheKeyProductos(listaPrecioId) {
+                        return `PedidoTable:productos:v1:${listaPrecioId ?? 'null'}`;
+                    },
 
-                leerCacheProductos(listaPrecioId) {
-                    try {
-                        const raw = localStorage.getItem(this.cacheKeyProductos(listaPrecioId));
-                        return raw ? JSON.parse(raw) : null;
-                    } catch (e) {
-                        return null;
-                    }
-                },
-
-                guardarCacheProductos(listaPrecioId, data) {
-                    try {
-                        localStorage.setItem(this.cacheKeyProductos(listaPrecioId), JSON.stringify(data));
-                    } catch (e) {}
-                },
-
-                // =========================
-                // Computed / UI
-                // =========================
-                get productosFiltrados() {
-                    const texto = this.search.trim().toLowerCase();
-                    const palabras = texto.split(/\s+/).filter(Boolean);
-
-                    return this.productos
-                        .filter(p => {
-                            const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
-                            return palabras.every(w => campo.includes(w));
-                        })
-                        .slice(0, 15);
-                },
-                moverCursor(direccion) {
-                    const total = this.productosFiltrados.length;
-                    if (total === 0) return;
-                    this.cursor = (this.cursor + direccion + total) % total;
-                },
-
-                recargarProductos() {
-                    this.open = false;
-
-                    // ✅ si sabes la lista, borras cache para forzar reload real
-                    if (this.listaPrecioId) {
+                    leerCacheProductos(listaPrecioId) {
                         try {
-                            localStorage.removeItem(this.cacheKeyProductos(this.listaPrecioId));
+                            const raw = localStorage.getItem(this.cacheKeyProductos(listaPrecioId));
+                            return raw ? JSON.parse(raw) : null;
+                        } catch (e) {
+                            return null;
+                        }
+                    },
+
+                    guardarCacheProductos(listaPrecioId, data) {
+                        try {
+                            localStorage.setItem(this.cacheKeyProductos(listaPrecioId), JSON.stringify(data));
                         } catch (e) {}
-                    }
+                    },
 
-                    // llama al backend para que dispare 'productos-cargados'
-                    Livewire.dispatch('recargar-productos');
-                },
+                    // =========================
+                    // Computed / UI
+                    // =========================
+                    get productosFiltrados() {
+                        const texto = this.search.trim().toLowerCase();
+                        const palabras = texto.split(/\s+/).filter(Boolean);
 
-                // =========================
-                // helpers existentes (tuyos)
-                // =========================
-                calcularDigitos(factor) {
-                    const f = Math.max(1, Number(factor) || 0);
-                    const maxUnits = Math.max(0, f - 1); // p.ej. factor=1000 -> maxUnits=999
-                    const digits = Math.max(2, String(Math.abs(Math.floor(maxUnits))).length);
-                    return digits;
-                },
+                        return this.productos
+                            .filter(p => {
+                                const campo = `${p.id} ${p.nombre} ${p.marca}`.toLowerCase();
+                                return palabras.every(w => campo.includes(w));
+                            })
+                            .slice(0, 15);
+                    },
+                    moverCursor(direccion) {
+                        const total = this.productosFiltrados.length;
+                        if (total === 0) return;
+                        this.cursor = (this.cursor + direccion + total) % total;
+                    },
 
-                calcularMinStep(factor) {
-                    let decimales = this.calcularDigitos(factor);
-                    let step = "0." + "0".repeat(decimales - 1) + "1"; // ejemplo: 0.001, 0.0001, etc.
-                    return {
-                        min: step,
-                        step: step
-                    };
-                },
+                    recargarProductos() {
+                        this.open = false;
 
-                agregar_producto_item(producto) {
-                    let ofrecidaStr = String(this.cantidad_ofrecida ?? '').trim();
-                    if (ofrecidaStr === '' || ofrecidaStr === '.' || ofrecidaStr === '0.') {
-                        ofrecidaStr = '0.01'; // valor mínimo seguro
-                    }
+                        // si sabes la lista, borras cache para forzar reload real
+                        if (this.listaPrecioId) {
+                            try {
+                                localStorage.removeItem(this.cacheKeyProductos(this.listaPrecioId));
+                            } catch (e) {}
+                        }
 
-                    let ofrecida = parseFloat(ofrecidaStr);
-                    if (isNaN(ofrecida) || ofrecida <= 0) {
-                        alert('Ingrese una cantidad válida');
-                        return;
-                    }
+                        // llama al backend para que dispare 'productos-cargados'
+                        Livewire.dispatch('recargar-productos');
+                    },
 
-                    const factor = parseFloat(producto.factor || 1);
-                    const precio = parseFloat(producto.precio || 0);
-                    const f_tipo_afectacion_id = producto.f_tipo_afectacion_id || 10;
+                    // =========================
+                    // helpers existentes (tuyos)
+                    // =========================
+                    calcularDigitos(factor) {
+                        const f = Math.max(1, Number(factor) || 0);
+                        const maxUnits = Math.max(0, f - 1); // p.ej. factor=1000 -> maxUnits=999
+                        const digits = Math.max(2, String(Math.abs(Math.floor(maxUnits))).length);
+                        return digits;
+                    },
 
-                    const {
-                        cantidad_convertida,
-                        total_unidades,
-                        importe
-                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
+                    calcularMinStep(factor) {
+                        let decimales = this.calcularDigitos(factor);
+                        let step = "0." + "0".repeat(decimales - 1) + "1"; // ejemplo: 0.001, 0.0001, etc.
+                        return {
+                            min: step,
+                            step: step
+                        };
+                    },
 
-                    const existe = this.items.find(i => i.id === producto.id);
-                    if (!existe) {
-                        this.items.push({
-                            ...producto,
-                            cantidad: cantidad_convertida, // bultos.unidades
-                            unidades: total_unidades,
-                            importe: importe
-                        });
-                        this.calcularTotales();
-                    }
+                    agregar_producto_item(producto) {
+                        let ofrecidaStr = String(this.cantidad_ofrecida ?? '').trim();
+                        if (ofrecidaStr === '' || ofrecidaStr === '.' || ofrecidaStr === '0.') {
+                            ofrecidaStr = '0.01'; // valor mínimo seguro
+                        }
 
-                    this.search = '';
-                    this.cantidad_ofrecida = '0.01';
-                    this.cursor = 0;
-                    this.open = false;
-                },
-                convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id) {
-                    const digitos = this.calcularDigitos(factor);
+                        let ofrecida = parseFloat(ofrecidaStr);
+                        if (isNaN(ofrecida) || ofrecida <= 0) {
+                            alert('Ingrese una cantidad válida');
+                            return;
+                        }
 
-                    // 2) normalizar input como string y arreglar casos como ".015" o "" o null
-                    let ofrecidaStr = String(ofrecida ?? "0").trim();
-                    if (ofrecidaStr === "") ofrecidaStr = "0";
-                    if (ofrecidaStr.startsWith(".")) ofrecidaStr = "0" + ofrecidaStr; // ".015" -> "0.015"
-                    if (ofrecidaStr.endsWith(".")) ofrecidaStr = ofrecidaStr + "0"; // "1." -> "1.0"
+                        const factor = parseFloat(producto.factor || 1);
+                        const precio = parseFloat(producto.precio || 0);
+                        const f_tipo_afectacion_id = producto.f_tipo_afectacion_id || 10;
 
-                    // 3) separar entero y decimal (asegurando que entero no quede vacío)
-                    let [enteroStr = "0", decimalStr = ""] = ofrecidaStr.split(".");
-                    if (enteroStr === "") enteroStr = "0";
-                    decimalStr = decimalStr || "";
+                        const {
+                            cantidad_convertida,
+                            total_unidades,
+                            importe
+                        } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
 
-                    // 4) truncar a 'digitos' y rellenar a la derecha para que tenga exactamente 'digitos'
-                    decimalStr = decimalStr.slice(0, digitos);
-                    if (decimalStr.length < digitos) decimalStr = decimalStr.padEnd(digitos, "0");
+                        const existe = this.items.find(i => i.id === producto.id);
+                        if (!existe) {
+                            this.items.push({
+                                ...producto,
+                                cantidad: cantidad_convertida, // bultos.unidades
+                                unidades: total_unidades,
+                                importe: importe
+                            });
+                            this.calcularTotales();
+                        }
 
-                    // 5) parseos seguros
-                    const parte_entera = parseInt(enteroStr, 10) || 0;
-                    const parte_decimal = parseInt(decimalStr, 10) || 0;
+                        this.search = '';
+                        this.cantidad_ofrecida = '0.01';
+                        this.cursor = 0;
+                        this.open = false;
+                    },
+                    convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id) {
+                        const digitos = this.calcularDigitos(factor);
 
-                    // 6) cálculo en unidades
-                    const total_unidades = parte_entera * factor + parte_decimal;
+                        // 2) normalizar input como string y arreglar casos como ".015" o "" o null
+                        let ofrecidaStr = String(ofrecida ?? "0").trim();
+                        if (ofrecidaStr === "") ofrecidaStr = "0";
+                        if (ofrecidaStr.startsWith(".")) ofrecidaStr = "0" + ofrecidaStr; // ".015" -> "0.015"
+                        if (ofrecidaStr.endsWith(".")) ofrecidaStr = ofrecidaStr + "0"; // "1." -> "1.0"
 
-                    const nuevos_bultos = Math.floor(total_unidades / factor);
-                    const nuevas_unidades = total_unidades % factor;
+                        // 3) separar entero y decimal (asegurando que entero no quede vacío)
+                        let [enteroStr = "0", decimalStr = ""] = ofrecidaStr.split(".");
+                        if (enteroStr === "") enteroStr = "0";
+                        decimalStr = decimalStr || "";
 
-                    const cantidad_convertida = `${nuevos_bultos}.${nuevas_unidades.toString().padStart(digitos, "0")}`;
+                        // 4) truncar a 'digitos' y rellenar a la derecha para que tenga exactamente 'digitos'
+                        decimalStr = decimalStr.slice(0, digitos);
+                        if (decimalStr.length < digitos) decimalStr = decimalStr.padEnd(digitos, "0");
 
-                    const importeCalc = parseFloat(((precio * total_unidades) / factor).toFixed(2));
+                        // 5) parseos seguros
+                        const parte_entera = parseInt(enteroStr, 10) || 0;
+                        const parte_decimal = parseInt(decimalStr, 10) || 0;
 
-                    if (f_tipo_afectacion_id === 21) {
+                        // 6) cálculo en unidades
+                        const total_unidades = parte_entera * factor + parte_decimal;
+
+                        const nuevos_bultos = Math.floor(total_unidades / factor);
+                        const nuevas_unidades = total_unidades % factor;
+
+                        const cantidad_convertida = `${nuevos_bultos}.${nuevas_unidades.toString().padStart(digitos, "0")}`;
+
+                        const importeCalc = parseFloat(((precio * total_unidades) / factor).toFixed(2));
+
+                        if (f_tipo_afectacion_id === 21) {
+                            return {
+                                cantidad_convertida,
+                                total_unidades: total_unidades.toFixed(2),
+                                importe: parseFloat((0).toFixed(2))
+                            };
+                        }
+
                         return {
                             cantidad_convertida,
                             total_unidades: total_unidades.toFixed(2),
-                            importe: parseFloat((0).toFixed(2))
+                            importe: importeCalc.toFixed(2)
                         };
-                    }
+                    },
 
-                    return {
-                        cantidad_convertida,
-                        total_unidades: total_unidades.toFixed(2),
-                        importe: importeCalc.toFixed(2)
-                    };
-                },
+                    eliminar_item(index) {
+                        this.items.splice(index, 1);
+                        this.calcularTotales();
+                    },
+                    actualizar_importe_items(index) {
+                        const item = this.items[index];
+                        let digitos = this.calcularDigitos(item.factor);
+                        const cant = this.actualizar_importe(index);
+                        if (cant !== undefined && !isNaN(parseFloat(cant))) {
+                            item.cantidad = parseFloat(cant).toFixed(digitos);
+                        }
+                    },
+                    actualizar_importe(index) {
+                        const item = this.items[index];
+                        const cantidadStr = item.cantidad?.toString() || '';
 
-                eliminar_item(index) {
-                    this.items.splice(index, 1);
-                    this.calcularTotales();
-                },
-                actualizar_importe_items(index) {
-                    const item = this.items[index];
-                    let digitos = this.calcularDigitos(item.factor);
-                    const cant = this.actualizar_importe(index);
-                    if (cant !== undefined && !isNaN(parseFloat(cant))) {
-                        item.cantidad = parseFloat(cant).toFixed(digitos);
-                    }
-                },
-                actualizar_importe(index) {
-                    const item = this.items[index];
-                    const cantidadStr = item.cantidad?.toString() || '';
+                        if (
+                            cantidadStr.endsWith('.') ||
+                            cantidadStr.endsWith('.0') ||
+                            cantidadStr.endsWith('.00') ||
+                            cantidadStr.endsWith('.000') ||
+                            cantidadStr === '' ||
+                            isNaN(parseFloat(cantidadStr)) ||
+                            parseFloat(cantidadStr) === 0
+                        ) {
+                            return;
+                        }
 
-                    if (
-                        cantidadStr.endsWith('.') ||
-                        cantidadStr.endsWith('.0') ||
-                        cantidadStr.endsWith('.00') ||
-                        cantidadStr.endsWith('.000') ||
-                        cantidadStr === '' ||
-                        isNaN(parseFloat(cantidadStr)) ||
-                        parseFloat(cantidadStr) === 0
-                    ) {
-                        return;
-                    }
+                        const factor = parseFloat(item.factor || 1);
+                        const precio = parseFloat(item.precio || 0);
+                        const cantidad = parseFloat(item.cantidad).toFixed(this.calcularDigitos(factor));
+                        const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
 
-                    const factor = parseFloat(item.factor || 1);
-                    const precio = parseFloat(item.precio || 0);
-                    const cantidad = parseFloat(item.cantidad).toFixed(this.calcularDigitos(factor));
-                    const f_tipo_afectacion_id = item.f_tipo_afectacion_id || 10;
+                        const [bultosStr, unidadesStr] = cantidad.split('.');
+                        const ofrecida =
+                            (parseInt(bultosStr) || 0) +
+                            (parseInt(unidadesStr || '0') / (10 ** this.calcularDigitos(factor)));
 
-                    const [bultosStr, unidadesStr] = cantidad.split('.');
-                    const ofrecida =
-                        (parseInt(bultosStr) || 0) +
-                        (parseInt(unidadesStr || '0') / (10 ** this.calcularDigitos(factor)));
+                        const {
+                            cantidad_convertida,
+                            total_unidades,
+                            importe
+                        } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
 
-                    const {
-                        cantidad_convertida,
-                        total_unidades,
-                        importe
-                    } = this.convertirCantidad(ofrecida, factor, precio, f_tipo_afectacion_id);
+                        item.unidades = total_unidades;
+                        item.importe = importe;
 
-                    item.unidades = total_unidades;
-                    item.importe = importe;
+                        this.calcularTotales();
+                        return cantidad_convertida;
+                    },
 
-                    this.calcularTotales();
-                    return cantidad_convertida;
-                },
+                    calcularTotales() {
+                        this.total = this.items.reduce((sum, i) => {
+                            const importe = parseFloat(i.importe);
+                            return sum + (isNaN(importe) ? 0 : importe);
+                        }, 0);
 
-                calcularTotales() {
-                    this.total = this.items.reduce((sum, i) => {
-                        const importe = parseFloat(i.importe);
-                        return sum + (isNaN(importe) ? 0 : importe);
-                    }, 0);
+                        if (this.total > 0) {
+                            this.subtotal = parseFloat((this.total / 1.18).toFixed(2));
+                            this.igv = parseFloat((this.total - this.subtotal).toFixed(2));
+                        } else {
+                            this.subtotal = 0;
+                            this.igv = 0;
+                        }
+                    },
 
-                    if (this.total > 0) {
-                        this.subtotal = parseFloat((this.total / 1.18).toFixed(2));
-                        this.igv = parseFloat((this.total - this.subtotal).toFixed(2));
-                    } else {
+                    guardar() {
+                        if (this.cargando) return; // corta doble click
+
+                        if (this.items.length === 0) {
+                            alert("No hay productos agregados al pedido.");
+                            return;
+                        }
+
+                        const errores = this.items.filter(item => {
+                            const cantidadValida = item.cantidad && !isNaN(item.cantidad) && parseFloat(item
+                                .cantidad) > 0;
+                            const unidadesValidas = item.unidades && !isNaN(item.unidades) && parseInt(item
+                                .unidades) > 0;
+                            const importeValido = item.f_tipo_afectacion_id == 21 ?
+                                true :
+                                (item.importe && !isNaN(item.importe) && parseFloat(item.importe) > 0);
+
+                            return !(cantidadValida && unidadesValidas && importeValido);
+                        });
+
+                        if (errores.length > 0) {
+                            alert(
+                                "Hay productos con datos inválidos (cantidades, unidades o importes). Corrige antes de guardar."
+                            );
+                            return;
+                        }
+
+                        if (isNaN(this.total) || this.total <= 0) {
+                            alert("El total del pedido debe ser mayor a cero.");
+                            return;
+                        }
+
+                        this.cargando = true;
+
+                        $wire.call('guardar_pedido_items', this.items)
+                            .catch(error => alert(error.message))
+                            .finally(() => {
+                                this.cargando = false;
+                            });
+                    },
+                    limpiarFormulario() {
+                        this.items = [];
+                        this.search = '';
+                        this.cantidad_ofrecida = '0.01';
                         this.subtotal = 0;
                         this.igv = 0;
-                    }
-                },
-
-                guardar() {
-                    if (this.cargando) return; // ✅ corta doble click
-
-                    if (this.items.length === 0) {
-                        alert("No hay productos agregados al pedido.");
-                        return;
-                    }
-
-                    const errores = this.items.filter(item => {
-                        const cantidadValida = item.cantidad && !isNaN(item.cantidad) && parseFloat(item
-                            .cantidad) > 0;
-                        const unidadesValidas = item.unidades && !isNaN(item.unidades) && parseInt(item
-                            .unidades) > 0;
-                        const importeValido = item.f_tipo_afectacion_id == 21 ?
-                            true :
-                            (item.importe && !isNaN(item.importe) && parseFloat(item.importe) > 0);
-
-                        return !(cantidadValida && unidadesValidas && importeValido);
-                    });
-
-                    if (errores.length > 0) {
-                        alert(
-                            "Hay productos con datos inválidos (cantidades, unidades o importes). Corrige antes de guardar."
-                        );
-                        return;
-                    }
-
-                    if (isNaN(this.total) || this.total <= 0) {
-                        alert("El total del pedido debe ser mayor a cero.");
-                        return;
-                    }
-
-                    this.cargando = true;
-
-                    $wire.call('guardar_pedido_items', this.items)
-                        .catch(error => alert(error.message))
-                        .finally(() => {
-                            this.cargando = false;
+                        this.total = 0;
+                    },
+                    agregar_seleccionados() {
+                        const seleccionados_ids = this.seleccionados;
+                        const seleccionados_productos = this.productosFiltrados.filter(p => seleccionados_ids.includes(p
+                            .id));
+                        const ofrecida = this.cantidad_ofrecida;
+                        seleccionados_productos.forEach(producto => {
+                            this.cantidad_ofrecida = ofrecida;
+                            this.agregar_producto_item(producto);
                         });
-                },
-                limpiarFormulario() {
-                    this.items = [];
-                    this.search = '';
-                    this.cantidad_ofrecida = '0.01';
-                    this.subtotal = 0;
-                    this.igv = 0;
-                    this.total = 0;
-                },
-                agregar_seleccionados() {
-                    const seleccionados_ids = this.seleccionados;
-                    const seleccionados_productos = this.productosFiltrados.filter(p => seleccionados_ids.includes(p.id));
-                    const ofrecida = this.cantidad_ofrecida;
-                    seleccionados_productos.forEach(producto => {
-                        this.cantidad_ofrecida = ofrecida;
-                        this.agregar_producto_item(producto);
-                    });
-                    this.seleccionados = [];
-                    this.open = false;
-                },
+                        this.seleccionados = [];
+                        this.open = false;
+                    },
 
-                // ✅ UN SOLO init, con TODO dentro
-                init() {
-                    // 1) cuando backend manda productos
-                    $wire.on('productos-cargados', ({
-                        productos,
-                        lista_precio_id
-                    }) => {
-                        this.listaPrecioId = lista_precio_id ?? null;
+                    // ✅ UN SOLO init, con TODO dentro
+                    init() {
+                        // 1) cuando backend manda productos
+                        $wire.on('productos-cargados', ({
+                            productos,
+                            lista_precio_id
+                        }) => {
+                            this.listaPrecioId = lista_precio_id ?? null;
 
-                        if (this.listaPrecioId) {
-                            this.guardarCacheProductos(this.listaPrecioId, productos || []);
-                        }
+                            if (this.listaPrecioId) {
+                                this.guardarCacheProductos(this.listaPrecioId, productos || []);
+                            }
 
-                        this.productos = productos || [];
-                    });
+                            this.productos = productos || [];
+                        });
 
-                    // 2) limpiar productos si se limpia cliente
-                    this.$watch('clienteIdEntangle', (val) => {
-                        if (!val) {
-                            this.productos = [];
-                            this.listaPrecioId = null;
-                        }
-                    });
+                        // 2) limpiar productos si se limpia cliente
+                        this.$watch('clienteIdEntangle', (val) => {
+                            if (!val) {
+                                this.productos = [];
+                                this.listaPrecioId = null;
+                            }
+                        });
 
-                    // 3) evento que ya tenías
-                    $wire.on('pedido-guardado', () => {
-                        this.limpiarFormulario();
-                    });
-                },
+                        // 3) evento que ya tenías
+                        $wire.on('pedido-guardado', () => {
+                            this.limpiarFormulario();
+                        });
+                    },
+                }
             }
-        }
 
-        window.clienteSelect = function({
-            vendedorIdEntangle,
-            clienteIdEntangle
-        }) {
-            return {
-                open: false,
-                cursor: 0,
-
-                clientes: [],
-                search: '',
-                selectedId: null,
-
+            window.clienteSelect = function({
                 vendedorIdEntangle,
-                clienteIdEntangle,
+                clienteIdEntangle
+            }) {
+                return {
+                    open: false,
+                    cursor: 0,
 
-                cacheKeyClientes(vendedorId) {
-                    return `PedidoTable:clientes:v1:${vendedorId ?? 'null'}`;
-                },
+                    clientes: [],
+                    search: '',
+                    selectedId: null,
 
-                leerCacheClientes(vendedorId) {
-                    try {
-                        const raw = localStorage.getItem(this.cacheKeyClientes(vendedorId));
-                        return raw ? JSON.parse(raw) : null;
-                    } catch (e) {
-                        return null;
-                    }
-                },
+                    vendedorIdEntangle,
+                    clienteIdEntangle,
 
-                guardarCacheClientes(vendedorId, data) {
-                    try {
-                        localStorage.setItem(this.cacheKeyClientes(vendedorId), JSON.stringify(data));
-                    } catch (e) {}
-                },
+                    cacheKeyClientes(vendedorId) {
+                        return `PedidoTable:clientes:v1:${vendedorId ?? 'null'}`;
+                    },
 
-                // SOLO UI (sin backend)
-                resetUi() {
-                    this.selectedId = null;
-                    this.search = '';
-                    this.open = false;
-                    this.cursor = 0;
-                },
-
-                asegurarCarga() {
-                    const vendedorId = this.vendedorIdEntangle;
-                    if (!vendedorId) {
-                        this.clientes = [];
-                        return;
-                    }
-
-                    const cached = this.leerCacheClientes(vendedorId);
-                    if (cached && Array.isArray(cached) && cached.length) {
-                        this.clientes = cached;
-                        return;
-                    }
-
-                    // 🔥 primera carga (UNA sola vez)
-                    this.$wire.loadClientesOptions();
-                },
-
-                get filtrados() {
-                    const texto = (this.search || '').trim().toLowerCase();
-                    const palabras = texto.split(/\s+/).filter(Boolean);
-
-                    if (!palabras.length) return this.clientes;
-
-                    return this.clientes.filter(c => {
-                        const campo = `${c.id} ${c.name} ${c.listaPrecio ?? ''}`.toLowerCase();
-                        return palabras.every(w => campo.includes(w));
-                    });
-                },
-
-                mover(dir) {
-                    const total = this.filtrados.length;
-                    if (!total) return;
-                    this.cursor = (this.cursor + dir + total) % total;
-                },
-
-                seleccionar(c) {
-                    if (!c) return;
-
-                    this.selectedId = c.id;
-                    this.search = c.name;
-                    this.open = false;
-
-                    // setea en Livewire solo al seleccionar (no en cada tecla)
-                    this.clienteIdEntangle = c.id;
-                    this.$wire.selectCliente(c.id);
-                },
-
-                limpiar() {
-                    // UI primero
-                    this.resetUi();
-                    this.open = true;
-
-                    // Livewire
-                    this.clienteIdEntangle = "";
-                    this.$wire.clearClienteSelection();
-                },
-
-                recargarClientes() {
-                    this.open = false;
-
-                    const vendedorId = this.vendedorIdEntangle;
-                    if (vendedorId) {
+                    leerCacheClientes(vendedorId) {
                         try {
-                            localStorage.removeItem(this.cacheKeyClientes(vendedorId));
-                        } catch (e) {}
-                    }
-
-                    this.$wire.loadClientesOptions();
-                },
-
-                init() {
-                    // ✅ payload desde backend
-                    $wire.on('clientes-cargados', ({
-                        clientes,
-                        vendedor_id
-                    }) => {
-                        const vid = vendedor_id ?? this.vendedorIdEntangle ?? null;
-                        const list = clientes || [];
-
-                        if (vid) this.guardarCacheClientes(vid, list);
-                        this.clientes = list;
-                    });
-
-                    // CLAVE: si Livewire limpia cliente_id (por ejemplo tras guardar), limpia el input visible
-                    this.$watch('clienteIdEntangle', (val) => {
-                        if (!val) {
-                            this.resetUi(); // ⬅aquí se quita "JUNIOR MECHATO"
+                            const raw = localStorage.getItem(this.cacheKeyClientes(vendedorId));
+                            return raw ? JSON.parse(raw) : null;
+                        } catch (e) {
+                            return null;
                         }
-                    });
+                    },
 
-                    // cuando cambia vendedor, solo UI + recarga (sin doble llamada a clearClienteSelection)
-                    this.$watch('vendedorIdEntangle', (newVal) => {
-                        this.resetUi();
-                        this.clienteIdEntangle = "";
-                        this.clientes = [];
+                    guardarCacheClientes(vendedorId, data) {
+                        try {
+                            localStorage.setItem(this.cacheKeyClientes(vendedorId), JSON.stringify(data));
+                        } catch (e) {}
+                    },
 
-                        if (!newVal) return;
+                    // SOLO UI (sin backend)
+                    resetUi() {
+                        this.selectedId = null;
+                        this.search = '';
+                        this.open = false;
+                        this.cursor = 0;
+                    },
 
-                        const cached = this.leerCacheClientes(newVal);
+                    asegurarCarga() {
+                        const vendedorId = this.vendedorIdEntangle;
+                        if (!vendedorId) {
+                            this.clientes = [];
+                            return;
+                        }
+
+                        const cached = this.leerCacheClientes(vendedorId);
                         if (cached && Array.isArray(cached) && cached.length) {
                             this.clientes = cached;
                             return;
                         }
 
+                        // primera carga (UNA sola vez)
                         this.$wire.loadClientesOptions();
-                    });
+                    },
 
-                    // si ya hay vendedor al cargar, intenta cache
-                    this.asegurarCarga();
-                },
+                    get filtrados() {
+                        const texto = (this.search || '').trim().toLowerCase();
+                        const palabras = texto.split(/\s+/).filter(Boolean);
+
+                        if (!palabras.length) return this.clientes;
+
+                        return this.clientes.filter(c => {
+                            const campo = `${c.id} ${c.name} ${c.listaPrecio ?? ''}`.toLowerCase();
+                            return palabras.every(w => campo.includes(w));
+                        });
+                    },
+
+                    mover(dir) {
+                        const total = this.filtrados.length;
+                        if (!total) return;
+                        this.cursor = (this.cursor + dir + total) % total;
+                    },
+
+                    seleccionar(c) {
+                        if (!c) return;
+
+                        this.selectedId = c.id;
+                        this.search = c.name;
+                        this.open = false;
+
+                        // setea en Livewire solo al seleccionar (no en cada tecla)
+                        this.clienteIdEntangle = c.id;
+                        this.$wire.selectCliente(c.id);
+                    },
+
+                    limpiar() {
+                        // UI primero
+                        this.resetUi();
+                        this.open = true;
+
+                        // Livewire
+                        this.clienteIdEntangle = "";
+                        this.$wire.clearClienteSelection();
+                    },
+
+                    recargarClientes() {
+                        this.open = false;
+
+                        const vendedorId = this.vendedorIdEntangle;
+                        if (vendedorId) {
+                            try {
+                                localStorage.removeItem(this.cacheKeyClientes(vendedorId));
+                            } catch (e) {}
+                        }
+
+                        this.$wire.loadClientesOptions();
+                    },
+
+                    init() {
+                        // ✅ payload desde backend
+                        $wire.on('clientes-cargados', ({
+                            clientes,
+                            vendedor_id
+                        }) => {
+                            const vid = vendedor_id ?? this.vendedorIdEntangle ?? null;
+                            const list = clientes || [];
+
+                            if (vid) this.guardarCacheClientes(vid, list);
+                            this.clientes = list;
+                        });
+
+                        // CLAVE: si Livewire limpia cliente_id (por ejemplo tras guardar), limpia el input visible
+                        this.$watch('clienteIdEntangle', (val) => {
+                            if (!val) {
+                                this.resetUi(); // ⬅aquí se quita "JUNIOR MECHATO"
+                            }
+                        });
+
+                        // cuando cambia vendedor, solo UI + recarga (sin doble llamada a clearClienteSelection)
+                        this.$watch('vendedorIdEntangle', (newVal) => {
+                            this.resetUi();
+                            this.clienteIdEntangle = "";
+                            this.clientes = [];
+
+                            if (!newVal) return;
+
+                            const cached = this.leerCacheClientes(newVal);
+                            if (cached && Array.isArray(cached) && cached.length) {
+                                this.clientes = cached;
+                                return;
+                            }
+
+                            this.$wire.loadClientesOptions();
+                        });
+
+                        // si ya hay vendedor al cargar, intenta cache
+                        this.asegurarCarga();
+                    },
+                }
             }
-        }
-    </script>
-@endscript
+        </script>
+    @endscript
+@endonce
