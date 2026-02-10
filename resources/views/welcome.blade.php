@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite('resources/css/app.css')
     <title>Gestión de Roles de Usuario</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite('resources/js/sweetalert2_11.js')
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
     <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">

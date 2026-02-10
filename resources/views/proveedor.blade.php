@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@vite('resources/js/sweetalert2_11.js')
 <livewire:proveedor-table/>
 
 <script>
@@ -24,7 +24,7 @@
                 confirmButtonText: 'OK'
             });
         });
-        
+
     });
 </script>
 @endsection

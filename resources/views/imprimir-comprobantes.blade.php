@@ -14,7 +14,7 @@
 @endcannot
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@vite('resources/js/sweetalert2_11.js')
 <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('padron-deleted', message => {
