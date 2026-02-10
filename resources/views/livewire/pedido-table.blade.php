@@ -71,13 +71,16 @@
                         <li class="px-3 py-2 cursor-pointer"
                             :class="index === cursor ? 'bg-gray-200' : 'hover:bg-gray-100'" @mousedown.prevent
                             @click="seleccionar(c)">
-                            <div class="font-semibold" x-text="`${c.id} - ${c.name}`"></div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold" x-text="`${c.id} - ${c.name}`"></span>
+                            </div>
 
                             <div class="text-xs text-gray-600" x-show="c.listaPrecio">
                                 <span x-text="`Lista: ${c.listaPrecio}`"></span>
-                            </div>
-
-                            <div class="flex flex-wrap gap-1 mt-1">
+                                <span
+                                    class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded ml-2 whitespace-nowrap"
+                                    x-show="c.ruta" x-text="c.ruta">
+                                </span>
                                 <template x-for="(m, idx) in (c.marcas || [])" :key="m.id ?? idx">
                                     <span class="px-2 py-0.5 rounded text-white text-[11px]"
                                         :style="`background:${m.color}`" x-text="m.name"></span>

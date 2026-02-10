@@ -424,7 +424,7 @@ class PedidoTable extends Component
         $lock = Cache::lock('guardar_pedido', 15);
 
         try {
-            // 🔒 Espera automática (como compra online)
+            // Espera automática (como compra online)
             $lock->block(10);
 
             $wasCreated = false;
@@ -440,7 +440,7 @@ class PedidoTable extends Component
                 $this->validarStock_arraydetalles($this->pedido_detalles, $almacen_id);
                 $this->validarPrecio_arraydetalles($this->pedido_detalles, $almacen_id);
 
-                // ✅ Idempotencia por UUID
+                // Idempotencia por UUID
                 $pedido = Pedido::firstOrCreate(
                     ["uuid" => $this->pedido_uuid],
                     [
@@ -513,7 +513,7 @@ class PedidoTable extends Component
             }
             $this->dispatch("reset-cliente-select");
             $this->pedido_uuid = (string) Str::uuid();
-            // ✅ Mensaje final
+            // Mensaje final
             $this->dispatch(
                 'pedido-guardado',
                 $wasCreated
@@ -543,7 +543,7 @@ class PedidoTable extends Component
         return view("livewire.pedido-table");
     }
 
-    public function calcularImporte($index, Producto $producto = null)
+    public function calcularImporte($index, ?Producto $producto = null)
     {
         if (!isset($this->pedido_detalles[$index]) || !$this->lista_precio) {
             return;
@@ -687,7 +687,7 @@ class PedidoTable extends Component
             ];
         })->values()->all();
 
-        // ✅ SOLO evento (sin state)
+        // SOLO evento (sin state)
         $this->dispatch('productos-cargados', productos: $productosPayload, lista_precio_id: (int) $lista_precio_id);
 
         Log::info('Productos cargados (frontend cache)', [
@@ -717,10 +717,14 @@ class PedidoTable extends Component
                         ->whereBetween('pedido_fecha_factuacion', [$inicioMes, $finMes])
                         ->with(['detalle.producto.marca:id,name,resaltar_cobertura,color_identificador']);
                 },
+                'ruta',
             ])
+            ->whereHas('ruta', function ($q) {
+                $q->where('vendedor_id', $this->vendedor_id);
+            })
             ->whereIn('ruta_id', $rutasDelVendedor)
             ->orderBy('razon_social')
-            ->get(['id', 'razon_social', 'lista_precio_id']);
+            ->get(['id', 'razon_social', 'lista_precio_id', 'ruta_id']);
 
         $clientesPayload = $clientesRows->map(function ($c) {
             $marcas = collect($c->fComprobanteSunats ?? [])
@@ -746,7 +750,8 @@ class PedidoTable extends Component
                 'id'          => $c->id,
                 'name'        => $c->razon_social,
                 'listaPrecio' => $c->listaPrecio?->name ?? '',
-                'marcas'      => $marcas,
+                'ruta'        => $c->ruta?->name ?? 'Sin Ruta',
+                'marcas'      => $marcas, // (coberturas) Marcas asociadas a comprobantes del cliente en el mes actual
             ];
         })->values()->all();
 
