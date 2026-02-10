@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/tailadmin.css',
                 'resources/js/tailadmin.js',
+                'resources/js/sweetalert2_11.js',
             ],
             refresh: true,
         }),
