@@ -208,10 +208,19 @@
                     ],
                     [
                         'link_descripcion' => 'Avances', //opcional
-                        'permission' => 'view avance',
+                        'permission' => ['view avance', 'admin avance'],
+                        'perm_mode' => 'any', // el permiso se evalúa en modo "cualquiera" (si el usuario tiene al menos uno de los permisos listados, pasa)
                         'route' => 'avance.view',
                         'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
                         'name' => 'Avances',
+                    ],
+                    [
+                        'link_descripcion' => 'Avances x Items', //opcional
+                        'permission' => ['view avance', 'admin avance'],
+                        'perm_mode' => 'any', // el permiso se evalúa en modo "cualquiera" (si el usuario tiene al menos uno de los permisos listados, pasa)
+                        'route' => 'avancexitems.view',
+                        'icon' => 'svg_companys', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Avances x Items',
                     ],
                 ],
             ],

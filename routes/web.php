@@ -51,7 +51,7 @@ Route::middleware([
 
     Route::get('/avance', function () {
         return view('avance-ventas');
-    })->middleware('can:view avance')->name('avance.view');
+    })->middleware(['permission:view avance|admin avance'])->name('avance.view');
 
     Route::get('/avancexitems', function () {
         return view('avance-ventas-items');
