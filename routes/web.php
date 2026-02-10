@@ -53,6 +53,10 @@ Route::middleware([
         return view('avance-ventas');
     })->middleware('can:view avance')->name('avance.view');
 
+    Route::get('/avancexitems', function () {
+        return view('avance-ventas-items');
+    })->middleware(['permission:view avance|admin avance'])->name('avancexitems.view');
+
     Route::get('/dashboard', function () {
         $role = Role::findOrCreate('admin');
         Permission::findOrCreate('view liquidacion')->assignRole($role);
