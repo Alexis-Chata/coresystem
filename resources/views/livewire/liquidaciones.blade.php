@@ -1,6 +1,6 @@
 <div class="text-xs sm:text-sm">
     @if ($view == 'liquidaciones')
-        <div>
+        <div wire:loading.class="opacity-50 pointer-events-none">
             <h2 class="text-lg font-semibold mb-4">Liquidaciones</h2>
             <label>Fecha reparto:
                 <input type="date" wire:model.live="fecha_fin"
@@ -8,49 +8,53 @@
             </label>
         </div>
         <br />
-        <table class="min-w-full border border-gray-300 shadow-md rounded-lg" id="dataTable_example"
-            x-data="{ liquidar(id) { $wire.call('liquidar', id) } }">
-            <thead class="bg-gray-200 text-gray-700">
-                <tr>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">ID</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Fecha</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Conductor</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Monto</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300">
-                @foreach ($movimientos as $liquidacion)
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->id }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">
-                            {{ carbon_parse($liquidacion->fecha_liquidacion)->format('d-m-Y') }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->conductor_id }} -
-                            {{ $liquidacion->conductor->name }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">
-                            {{ number_format($liquidacion->pedidos->sum('importe_total'), 2) }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">
-                            @if ($liquidacion->estado == 'por liquidar')
-                                <button @click="liquidar({{ $liquidacion->id }})"
-                                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">Liquidar</button>
-                            @else
-                                <button wire:click="ver_liquidacion({{ $liquidacion->id }})"
-                                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Ver</button>
-                            @endif
-                        </td>
+        <div wire:loading.class='hidden'>
+            <table class="min-w-full border border-gray-300 shadow-md rounded-lg" id="dataTable_example"
+                x-data="{ liquidar(id) { $wire.call('liquidar', id) } }">
+                <thead class="bg-gray-200 text-gray-700">
+                    <tr>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">ID</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Fecha</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Conductor</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Monto</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Acciones</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-gray-300">
+                    @foreach ($movimientos as $liquidacion)
+                        <tr class="hover:bg-gray-100">
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->id }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">
+                                {{ carbon_parse($liquidacion->fecha_liquidacion)->format('d-m-Y') }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->conductor_id }} -
+                                {{ $liquidacion->conductor->name }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">
+                                {{ number_format($liquidacion->pedidos->sum('importe_total'), 2) }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">
+                                @if ($liquidacion->estado == 'por liquidar')
+                                    <button @click="liquidar({{ $liquidacion->id }})"
+                                        class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">Liquidar</button>
+                                @else
+                                    <button wire:click="ver_liquidacion({{ $liquidacion->id }})"
+                                        class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Ver</button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     @elseif ($view == 'liquidacion comprobantes')
-        @if ($regresa)
-            <div class="flex justify-between">
-                <button wire:click="regresar"
-                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
-                {{-- <button wire:click="guardar_anulados"
+        <div wire:loading.class="opacity-50 pointer-events-none">
+            @if ($regresa)
+                <div class="flex justify-between">
+                    <button wire:click="regresar"
+                        class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
+                    {{-- <button wire:click="guardar_anulados"
                     class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Guardar Anulados</button> --}}
-            </div>
-        @endif
+                </div>
+            @endif
+        </div>
         <br />
         <br />
         <div>
@@ -62,47 +66,49 @@
             <p class="px-2 text-blue-700">Devuelto: {{ number_format($comprobantes->sum('total_devuelto'), 2) }}</p>
         </div>
         <br />
-        <table class="min-w-full border border-gray-300 shadow-md rounded-lg">
-            <thead class="bg-gray-200 text-gray-700">
-                <tr>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Tipo Comp.</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Serie - Correlativo</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Cod - Cliente</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Imp.Venta</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b text-blue-700">Valor Devuelto</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Estado</th>
-                    <th class="px-2 sm:px-4 py-2 text-left border-b">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300">
-                @forelse ($comprobantes as $comprobante)
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->tipoDoc_name }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->serie }} -
-                            {{ $comprobante->correlativo }}
-                        </td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->cliente_id }} -
-                            {{ $comprobante->clientRazonSocial }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->mtoImpVenta }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->total_devuelto }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->estado_reporte ? '' : 'Devol.' }}</td>
-                        <td class="px-2 sm:px-4 py-2 border-b">
-                            <!-- Botón Devoluciones -->
-                            <button wire:click="mostrarDevolucion({{ $comprobante->id }})"
-                                class="px-3 py-1 md:text-sm text-white bg-green-600 rounded-md">
-                                Devolucion
-                            </button>
-                        </td>
-                    </tr>
-                @empty
+        <div wire:loading.class='hidden'>
+            <table class="min-w-full border border-gray-300 shadow-md rounded-lg">
+                <thead class="bg-gray-200 text-gray-700">
                     <tr>
-                        <td colspan="100%" class="px-2 sm:px-4 py-2 text-center text-gray-500">No hay registros
-                            disponibles</td>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Tipo Comp.</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Serie - Correlativo</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Cod - Cliente</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Imp.Venta</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b text-blue-700">Valor Devuelto</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Estado</th>
+                        <th class="px-2 sm:px-4 py-2 text-left border-b">Acciones</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
-        <div x-data="{
+                </thead>
+                <tbody class="divide-y divide-gray-300">
+                    @forelse ($comprobantes as $comprobante)
+                        <tr class="hover:bg-gray-100">
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->tipoDoc_name }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->serie }} -
+                                {{ $comprobante->correlativo }}
+                            </td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->cliente_id }} -
+                                {{ $comprobante->clientRazonSocial }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->mtoImpVenta }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->total_devuelto }}</td>
+                            <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->estado_reporte ? '' : 'Devol.' }}
+                            </td>
+                            <td class="px-2 sm:px-4 py-2 border-b">
+                                <!-- Botón Devoluciones -->
+                                <button wire:click="mostrarDevolucion({{ $comprobante->id }})"
+                                    class="px-3 py-1 md:text-sm text-white bg-green-600 rounded-md">
+                                    Devolucion
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="100%" class="px-2 sm:px-4 py-2 text-center text-gray-500">No hay registros
+                                disponibles</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            <div x-data="{
                 open: @entangle('modalDevolucion').live,
                 detalles: $wire.entangle('detalleSeleccionado'),
                 comprobanteSeleccionado: $wire.entangle('comprobanteSeleccionado_array'),
@@ -144,141 +150,147 @@
                     });
                 }
             }" x-show="open" x-cloak
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 
-            <div class="bg-white w-full max-w-4xl rounded-lg shadow-lg p-6 relative"
-                x-on:livewire:load.window="
+                <div class="bg-white w-full max-w-4xl rounded-lg shadow-lg p-6 relative"
+                    x-on:livewire:load.window="
                 Livewire.hook('message.sent', () => procesando = true)
                 Livewire.hook('message.processed', () => procesando = false)">
-                <button @click="$wire.cerrarModal()" wire:target="guardarDevoluciones, cerrarModal" wire:loading.attr="disabled"
-                    class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">✕</button>
+                    <button @click="$wire.cerrarModal()" wire:target="guardarDevoluciones, cerrarModal"
+                        wire:loading.attr="disabled"
+                        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">✕</button>
 
-                <h2 class="text-lg font-semibold mb-4">Detalles del comprobante</h2>
+                    <h2 class="text-lg font-semibold mb-4">Detalles del comprobante</h2>
 
-                @if ($comprobanteSeleccionado)
-                    <div class="mb-4">
-                        <p><strong>Tipo:</strong> {{ $comprobanteSeleccionado->tipoDoc_name }}</p>
-                        <p><strong>Serie:</strong> {{ $comprobanteSeleccionado->serie }} -
-                            {{ $comprobanteSeleccionado->correlativo }}</p>
-                        <p><strong>Cliente:</strong> {{ $comprobanteSeleccionado->clientRazonSocial }}</p>
-                        <p><strong>Importe:</strong> S/ {{ number_format($comprobanteSeleccionado->mtoImpVenta, 2) }}
-                        </p>
-                    </div>
-
-                    <h3 class="text-md font-semibold mb-2">Detalle de productos</h3>
-                    <!-- Checkbox de devolución total -->
-                    <template x-if="comprobanteSeleccionado.estado_reporte">
-                        <div class="flex items-center justify-end mb-2">
-                            <label class="flex items-center text-sm text-gray-700 cursor-pointer">
-                                <input type="checkbox" x-model="devolucionTotal" @change="toggleDevolucionTotal"
-                                    :disabled="!comprobanteSeleccionado.estado_reporte"
-                                    class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                Devolución total
-                            </label>
+                    @if ($comprobanteSeleccionado)
+                        <div class="mb-4">
+                            <p><strong>Tipo:</strong> {{ $comprobanteSeleccionado->tipoDoc_name }}</p>
+                            <p><strong>Serie:</strong> {{ $comprobanteSeleccionado->serie }} -
+                                {{ $comprobanteSeleccionado->correlativo }}</p>
+                            <p><strong>Cliente:</strong> {{ $comprobanteSeleccionado->clientRazonSocial }}</p>
+                            <p><strong>Importe:</strong> S/
+                                {{ number_format($comprobanteSeleccionado->mtoImpVenta, 2) }}
+                            </p>
                         </div>
-                    </template>
 
-                    <template x-if="detalles.length">
-                        <table class="min-w-full border border-gray-300 text-sm">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-2 py-1 border-b text-left">Cod</th>
-                                    <th class="px-2 py-1 border-b text-left">Producto</th>
-                                    <th class="px-2 py-1 border-b text-right">Cant.</th>
-                                    <th class="px-2 py-1 border-b text-right">Precio</th>
-                                    <th class="px-2 py-1 border-b text-right">Total</th>
-                                    <th class="px-2 py-1 border-b text-right text-blue-700">Cant. Devuelta</th>
-                                    <th class="px-2 py-1 border-b text-right text-blue-700">Valor Devuelto</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="(item, index) in detalles" :key="index">
-                                    <tr :class="item._error ? 'bg-red-100' : ''">
-                                        <td class="px-2 py-1 border-b" x-text="item.codProducto"></td>
-                                        <td class="px-2 py-1 border-b" x-text="item.descripcion"></td>
-                                        <td class="px-2 py-1 border-b text-right" x-text="item.cantidad"></td>
-                                        <td class="px-2 py-1 border-b text-right"
-                                            x-text="Number(item.mtoPrecioUnitario).toFixed(2)"></td>
-                                        <td class="px-2 py-1 border-b text-right"
-                                            x-text="(item.cantidad * item.mtoPrecioUnitario).toFixed(2)"></td>
+                        <h3 class="text-md font-semibold mb-2">Detalle de productos</h3>
+                        <!-- Checkbox de devolución total -->
+                        <template x-if="comprobanteSeleccionado.estado_reporte">
+                            <div class="flex items-center justify-end mb-2">
+                                <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                                    <input type="checkbox" x-model="devolucionTotal" @change="toggleDevolucionTotal"
+                                        :disabled="!comprobanteSeleccionado.estado_reporte"
+                                        class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    Devolución total
+                                </label>
+                            </div>
+                        </template>
 
-                                        <!-- Cantidad devuelta -->
-                                        <td class="px-2 py-1 border-b text-right">
-                                            <template x-if="comprobanteSeleccionado.estado_reporte">
-                                                <input type="number" min="0" :max="item.cantidad"
-                                                    step="1" x-model.number="item.cantidad_devuelta"
-                                                    @input="validarCantidad(item)" @blur="decimalto2(item)"
-                                                    class="w-20 border rounded-md text-right px-1 py-0.5"
-                                                    :class="item._error ? 'border-red-500 bg-red-50' : ''">
-                                            </template>
-                                            <template x-if="!comprobanteSeleccionado.estado_reporte">
-                                                <span x-text="item.cantidad_devuelta || 0"></span>
-                                            </template>
-                                        </td>
-
-                                        <!-- Valor devuelto -->
-                                        <td class="px-2 py-1 border-b text-right text-blue-700 font-semibold"
-                                            x-text="(Number(item.cantidad_devuelta || 0) * Number(item.mtoPrecioUnitario)).toFixed(2)">
-                                        </td>
+                        <template x-if="detalles.length">
+                            <table class="min-w-full border border-gray-300 text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-2 py-1 border-b text-left">Cod</th>
+                                        <th class="px-2 py-1 border-b text-left">Producto</th>
+                                        <th class="px-2 py-1 border-b text-right">Cant.</th>
+                                        <th class="px-2 py-1 border-b text-right">Precio</th>
+                                        <th class="px-2 py-1 border-b text-right">Total</th>
+                                        <th class="px-2 py-1 border-b text-right text-blue-700">Cant. Devuelta</th>
+                                        <th class="px-2 py-1 border-b text-right text-blue-700">Valor Devuelto</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </template>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, index) in detalles" :key="index">
+                                        <tr :class="item._error ? 'bg-red-100' : ''">
+                                            <td class="px-2 py-1 border-b" x-text="item.codProducto"></td>
+                                            <td class="px-2 py-1 border-b" x-text="item.descripcion"></td>
+                                            <td class="px-2 py-1 border-b text-right" x-text="item.cantidad"></td>
+                                            <td class="px-2 py-1 border-b text-right"
+                                                x-text="Number(item.mtoPrecioUnitario).toFixed(2)"></td>
+                                            <td class="px-2 py-1 border-b text-right"
+                                                x-text="(item.cantidad * item.mtoPrecioUnitario).toFixed(2)"></td>
 
-                    <template x-if="!detalles.length">
-                        <p class="text-gray-500 italic mt-4 text-center">No hay detalles disponibles</p>
-                    </template>
+                                            <!-- Cantidad devuelta -->
+                                            <td class="px-2 py-1 border-b text-right">
+                                                <template x-if="comprobanteSeleccionado.estado_reporte">
+                                                    <input type="number" min="0" :max="item.cantidad"
+                                                        step="1" x-model.number="item.cantidad_devuelta"
+                                                        @input="validarCantidad(item)" @blur="decimalto2(item)"
+                                                        class="w-20 border rounded-md text-right px-1 py-0.5"
+                                                        :class="item._error ? 'border-red-500 bg-red-50' : ''">
+                                                </template>
+                                                <template x-if="!comprobanteSeleccionado.estado_reporte">
+                                                    <span x-text="item.cantidad_devuelta || 0"></span>
+                                                </template>
+                                            </td>
 
-                    <!-- Total devolución -->
-                    <div class="text-right mt-4 font-semibold">
-                        Total devolución:
-                        <span class="text-blue-700"
-                            x-text="detalles.reduce((acc, i) => acc + (Number(i.cantidad_devuelta || 0) * Number(i.mtoPrecioUnitario)), 0).toFixed(2)">
-                        </span>
-                    </div>
-                @endif
-                @if (optional($comprobanteSeleccionado)->estado_reporte)
-                    <button
-                        @click="if (confirm('(IRREVERSIBLE): Esta acción permitirá registrar devoluciones para este comprobante. ¿Desea continuar?')) { $wire.guardarDevoluciones(detalles); }"
-                        wire:target="guardarDevoluciones, cerrarModal" wire:loading.attr="disabled"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span wire:loading.remove wire:target="guardarDevoluciones, cerrarModal">💾 Guardar devolución</span>
-                        <span wire:loading wire:target="guardarDevoluciones, cerrarModal">⏳ Guardando...</span>
-                    </button>
-                @endif
+                                            <!-- Valor devuelto -->
+                                            <td class="px-2 py-1 border-b text-right text-blue-700 font-semibold"
+                                                x-text="(Number(item.cantidad_devuelta || 0) * Number(item.mtoPrecioUnitario)).toFixed(2)">
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        <template x-if="!detalles.length">
+                            <p class="text-gray-500 italic mt-4 text-center">No hay detalles disponibles</p>
+                        </template>
+
+                        <!-- Total devolución -->
+                        <div class="text-right mt-4 font-semibold">
+                            Total devolución:
+                            <span class="text-blue-700"
+                                x-text="detalles.reduce((acc, i) => acc + (Number(i.cantidad_devuelta || 0) * Number(i.mtoPrecioUnitario)), 0).toFixed(2)">
+                            </span>
+                        </div>
+                    @endif
+                    @if (optional($comprobanteSeleccionado)->estado_reporte)
+                        <button
+                            @click="if (confirm('(IRREVERSIBLE): Esta acción permitirá registrar devoluciones para este comprobante. ¿Desea continuar?')) { $wire.guardarDevoluciones(detalles); }"
+                            wire:target="guardarDevoluciones, cerrarModal" wire:loading.attr="disabled"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="guardarDevoluciones, cerrarModal">💾 Guardar
+                                devolución</span>
+                            <span wire:loading wire:target="guardarDevoluciones, cerrarModal">⏳ Guardando...</span>
+                        </button>
+                    @endif
+                </div>
             </div>
         </div>
     @elseif ($view == 'liquidacion detalle')
-        @if ($regresa)
-            <button wire:click="regresar"
-                class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
-            <br />
-        @else
-            <div class="flex justify-between">
-                <div class="flex flex-wrap gap-1">
-                    <button wire:click="volver"
-                        class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
-                    <button wire:click="diferencias"
-                        class="px-3 py-1 md:text-sm text-white bg-yellow-600 rounded-md">Diferencias</button>
-                    {{-- <button wire:click="agregar_salida"
+        <div wire:loading.class="opacity-50 pointer-events-none">
+            @if ($regresa)
+                <button wire:click="regresar"
+                    class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
+                <br />
+            @else
+                <div class="flex justify-between" wire:loading.class="opacity-50 pointer-events-none">
+                    <div class="flex flex-wrap gap-1">
+                        <button wire:click="volver"
+                            class="px-3 py-1 md:text-sm text-white bg-blue-600 rounded-md">Volver</button>
+                        <button wire:click="diferencias"
+                            class="px-3 py-1 md:text-sm text-white bg-yellow-600 rounded-md">Diferencias</button>
+                        {{-- <button wire:click="agregar_salida"
                         class="px-3 py-1 md:text-sm text-white bg-red-600 rounded-md">Add.Salida</button>
                     <button wire:click="agregar_ingreso"
                         class="px-3 py-1 md:text-sm text-white bg-green-600 rounded-md">Add.Ingreso</button> --}}
-                    <button wire:click="liquidacion_comprobantes"
-                        class="px-3 py-1 md:text-sm text-white bg-gray-600 rounded-md">Comprobantes</button>
-                </div>
-                {{-- <button wire:click="liquidacion_comprobantesmmmm"
+                        <button wire:click="liquidacion_comprobantes"
+                            class="px-3 py-1 md:text-sm text-white bg-gray-600 rounded-md">Comprobantes</button>
+                    </div>
+                    {{-- <button wire:click="liquidacion_comprobantesmmmm"
                     class="px-3 py-1 md:text-sm text-white bg-indigo-600 rounded-md">Grabar Liquidacion</button> --}}
-            </div>
-        @endif
+                </div>
+            @endif
+        </div>
         <br />
         <div>
             <p>Fecha Reparto: {{ $movimientos->first()->fecha_liquidacion }}</p>
             <p>Conductor: {{ $movimientos->first()->conductor_id }} - {{ $movimientos->first()->conductor->name }}</p>
         </div>
         <br />
-        <div class="w-full overflow-x-auto">
+        <div wire:loading.class='hidden' class="w-full overflow-x-auto">
             <table class="w-full min-w-max border border-gray-300 shadow-md rounded-lg">
                 <thead class="bg-gray-200 text-gray-700">
                     <tr>
@@ -430,6 +442,9 @@
             </div>
         </div>
     @endif
+    <div wire:loading.delay
+        class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent">
+    </div>
 </div>
 
 @script

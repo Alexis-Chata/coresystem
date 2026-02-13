@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-2">
-    <fieldset class="space-x-4">
+    <fieldset class="space-x-4" wire:loading.class="opacity-50 pointer-events-none">
         <label class="inline-flex items-center cursor-pointer space-x-2">
             <input type="radio" wire:model="date_field" name="date_field" value="1"
                 class="w-6 h-6 accent-green-600 cursor-pointer">
@@ -151,5 +151,8 @@
                 <span class="text-lg">Fecha Emision</span>
             </label>
         </div>
+    </div>
+    <div wire:loading.delay
+        class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent">
     </div>
 </div>
