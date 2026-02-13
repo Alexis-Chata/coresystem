@@ -28,10 +28,11 @@ class ReportesExport implements FromCollection, WithHeadings
     private $num_documento;
     private $producto;
     private $producto_factor;
+    private $lista_precios;
     private $fecha_emision;
     private $usuario;
 
-    public function __construct($date_field, $fecha_inicio, $fecha_fin, $ruta_id = null, $marca = null, $vendedor_id = null, $producto_id = null, $ruta = false, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false, $usuario = false, $producto_factor = false)
+    public function __construct($date_field, $fecha_inicio, $fecha_fin, $ruta_id = null, $marca = null, $vendedor_id = null, $producto_id = null, $ruta = false, $marcas_name = false, $tipo_documento = false, $conductor = false, $vendedor = false, $cliente = false, $num_documento = false, $producto = false, $fecha_emision = false, $usuario = false, $producto_factor = false, $lista_precios = false)
     {
         $this->date_field = $date_field;
         $this->fecha_inicio = $fecha_inicio;
@@ -50,6 +51,7 @@ class ReportesExport implements FromCollection, WithHeadings
         $this->num_documento = $num_documento;
         $this->producto = $producto || !is_null($producto_id) || $producto_factor;
         $this->producto_factor = $producto_factor;
+        $this->lista_precios = $lista_precios;
         $this->fecha_emision = $fecha_emision;
         $this->usuario = $usuario;
     }
@@ -73,6 +75,7 @@ class ReportesExport implements FromCollection, WithHeadings
         $num_documento = $this->num_documento;
         $productoFlag  = $this->producto; // renombrado para no chocar
         $producto_factor = $this->producto_factor;
+        $lista_precios = $this->lista_precios;
         $fecha_emision = $this->fecha_emision;
         $usuario = $this->usuario;
         //ini_set('memory_limit', '512M');
@@ -88,6 +91,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ["by" => "marcas.name", "estado" => $marcas_name],
             ["by" => "f_comprobante_sunats.vendedor_id", "estado" => $vendedor],
             ["by" => "empleados.name", "estado" => $vendedor],
+            ["by" => "f_comprobante_sunat_detalles.ref_producto_lista_precio", "estado" => $lista_precios],
             ["by" => "f_comprobante_sunats.cliente_id", "estado" => $cliente],
             ["by" => "f_comprobante_sunats.clientRazonSocial", "estado" => $cliente],
             ["by" => DB::raw("CONCAT(f_comprobante_sunats.serie, '-', f_comprobante_sunats.correlativo)"), "estado" => $num_documento],
@@ -150,6 +154,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when($conductor, fn($q) => $q->addSelect('f_comprobante_sunats.conductor_id'))
             ->when($marcas_name, fn($q) => $q->addSelect('marcas.name'))
             ->when($vendedor, fn($q) => $q->addSelect('f_comprobante_sunats.vendedor_id', 'empleados.name as nombre_vendedor'))
+            ->when($lista_precios, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.ref_producto_lista_precio'))
             ->when($cliente, fn($q) => $q->addSelect('f_comprobante_sunats.cliente_id', 'f_comprobante_sunats.clientRazonSocial'))
             ->when($num_documento, fn($q) => $q->addSelect(DB::raw("CONCAT(f_comprobante_sunats.serie, '-', f_comprobante_sunats.correlativo) as num_documento")))
             ->when($productoFlag, fn($q) => $q->addSelect('f_comprobante_sunat_detalles.codProducto', 'productos.name as nombre_articulo'))
@@ -177,6 +182,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when($marcas_name, fn($q) => $q->orderBy('marcas.name'))
             ->when($vendedor, fn($q) => $q->orderBy('f_comprobante_sunats.vendedor_id'))
             ->when($vendedor, fn($q) => $q->orderBy('empleados.name'))
+            ->when($lista_precios, fn($q) => $q->orderBy('f_comprobante_sunat_detalles.ref_producto_lista_precio'))
             ->when($cliente, fn($q) => $q->orderBy('f_comprobante_sunats.cliente_id'))
             ->when($cliente, fn($q) => $q->orderBy('f_comprobante_sunats.clientRazonSocial'))
             ->when($num_documento, fn($q) => $q->orderBy('num_documento'))
@@ -237,6 +243,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ["titulo" => "Descrip Marca", "estado" => $this->marcas_name],
             ["titulo" => "Cod Prevendedor", "estado" => $this->vendedor],
             ["titulo" => "Nombre Prevendedor", "estado" => $this->vendedor],
+            ["titulo" => "Lista Precios", "estado" => $this->lista_precios],
             ["titulo" => "Cod Cliente", "estado" => $this->cliente],
             ["titulo" => "Nombre Cliente", "estado" => $this->cliente],
             ["titulo" => "Num Documento", "estado" => $this->num_documento],

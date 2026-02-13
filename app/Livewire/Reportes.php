@@ -30,6 +30,7 @@ class Reportes extends Component
     public $productos;
     public $producto_id;
 
+    public $lista_precios;
     public $producto_factor;
     public $rutas_name;
     public $marcas_name;
@@ -128,6 +129,7 @@ class Reportes extends Component
         $vendedor_id = $this->vendedor_id;
         $producto_id = $this->producto_id;
 
+        $lista_precios = $this->lista_precios ?? false;
         $producto_factor = $this->producto_factor ?? false;
         $ruta = $this->rutas_name ?? false;
         $marcas_name = $this->marcas_name ?? false;
@@ -162,7 +164,8 @@ class Reportes extends Component
                 $producto,
                 $fecha_emision,
                 $usuario,
-                $producto_factor
+                $producto_factor,
+                $lista_precios
             ),
             'reporte_ventas.xlsx'
         );

@@ -13,13 +13,17 @@
         </label>
     </fieldset>
 
-    <div class="flex flex-wrap gap-2 items-center sm:flex-row">
+    <div class="mb-2" wire:loading>
+        Cargando...
+    </div>
+
+    <div wire:loading.class='hidden' class="flex flex-wrap gap-2 items-center sm:flex-row">
         <input type="date" wire:model.live="fecha_inicio"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
         <input type="date" wire:model.live="fecha_fin"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
     </div>
-    <div class="flex flex-wrap gap-2 items-center sm:flex-row">
+    <div wire:loading.class='hidden' class="flex flex-wrap gap-2 items-center sm:flex-row">
         <select wire:model="ruta_id"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 ease-in-out">
             <option value="NULL">Selecciona una ruta</option>
@@ -61,8 +65,15 @@
         </div>
     </div>
 
-    <div class="flex flex-col gap-1.5">
+    <div wire:loading.class='hidden' class="flex flex-col gap-1.5">
         <br />
+        <div>
+            <label class="cursor-pointer space-x-1">
+                <input type="checkbox" wire:model="lista_precios"
+                    class="cursor-pointer w-4 h-4 text-blue-600 accent-blue-500">
+                <span class="text-lg">Lista Precios</span>
+            </label>
+        </div>
         <div>
             <label class="cursor-pointer space-x-1">
                 <input type="checkbox" wire:model="producto_factor"
