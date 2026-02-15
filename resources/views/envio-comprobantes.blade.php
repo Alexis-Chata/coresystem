@@ -3,8 +3,6 @@
 @section('content')
     <h1>envio Comprobantes</h1>
     <br />
-    <livewire:enviar-comprobantes />
-    <br />
     <div id="data-table">
     @livewire('comprobantes-datatable')
     </div>

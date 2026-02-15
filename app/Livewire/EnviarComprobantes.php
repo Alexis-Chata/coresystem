@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EnviarComprobantes extends Component
 {
+    // componente sin uso, ahora se agrego directamente al datatable
     public function render()
     {
         return view('livewire.enviar-comprobantes');

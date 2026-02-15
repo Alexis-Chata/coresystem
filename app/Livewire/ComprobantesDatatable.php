@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exports\FComprobanteSunatsExport;
 use App\Models\Empresa;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -14,17 +15,27 @@ use Exception;
 use Greenter\Ws\Services\ConsultCdrService;
 use Greenter\Ws\Services\SoapClient;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Maatwebsite\Excel\Facades\Excel;
 use Rappasoft\LaravelLivewireTables\Views\Columns\DateColumn;
 use ZipArchive;
 
 class ComprobantesDatatable extends DataTableComponent
 {
+    // No esta dentro de la documentacion pero esta ayudando para agregar html antes/despues de la tabla
+    public function render(): Application|Factory|View
+    {
+        return view('livewire.comprobantes-datatable-wrapper');
+    }
+
     //protected $model = FComprobanteSunat::class;
     protected ?int $searchFilterDebounce = 1000;
     public ?int $perPage = 50;
@@ -44,19 +55,20 @@ class ComprobantesDatatable extends DataTableComponent
     public $buscar_search;
     public $estado_envio;
     public $tipoDoc;
+    public $tipo_comprobante;
 
     public function builder(): Builder
     {
 
         $return =  FComprobanteSunat::query()
             ->when($this->tipoDoc, function ($query, $tipo_doc) {
-                $query->where("tipoDoc", $tipo_doc); // 1️⃣ Siempre filtra por tipoDoc primero
+                $query->where("tipoDoc", $tipo_doc); // Siempre filtra por tipoDoc primero
             })
             ->when($this->fecha_emision, function ($query) {
                 $query->whereBetween("fechaEmision", [$this->fecha_emision . ' 00:00:00', $this->fecha_emision_fin . ' 23:59:59']);
             })
             ->when($this->estado_envio, function ($query) {
-                $query->where(function ($q) { // 3️⃣ Aplicar condición dentro de un subquery
+                $query->where(function ($q) { // Aplicar condición dentro de un subquery
                     $estado = in_array($this->estado_envio, ['aceptado', 'rechazado'])
                         ? $this->estado_envio
                         : 'pendiente';
@@ -76,16 +88,11 @@ class ComprobantesDatatable extends DataTableComponent
         return $return;
     }
 
-    #[On('actualiza_tabla')]
-    public function actualizando_tabla($fecha_inicio, $fecha_fin, $search, $estado_envio, $tipoDoc)
+    public function descargar_comprobantes()
     {
-        $this->fecha_emision = $fecha_inicio;
-        $this->fecha_emision_fin = $fecha_fin;
-        $this->buscar_search = $search;
-        $this->estado_envio = $estado_envio;
-        $this->tipoDoc = $tipoDoc;
-        //dd(isset($this->estado_envio) && $this->estado_envio);
-        $this->dispatch('refreshDatatable');
+        $inicio = $this->fecha_emision;
+        $fin = $this->fecha_emision_fin;
+        return Excel::download(new FComprobanteSunatsExport($inicio, $fin), 'Reporte_Comprobantes_' . format_date($inicio) . '_' . format_date($fin) . '.xlsx');
     }
 
     public function mount()
@@ -288,8 +295,10 @@ class ComprobantesDatatable extends DataTableComponent
         $this->cdr($comprobante->id);
     }
 
+    // Ya no se usa anular() desde el dropdown
     public function anular($id)
     {
+        return; //Ya no se usa anular() desde el dropdown
         $comprobante_guia = FComprobanteSunat::find($id);
 
         $comprobante_guia = $comprobante_guia->id ? $comprobante_guia : FGuiaSunat::find($id);
