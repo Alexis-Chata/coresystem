@@ -22,7 +22,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-300">
                     @foreach ($movimientos as $liquidacion)
-                        <tr class="hover:bg-gray-100">
+                        <tr class="hover:bg-indigo-200">
                             <td class="px-2 sm:px-4 py-2 border-b">{{ $liquidacion->id }}</td>
                             <td class="px-2 sm:px-4 py-2 border-b">
                                 {{ carbon_parse($liquidacion->fecha_liquidacion)->format('d-m-Y') }}</td>
@@ -81,7 +81,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-300">
                     @forelse ($comprobantes as $comprobante)
-                        <tr class="hover:bg-gray-100">
+                        <tr class="hover:bg-indigo-200">
                             <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->tipoDoc_name }}</td>
                             <td class="px-2 sm:px-4 py-2 border-b">{{ $comprobante->serie }} -
                                 {{ $comprobante->correlativo }}
@@ -304,7 +304,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-300">
                     @forelse ($productos as $producto)
-                        <tr class="hover:bg-gray-100"
+                        <tr class="hover:bg-indigo-200"
                             :class="{ 'bg-red-200': {{ $producto->diferencia_cajas == 0 ? 'false' : 'true' }} }">
                             <td class="px-2 sm:px-4 py-2 border-b">{{ $producto->id }} - {{ $producto->name }}</td>
                             <td class="px-2 sm:px-4 py-2 border-b">{{ $producto->diferencia_cajas }}</td>
