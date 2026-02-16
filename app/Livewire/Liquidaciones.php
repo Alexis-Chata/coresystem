@@ -756,8 +756,8 @@ class Liquidaciones extends Component
                 //logger("Detalles calculado para refacturar:", ["detalles" => $detalles]);
                 $subtotales = (object)$subtotales;
 
-                $fechaOriginal = Carbon::parse($comprobante->fechaEmision);
-                $hoy = now();
+                $fechaOriginal = Carbon::parse($comprobante->fechaEmision)->startOfDay();
+                $hoy = now()->startOfDay();
 
                 // Si han pasado 1, 2 o 3 días (ej: 1 -> 2/3/4), mantiene la fecha original
                 $fechaEmisionNueva = ($hoy->greaterThan($fechaOriginal) && $hoy->diffInDays($fechaOriginal) <= 3)
