@@ -299,6 +299,11 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::post('/guardar-ubicacion', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'latitud' => 'required|numeric',
+            'longitud' => 'required|numeric',
+        ]);
+
         session([
             'latitud' => $request->latitud,
             'longitud' => $request->longitud,

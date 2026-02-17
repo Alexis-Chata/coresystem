@@ -28,22 +28,22 @@
         @livewireStyles
         {{-- <link href="style.css" rel="stylesheet"> --}}
     </head>
-    <body
-        class="font-sans antialiased"
-        x-data="{
-            page: 'ecommerce',
-            loaded: true,
-            darkMode: true,
-            stickyMenu: false,
-            sidebarToggle: false,
-            scrollTop: false,
-            ultimaUbicacion: Number(localStorage.getItem('ultimaUbicacion')) || 0,
-            solicitarUbicacion() {
+    <body class="font-sans antialiased" x-data="{
+        page: 'ecommerce',
+        loaded: true,
+        darkMode: true,
+        stickyMenu: false,
+        sidebarToggle: false,
+        scrollTop: false,
+        ultimaUbicacion: parseInt(localStorage.getItem('ultimaUbicacion') || '0', 10),
+
+        solicitarUbicacion() {
             const ahora = Date.now();
             const diferencia = ahora - this.ultimaUbicacion;
 
-            if (diferencia < 20000) { // menos de 20 segundos
-                console.log('Ya se solicitó ubicación recientemente.', 'hace:', diferencia, 'ms');
+            // throttle: no pedir si fue hace < 15s
+            if (diferencia < 15000) {
+                console.log('Ya se solicitó ubicación recientemente. Hace:', diferencia, 'ms');
                 return;
             }
 
@@ -52,40 +52,46 @@
                 return;
             }
 
-            this.ultimaUbicacion = ahora;
-            localStorage.setItem('ultimaUbicacion', ahora);
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const latitud = pos.coords.latitude;
+                    const longitud = pos.coords.longitude;
 
-            navigator.geolocation.getCurrentPosition(pos => {
-                const latitud = pos.coords.latitude;
-                const longitud = pos.coords.longitude;
-                console.log('Ubicación obtenida:', latitud, longitud);
+                    // Guardar throttle solo si sí obtuvo ubicación
+                    this.ultimaUbicacion = ahora;
+                    localStorage.setItem('ultimaUbicacion', String(ahora));
 
-                fetch('{{ route('guardar.ubicacion') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ latitud, longitud })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            console.log('Ubicación guardada exitosamente:', data);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al guardar ubicación:', error);
-                    });
+                    console.log('Ubicación obtenida:', latitud, longitud);
 
-            }, error => {
-                alert('Error obteniendo ubicación: ' + error.message);
-            });
-
+                    fetch(@js(route('guardar.ubicacion')), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': @js(csrf_token()),
+                            },
+                            body: JSON.stringify({ latitud, longitud }),
+                        })
+                        .then(async (response) => {
+                            if (!response.ok) {
+                                // Si aquí cae un 302/401/419/500, lo vemos claro
+                                const text = await response.text();
+                                throw new Error('HTTP ' + response.status + ' - ' + text);
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            if (data?.success) console.log('Ubicación guardada:', data);
+                            else console.warn('Respuesta inesperada:', data);
+                        })
+                        .catch((error) => console.error('Error al guardar ubicación:', error));
+                },
+                (error) => {
+                    alert('Error obteniendo ubicación: ' + error.message);
+                }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
+            );
         }
-    }"
-    x-init="
-    darkMode = JSON.parse(localStorage.getItem('darkMode'));
+    }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
     $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
 
     // Escuchar cambios en otras pestañas
@@ -94,10 +100,8 @@
             ultimaUbicacion = Number(event.newValue);
         }
     });"
-        :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }"
-        @click="solicitarUbicacion"
-        @keydown="solicitarUbicacion"
-    >
+        :class="{ 'dark text-bodydark bg-boxdark-2': darkMode === true }" @click="solicitarUbicacion"
+        @keydown="solicitarUbicacion">
         <x-banner />
 
         <!-- ===== Preloader Start ===== -->
