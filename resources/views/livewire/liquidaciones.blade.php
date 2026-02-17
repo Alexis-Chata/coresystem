@@ -201,7 +201,7 @@
                                 </thead>
                                 <tbody>
                                     <template x-for="(item, index) in detalles" :key="index">
-                                        <tr :class="item._error ? 'bg-red-100' : ''">
+                                        <tr :class="item._error ? 'bg-red-100' : ''" class="hover:bg-indigo-200">
                                             <td class="px-2 py-1 border-b" x-text="item.codProducto"></td>
                                             <td class="px-2 py-1 border-b" x-text="item.descripcion"></td>
                                             <td class="px-2 py-1 border-b text-right" x-text="item.cantidad"></td>
