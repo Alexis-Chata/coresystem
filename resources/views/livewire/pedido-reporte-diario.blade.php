@@ -223,17 +223,6 @@
                 </tbody>
             </table>
         </div>
-        <!-- jQuery -->
-        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-        <!-- DataTables Core -->
-        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
-
-        <!-- DataTables TailwindCSS Integration -->
-        <script src="https://cdn.datatables.net/2.2.2/js/dataTables.tailwindcss.js"></script>
-
-        <!-- Estilos de DataTables para Tailwind -->
-        <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
     @endrole
     <div x-data="{ open: false }" x-show="open" @open-modal.window="open = true" @close-modal.window="open = false"
         class="overflow-y-auto fixed inset-0 z-50 edit_modal" style="display: none;">
@@ -390,9 +379,7 @@
                                         <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
                                         <td>
                                             @php
-                                                $producto = App\Models\Producto::withTrashed()->find(
-                                                    $detalle->producto_id,
-                                                );
+                                                $producto = $detalle->producto;
                                                 $esPaqueteUnico = $producto->cantidad == 1;
                                             @endphp
 
@@ -493,6 +480,16 @@
     </div>
 </div>
 
+@assets
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables Core -->
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+    <!-- DataTables TailwindCSS Integration -->
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.tailwindcss.js"></script>
+    <!-- Estilos de DataTables para Tailwind -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
+@endassets
 @script
     <script>
         $wire.on('DataTable-initialize', () => {

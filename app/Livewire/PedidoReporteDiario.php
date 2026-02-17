@@ -128,7 +128,9 @@ class PedidoReporteDiario extends Component
     {
         $this->pedidoEnEdicion = Pedido::with([
             "cliente",
-            "pedidoDetalles.producto", // Incluir la relación con producto
+            "pedidoDetalles.producto" => function ($query) { // Incluir la relación con producto
+                $query->withTrashed()->with(["marca"]);
+            },
         ])->find($pedidoId);
 
         $this->comentarios = $this->pedidoEnEdicion->comentario;
@@ -364,7 +366,9 @@ class PedidoReporteDiario extends Component
 
                 // Recargar el pedido
                 $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
-                    "pedidoDetalles.producto",
+                    "pedidoDetalles.producto" => function ($query) {
+                        $query->withTrashed()->with(["marca"]);
+                    },
                 ]);
 
                 // Limpiar búsqueda
@@ -486,7 +490,9 @@ class PedidoReporteDiario extends Component
 
             // Recargar el pedido para actualizar la vista
             $this->pedidoEnEdicion = $this->pedidoEnEdicion->fresh([
-                "pedidoDetalles.producto",
+                "pedidoDetalles.producto" => function ($query) {
+                    $query->withTrashed()->with(["marca"]);
+                },
             ]);
 
             DB::commit();
