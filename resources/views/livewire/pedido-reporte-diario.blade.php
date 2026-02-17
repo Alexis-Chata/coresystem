@@ -211,7 +211,7 @@
                 </thead>
                 <tbody>
                     @foreach ($resumenPorProducto as $producto)
-                        <tr>
+                        <tr class="hover:bg-indigo-200">
                             <td class="px-6 py-4">{{ $producto['producto_id'] }}</td>
                             <td class="px-6 py-4">{{ $producto['producto_name'] }}</td>
                             <td class="px-6 py-4">{{ $producto['producto_marca'] ?? 'N/A' }}</td>
@@ -233,9 +233,6 @@
 
         <!-- Estilos de DataTables para Tailwind -->
         <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.tailwindcss.css">
-        <script>
-            new DataTable('#example');
-        </script>
     @endrole
     <div x-data="{ open: false }" x-show="open" @open-modal.window="open = true" @close-modal.window="open = false"
         class="overflow-y-auto fixed inset-0 z-50 edit_modal" style="display: none;">
@@ -491,3 +488,23 @@
         </div>
     </div>
 </div>
+
+@script
+    <script>
+        $wire.on('DataTable-initialize', () => {
+            requestAnimationFrame(() => {
+                const table = document.querySelector('#example');
+                if (table) {
+                    console.log("✅ DataTable listo para inicializarse");
+                    new DataTable('#example');
+
+                    queueMicrotask(() => {
+                        Alpine.initTree(document.getElementById('example'));
+                    });
+                } else {
+                    console.warn("❌ Tabla no encontrada al momento de inicializar");
+                }
+            });
+        });
+    </script>
+@endscript

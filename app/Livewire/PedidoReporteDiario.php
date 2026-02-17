@@ -110,6 +110,7 @@ class PedidoReporteDiario extends Component
         })->sortKeys();
         //dd($resumenPorProducto, $detalles->first());
 
+        $this->dispatch('DataTable-initialize');
         return view("livewire.pedido-reporte-diario", [
             "pedidosPorVendedor" => $pedidosPorVendedor,
             "resumenPorProducto" => $resumenPorProducto,
