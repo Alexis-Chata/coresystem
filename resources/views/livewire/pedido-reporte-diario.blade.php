@@ -149,7 +149,8 @@
                                                                 <td class="px-6 py-4">#{{ $detalle->producto_id }} -
                                                                     {{ $detalle->producto_name }}</td>
                                                                 <td class="px-6 py-4">
-                                                                    {{ number_format($detalle->cantidad, calcular_digitos($detalle->producto_cantidad_caja)) }}</td>
+                                                                    {{ number_format($detalle->cantidad, calcular_digitos($detalle->producto_cantidad_caja)) }}
+                                                                </td>
                                                                 <td class="px-6 py-4">S/.
                                                                     {{ number_format($detalle->producto_precio, 2) }}
                                                                 </td>
@@ -402,7 +403,9 @@
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
                                                     class="px-2 py-1 w-20 text-sm rounded border" />
                                             @else
-                                                <input type="number" min="{{ convertir_a_cajas(1, $producto->cantidad) }}" step="{{ convertir_a_cajas(1, $producto->cantidad) }}"
+                                                <input type="number"
+                                                    min="{{ convertir_a_cajas(1, $producto->cantidad) }}"
+                                                    step="{{ convertir_a_cajas(1, $producto->cantidad) }}"
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
@@ -478,7 +481,8 @@
                 @if ($this->getErrorBag()->count())
                     <div class="w-full mb-3">
                         @error('error_guardar')
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm font-semibold shadow">
+                            <div
+                                class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm font-semibold shadow">
                                 {!! $message !!}
                             </div>
                         @enderror
@@ -493,13 +497,19 @@
     <script>
         $wire.on('DataTable-initialize', () => {
             requestAnimationFrame(() => {
-                const table = document.querySelector('#example');
-                if (table) {
+                const tableElement = document.querySelector('#example');
+                if (tableElement) {
+                    // DESTRUYE la tabla existente antes de volver a crearla para evitar superposiciones
+                    if ($.fn.DataTable.isDataTable('#example')) {
+                        $('#example').DataTable().destroy();
+                    }
                     console.log("✅ DataTable listo para inicializarse");
                     new DataTable('#example');
 
                     queueMicrotask(() => {
-                        Alpine.initTree(document.getElementById('example'));
+                        if (typeof Alpine !== 'undefined' && Alpine.initTree) {
+                            Alpine.initTree(document.getElementById('example'));
+                        }
                     });
                 } else {
                     console.warn("❌ Tabla no encontrada al momento de inicializar");
