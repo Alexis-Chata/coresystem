@@ -88,7 +88,7 @@
                 },
                 (error) => {
                     alert('Error obteniendo ubicación: ' + error.message);
-                }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
+                }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 15000 }
             );
         }
     }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
