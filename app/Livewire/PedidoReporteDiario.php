@@ -40,77 +40,73 @@ class PedidoReporteDiario extends Component
     {
         $user = auth_user();
         $fechaBusqueda = Carbon::parse($this->fecha);
+        $isAdmin = $user->hasRole("admin");
 
-        if ($user->hasRole("admin")) {
-            $pedidosPorVendedor = Pedido::where("fecha_emision", $fechaBusqueda)
-                ->with([
-                    "vendedor",
-                    "ruta",
-                    "cliente",
-                    "listaPrecio",
-                    "pedidoDetalles.producto" => function ($query) {
-                        $query->withTrashed()->with(["marca"]);
-                    },
-                ])
-                ->get()
-                ->groupBy("vendedor_id");
-        } else {
-            $vendedorId = $user->empleados->first()->id;
-            $pedidosPorVendedor = Pedido::where("fecha_emision", $fechaBusqueda)
-                ->where("vendedor_id", $vendedorId)
-                ->with([
-                    "vendedor",
-                    "ruta",
-                    "cliente",
-                    "listaPrecio",
-                    "pedidoDetalles.producto" => function ($query) {
-                        $query->withTrashed()->with(["marca"]);
-                    },
-                ])
-                ->orderBy("vendedor_id")
-                ->get()
-                ->groupBy("vendedor_id");
+        // Obtenemos el ID del vendedor una sola vez si no es admin
+        $vendedorId = $isAdmin ? null : $user->empleados->first()->id;
+
+        $queryPedidos = Pedido::where("fecha_emision", $fechaBusqueda)
+            ->with([
+                "vendedor",
+                "ruta",
+                "cliente",
+                "listaPrecio",
+                "pedidoDetalles" // Carga ligera, sin producto ni marca
+            ]);
+
+        if (!$isAdmin) {
+            $queryPedidos->where("vendedor_id", $vendedorId)->orderBy("vendedor_id");
         }
 
-        $detalles = $pedidosPorVendedor->flatten()->flatMap(function ($pedido) {
-            return $pedido->pedidoDetalles->map(function ($detalle) use ($pedido) {
-                // Agregar campo personalizado
-                $detalle->total_cantidad_unidades = convertir_a_paquetes($detalle->cantidad, $detalle->producto_cantidad_caja);
-                $detalle->cliente_id = $pedido->cliente_id;
-                $detalle->producto_marca_id = $detalle->producto->marca_id;
-                $detalle->producto_marca_name = $detalle->producto->marca->name;
-                return $detalle;
-            });
-        });
+        $pedidosPorVendedor = $queryPedidos->get()->groupBy("vendedor_id");
 
-        // Agrupamos por producto_id y resumimos la info
-        $resumenPorProducto = $detalles->groupBy('producto_id')->map(function ($detallesProducto, $productoId) use ($detalles) {
-            // $detallesProducto - es una collection de PedidoDetalle; detalles agrupados por producto_id
-            $primerDetalle = $detallesProducto->first(); // Para tomar datos del producto
-            $totalUnidades = $detallesProducto->sum('total_cantidad_unidades');
+
+        $queryDetallesDB = DB::table('pedido_detalles')
+            ->join('pedidos', 'pedido_detalles.pedido_id', '=', 'pedidos.id')
+            ->join('productos', 'pedido_detalles.producto_id', '=', 'productos.id')
+            ->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->where('pedidos.fecha_emision', $fechaBusqueda)
+            ->select(
+                'pedido_detalles.producto_id',
+                'pedido_detalles.producto_name',
+                'pedido_detalles.producto_cantidad_caja',
+                'pedido_detalles.cantidad',
+                'pedido_detalles.importe',
+                'pedido_detalles.cantidad_unidades',
+                'marcas.id as producto_marca_id',
+                'marcas.name as producto_marca_name'
+            );
+
+        if (!$isAdmin) {
+            $queryDetallesDB->where('pedidos.vendedor_id', $vendedorId);
+        }
+
+        $detallesDB = $queryDetallesDB->get();
+
+        $resumenPorProducto = $detallesDB->groupBy('producto_id')->map(function ($detallesProducto, $productoId) {
+            // $detallesProducto es una collection de stdClass (muy ligeros)
+            $primerDetalle = $detallesProducto->first();
+            $totalUnidades = $detallesProducto->sum(function ($d) {
+                return convertir_a_paquetes($d->cantidad, $d->producto_cantidad_caja);
+            });
+            $total_en_unidades = $detallesProducto->sum('cantidad_unidades'); // Suma directa de cantidad_unidades(este campo se agrego despues) el resputado debe ser el mismo que $totalUnidades
+
             return [
                 'producto_id'             => $productoId,
                 'producto_name'           => $primerDetalle->producto_name,
                 'producto_cantidad_caja'  => $primerDetalle->producto_cantidad_caja,
-                'producto_marca'          => $primerDetalle->producto_marca_id,
+                'producto_marca_id'       => $primerDetalle->producto_marca_id,
+                'producto_marca'          => $primerDetalle->producto_marca_name ?? 'N/A',
                 'total_cantidad_unidades' => $totalUnidades,
+                'total_en_unidades'       => $total_en_unidades,
                 'cantidad_bultos'         => intdiv($totalUnidades, $primerDetalle->producto_cantidad_caja),
                 'cantidad_unidades'       => $totalUnidades % $primerDetalle->producto_cantidad_caja,
                 'suma_importe'            => $detallesProducto->sum('importe'),
             ];
-        })->sortBy('producto_id')->values(); // ->values() si deseas que el índice sea 0,1,2... en lugar del producto_id
-
-        $reportePorMarca = $detalles->groupBy('producto_marca_id')->map(function ($grupo) {
-            return [
-                'marca_id' => $grupo->first()->producto_marca_id,
-                'marca_name' => $grupo->first()->producto_marca_name,
-                'clientes_unicos' => $grupo->pluck('cliente_id')->unique()->count(),
-                'importe_total' => $grupo->sum('importe'),
-            ];
-        })->sortKeys();
-        //dd($resumenPorProducto, $detalles->first());
+        })->sortBy('producto_id')->values();
 
         $this->dispatch('DataTable-initialize');
+
         return view("livewire.pedido-reporte-diario", [
             "pedidosPorVendedor" => $pedidosPorVendedor,
             "resumenPorProducto" => $resumenPorProducto,
