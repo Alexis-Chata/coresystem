@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +15,7 @@
         </title>
 
         @if (app()->environment('local'))
-        <link rel="icon" href="{{ asset('src/images/logo/logo-icon-local.svg') }}" sizes="any">
+            <link rel="icon" href="{{ asset('src/images/logo/logo-icon-local.svg') }}" sizes="any">
         @endif
 
         <!-- Fonts -->
@@ -28,6 +29,7 @@
         @livewireStyles
         {{-- <link href="style.css" rel="stylesheet"> --}}
     </head>
+
     <body class="font-sans antialiased" x-data="{
         page: 'ecommerce',
         loaded: true,
@@ -48,11 +50,23 @@
             }
 
             if (!navigator.geolocation) {
-                alert('Tu navegador no soporta geolocalización.');
+                console.warn('Tu navegador no soporta geolocalización.');
                 return;
             }
 
+            // Primer intento: alta precisión
+            this.intentarUbicacion(true, false);
+        },
+
+        /**
+        * altaPrecision: true/false  => enableHighAccuracy
+        * yaReintento: evita reintentar más de una vez
+        */
+        intentarUbicacion(altaPrecision = true, yaReintento = false) {
+            const ahora = Date.now();
+
             navigator.geolocation.getCurrentPosition(
+                // ÉXITO
                 (pos) => {
                     const latitud = pos.coords.latitude;
                     const longitud = pos.coords.longitude;
@@ -61,7 +75,11 @@
                     this.ultimaUbicacion = ahora;
                     localStorage.setItem('ultimaUbicacion', String(ahora));
 
-                    console.log('Ubicación obtenida:', latitud, longitud);
+                    console.log(
+                        'Ubicación obtenida (' + (altaPrecision ? 'alta' : 'baja') + ' precisión):',
+                        latitud,
+                        longitud
+                    );
 
                     fetch(@js(route('guardar.ubicacion')), {
                             method: 'POST',
@@ -86,9 +104,39 @@
                         })
                         .catch((error) => console.error('Error al guardar ubicación:', error));
                 },
+
+                //  ERROR
                 (error) => {
-                    alert('Error obteniendo ubicación: ' + error.message);
-                }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 15000 }
+                    alert(
+                        'Error obteniendo ubicación (' + (altaPrecision ? 'alta' : 'baja') + ' precisión):',
+                        error
+                    );
+
+                    // Si el usuario negó permisos, NO tiene sentido reintentar
+                    if (error.code === error.PERMISSION_DENIED) {
+                        console.warn('El usuario negó los permisos de ubicación.');
+                        this.ultimaUbicacion = ahora;
+                        localStorage.setItem('ultimaUbicacion', String(ahora));
+                        return;
+                    }
+
+                    // Si falló con alta precisión y aún no reintentamos, probamos sin alta precisión
+                    if (altaPrecision && !yaReintento) {
+                        console.log('Reintentando sin alta precisión...');
+                        this.intentarUbicacion(false, true);
+                        return;
+                    }
+
+                    // Si ya reintentamos o ya estábamos en baja precisión, aplicamos cooldown para no spammear
+                    this.ultimaUbicacion = ahora;
+                    localStorage.setItem('ultimaUbicacion', String(ahora));
+                },
+
+                {
+                    enableHighAccuracy: altaPrecision,
+                    timeout: altaPrecision ? 20000 : 10000, // un poco menos exigente en el segundo intento
+                    maximumAge: 30000
+                }
             );
         }
     }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
@@ -166,12 +214,15 @@
                 justify-content: flex-end;
                 right: 0;
             }
+
             .overflow-x-auto {
                 /* overflow-x: initial !important; */
             }
+
             #power-grid-table-container.overflow-x-auto {
                 overflow: visible;
             }
+
             [role="navigation"] .z-10 {
                 z-index: 8 !important;
             }
@@ -192,4 +243,5 @@
         {{-- Scripts apilados desde vistas con @push('scripts-body') --}}
         @stack('scripts-body')
     </body>
+
 </html>
