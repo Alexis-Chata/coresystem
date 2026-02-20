@@ -13,7 +13,7 @@ class EnvioSunatService
     /**
      * Códigos de error de SUNAT que implican rechazo del comprobante.
      */
-    private const ERRORES_RECHAZO = ['2017', '2108', '2640', '2800'];
+    private const ERRORES_RECHAZO = ['1083', '2017', '2108', '2640', '2800'];
 
     public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {

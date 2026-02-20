@@ -201,6 +201,7 @@ class ComprobantesDatatable extends DataTableComponent
         //dd($comprobante);
         $service = new EnvioSunatService;
         $service->actualizarEstadoSegunRespuestaSunat($comprobante);
+        $comprobante->refresh();
         // 1) Notas de pedido: no van a SUNAT
         if ($comprobante->tipoDoc === "00") {
             $this->dispatch('sweetalert2-notapedido', $comprobante->serie . "-" . $comprobante->correlativo);
@@ -212,8 +213,8 @@ class ComprobantesDatatable extends DataTableComponent
             return Storage::download($comprobante->cdrxml);
         }
 
-        // 3) Si está ACEPTADO (codigo_sunat = '0') pero no tengo CDR, lo consulto en SUNAT
-        if ($comprobante->codigo_sunat === '0') {
+        // 3) Si no tengo CDR, lo consulto en SUNAT
+        if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '') {
             logger("cdr: aceptado sin CDR físico, consultando CDR en SUNAT");
             $consulta_cdr = $this->consulta_cdr($id);
             logger("Resultado de consulta CDR", ['consulta_cdr' => $consulta_cdr]);
@@ -228,6 +229,7 @@ class ComprobantesDatatable extends DataTableComponent
         logger("cdr: enviando comprobante a SUNAT");
         $envioSunat = new EnvioSunatService;
         $response = $envioSunat->send($comprobante);
+        $comprobante->refresh();
         Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse'] ?? []);
 
         // 5) Después de enviar, intento descargar CDR si ya se generó
