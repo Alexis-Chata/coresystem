@@ -75,6 +75,13 @@ class EnvioSunatService
             $comprobante->save();
         }
 
+        $errores_rechazo = ['2017', '2108', '2640', '2800'];
+
+        if (in_array((string) $comprobante->codigo_sunat, $errores_rechazo, true)) {
+            $comprobante->estado_cpe_sunat = 'rechazado';
+            $comprobante->save();
+        }
+
         return $response;
     }
 
