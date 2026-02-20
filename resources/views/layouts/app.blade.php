@@ -107,7 +107,7 @@
 
                 //  ERROR
                 (error) => {
-                    alert(
+                    console.warn(
                         'Error obteniendo ubicación (' + (altaPrecision ? 'alta' : 'baja') + ' precisión):',
                         error
                     );
