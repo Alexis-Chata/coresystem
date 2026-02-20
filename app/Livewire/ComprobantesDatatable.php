@@ -162,7 +162,14 @@ class ComprobantesDatatable extends DataTableComponent
             $zip->extractTo(storage_path('app/private/invoices/'));
             $zip->close();
         }
-        $comprobante->update(['cdrxml' => $path_cdrxml, 'cdrbase64' => base64_encode($result->getCdrZip()), 'codigo_sunat' => $result->getCdrResponse()->getCode(), 'mensaje_sunat' => $result->getCdrResponse()->getDescription(), 'obs' => $result->getCdrResponse()->getNotes()]);
+        $comprobante->update([
+            'cdrxml'      => $path_cdrxml,
+            'cdrbase64'   => base64_encode($result->getCdrZip()),
+            'codigo_sunat' => $result->getCdrResponse()->getCode(),
+            'mensaje_sunat' => $result->getCdrResponse()->getDescription(),
+            'obs'         => $result->getCdrResponse()->getNotes()
+        ]);
+
         if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
             return Storage::download($comprobante->cdrxml);
         } else {
@@ -190,39 +197,56 @@ class ComprobantesDatatable extends DataTableComponent
 
     public function cdr($id)
     {
-        $comprobante = FComprobanteSunat::find($id);
+        $comprobante = FComprobanteSunat::findOrFail($id);
         //dd($comprobante);
-        if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '0') {
-            logger("validando que no sea null ni cero", [
-                'value_null' => false,
-                'value_cero' => false
-            ]);
-            $consulta_cdr = $this->consulta_cdr($id);
-
-            if ($consulta_cdr) {
-                return $consulta_cdr;
-            }
-        }
-        if ($comprobante->codigo_sunat === '0') {
-            if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
-                return Storage::download($comprobante->cdrxml);
-            } else {
-                Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml. ' . $comprobante->cdrxml]);
-                return;
-            }
-        }
+        $service = new EnvioSunatService;
+        $service->actualizarEstadoSegunRespuestaSunat($comprobante);
+        // 1) Notas de pedido: no van a SUNAT
         if ($comprobante->tipoDoc === "00") {
             $this->dispatch('sweetalert2-notapedido', $comprobante->serie . "-" . $comprobante->correlativo);
             return;
         }
-        $envioSunat = new EnvioSunatService;
-        $response = $envioSunat->send($comprobante);
-        Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse']);
+
+        // 2) Si YA tengo el CDR guardado físicamente, lo descargo y listo
         if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
             return Storage::download($comprobante->cdrxml);
-        } else {
-            Log::channel('respuesta_envio_sunat')->warning('path_cdrxml', ['El archivo no existe; verificar path_cdrxml.' . $comprobante->cdrxml]);
         }
+
+        // 3) Si está ACEPTADO (codigo_sunat = '0') pero no tengo CDR, lo consulto en SUNAT
+        if ($comprobante->codigo_sunat === '0') {
+            logger("cdr: aceptado sin CDR físico, consultando CDR en SUNAT");
+            $consulta_cdr = $this->consulta_cdr($id);
+            logger("Resultado de consulta CDR", ['consulta_cdr' => $consulta_cdr]);
+
+            if ($consulta_cdr) {
+                return $consulta_cdr;
+            }
+            // Si no devuelve nada, seguimos abajo (no rompemos)
+        }
+
+        // 4) Si nunca se envió (null) o tiene código de error (!== '0'), intento enviar ahora
+        logger("cdr: enviando comprobante a SUNAT");
+        $envioSunat = new EnvioSunatService;
+        $response = $envioSunat->send($comprobante);
+        Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse'] ?? []);
+
+        // 5) Después de enviar, intento descargar CDR si ya se generó
+        if ($comprobante->cdrxml && Storage::exists($comprobante->cdrxml)) {
+            return Storage::download($comprobante->cdrxml);
+        }
+
+        // 6) Si aún no hay CDR, como fallback intento consultarlo
+        $consulta_cdr = $this->consulta_cdr($id);
+        logger("Resultado de consulta CDR post-envio", ['consulta_cdr' => $consulta_cdr]);
+
+        if ($consulta_cdr) {
+            return $consulta_cdr;
+        }
+
+        Log::channel('respuesta_envio_sunat')
+            ->warning('path_cdrxml', ['No se pudo obtener CDR para el comprobante ' . $comprobante->id]);
+
+        return;
     }
 
     public function sunatResponse($id)
