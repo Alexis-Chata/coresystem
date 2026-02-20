@@ -10,6 +10,11 @@ use ZipArchive;
 
 class EnvioSunatService
 {
+    /**
+     * Códigos de error de SUNAT que implican rechazo del comprobante.
+     */
+    private const ERRORES_RECHAZO = ['2017', '2108', '2640', '2800'];
+
     public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $this->xml($comprobante);
@@ -23,16 +28,17 @@ class EnvioSunatService
         $invoice = match ($comprobante->tipoDoc) {
             "01", "03" => $sunat->getInvoice($comprobante),
             "07", "08" => $sunat->getNote($comprobante),
-            "09" => $sunat->getDespatch($comprobante),
-            default => null,
+            "09"       => $sunat->getDespatch($comprobante),
+            default    => null,
         };
+
         if ($invoice === null) {
             return;
         }
 
         $see = match ($comprobante->tipoDoc) {
-            "09" => $sunat->getSeeApi($company),
-            default => $sunat->getSee($company),
+            "09"       => $sunat->getSeeApi($company),
+            default    => $sunat->getSee($company),
         };
 
         $result = $see->send($invoice);
@@ -41,8 +47,7 @@ class EnvioSunatService
             $ticket = $result->getTicket();
             $result = $see->getStatus($ticket);
             $response['xml'] = $see->getLastXml();
-        }
-        else{
+        } else {
             $response['xml'] = $see->getFactory()->getLastXml();
         }
 
@@ -51,38 +56,71 @@ class EnvioSunatService
         $response['sunatResponse'] = $sunat->sunatResponse($result);
 
         $path = 'invoices/' . $invoice->getName() . '.xml';
+
         if ($response['sunatResponse']['success']) {
             $path_cdrzip = 'invoices/' . $invoice->getName() . '-CDR.zip';
             Storage::put($path_cdrzip, base64_decode($response['sunatResponse']["cdrZip"]));
+
             $zip = new ZipArchive;
             if ($zip->open(storage_path('app/private/' . $path_cdrzip)) === true) {
                 $zip->extractTo(storage_path('app/private/invoices/'));
                 $zip->close();
             }
+
             $path_cdrxml = 'invoices/R-' . $invoice->getName() . '.xml';
-            $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'cdrxml' => $path_cdrxml, 'cdrbase64' => $response['sunatResponse']['cdrZip'], 'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'], 'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'], 'obs' => $response['sunatResponse']['cdrResponse']['notes']]);
+
+            $comprobante->update([
+                'nombrexml'    => $path,
+                'xmlbase64'    => base64_encode((string) $response['xml']),
+                'hash'         => $response['hash'],
+                'cdrxml'       => $path_cdrxml,
+                'cdrbase64'    => $response['sunatResponse']['cdrZip'],
+                'codigo_sunat' => $response['sunatResponse']['cdrResponse']['code'],
+                'mensaje_sunat' => $response['sunatResponse']['cdrResponse']['description'],
+                'obs'          => $response['sunatResponse']['cdrResponse']['notes'],
+            ]);
         } else {
-            $comprobante->update(['nombrexml' => $path, 'xmlbase64' => base64_encode(((string) $response['xml'])), 'hash' => $response['hash'], 'codigo_sunat' => $response['sunatResponse']['error']['code'], 'mensaje_sunat' => $response['sunatResponse']['error']['message']]);
+            $comprobante->update([
+                'nombrexml'    => $path,
+                'xmlbase64'    => base64_encode((string) $response['xml']),
+                'hash'         => $response['hash'],
+                'codigo_sunat' => $response['sunatResponse']['error']['code'],
+                'mensaje_sunat' => $response['sunatResponse']['error']['message'],
+            ]);
         }
 
-        if(str_contains($comprobante->mensaje_sunat, "acepta")){
-            $comprobante->estado_cpe_sunat = "aceptado";
-            $comprobante->save();
-        }
-
-        if(str_contains($comprobante->mensaje_sunat, "rechaza")){
-            $comprobante->estado_cpe_sunat = "rechazado";
-            $comprobante->save();
-        }
-
-        $errores_rechazo = ['2017', '2108', '2640', '2800'];
-
-        if (in_array((string) $comprobante->codigo_sunat, $errores_rechazo, true)) {
-            $comprobante->estado_cpe_sunat = 'rechazado';
-            $comprobante->save();
-        }
+        // 👇 Aquí llamas a tu nueva función
+        $this->actualizarEstadoSegunRespuestaSunat($comprobante);
 
         return $response;
+    }
+
+    /**
+     * Actualiza el estado del CPE según el mensaje/código de SUNAT.
+     */
+    public function actualizarEstadoSegunRespuestaSunat(FComprobanteSunat|FGuiaSunat $comprobante): void
+    {
+        $estado = $comprobante->estado_cpe_sunat; // estado actual
+
+        // Normalizamos el mensaje para evitar problemas con mayúsculas
+        $mensaje = mb_strtolower((string) $comprobante->mensaje_sunat);
+
+        if (str_contains($mensaje, 'acepta')) {
+            $estado = 'aceptado';
+        }
+
+        if (
+            str_contains($mensaje, 'rechaza') ||
+            in_array((string) $comprobante->codigo_sunat, self::ERRORES_RECHAZO, true)
+        ) {
+            $estado = 'rechazado';
+        }
+
+        // Solo guardamos si realmente cambió algo
+        if ($estado !== $comprobante->estado_cpe_sunat) {
+            $comprobante->estado_cpe_sunat = $estado;
+            $comprobante->save();
+        }
     }
 
     public function xml(FComprobanteSunat|FGuiaSunat $comprobante)
@@ -94,10 +132,11 @@ class EnvioSunatService
 
         $invoice = match ($comprobante->tipoDoc) {
             "00", "01", "03" => $sunat->getInvoice($comprobante),
-            "07", "08" => $sunat->getNote($comprobante),
-            "09" => $sunat->getDespatch($comprobante),
-            default => null,
+            "07", "08"       => $sunat->getNote($comprobante),
+            "09"             => $sunat->getDespatch($comprobante),
+            default          => null,
         };
+
         if ($invoice === null) {
             return;
         }
@@ -107,14 +146,19 @@ class EnvioSunatService
 
         $path = 'invoices/' . $invoice->getName() . '.xml';
         Storage::put($path, $response['xml']);
-        $comprobante->update(['nombrexml' => $path, 'hash' => $response['hash']]);
+
+        $comprobante->update([
+            'nombrexml' => $path,
+            'hash'      => $response['hash'],
+        ]);
+
         return $response;
     }
 
     public function pdf(FComprobanteSunat|FGuiaSunat $comprobante)
     {
         $this->xml($comprobante);
-        //dd($comprobante->sede->empresa);
+
         $company = $comprobante->sede->empresa;
 
         $sunat = new SunatService;
@@ -122,10 +166,11 @@ class EnvioSunatService
 
         $invoice = match ($comprobante->tipoDoc) {
             "00", "01", "03" => $sunat->getInvoice($comprobante),
-            "07", "08" => $sunat->getNote($comprobante),
-            "09" => $sunat->getDespatch($comprobante),
-            default => null,
+            "07", "08"       => $sunat->getNote($comprobante),
+            "09"             => $sunat->getDespatch($comprobante),
+            default          => null,
         };
+
         if ($invoice === null) {
             return;
         }
