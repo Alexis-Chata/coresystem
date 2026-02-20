@@ -97,11 +97,19 @@
             <div class="relative">
                 <select wire:model.defer="f_tipo_comprobante_id"
                     wire:key="tipo-comp-{{ $cliente_id }}-{{ count($tipoComprobantes) }}"
-                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none peer">
-                    <option value="">Selecciona un Tipo de Comprobante</option>
+                    @class([
+                        'block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border appearance-none peer',
+                        'border-gray-300 dark:border-gray-600',
+                        'text-gray-400 dark:text-gray-500' => blank($f_tipo_comprobante_id),
+                        'text-gray-900 dark:text-gray-100' => filled($f_tipo_comprobante_id),
+                    ])>
+                    <option value="" disabled>Selecciona un Tipo de Comprobante</option>
 
                     @foreach ($tipoComprobantes as $tipo)
-                        <option value="{{ $tipo->id }}">{{ $tipo->name }}</option>
+                        <option value="{{ $tipo->id }}"
+                            class="text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1A222C]">
+                            {{ $tipo->name }}
+                        </option>
                     @endforeach
                 </select>
 
