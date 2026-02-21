@@ -80,6 +80,7 @@ if (!function_exists('convertir_a_cajas')) {
      */
     function convertir_a_cajas($paquetes, $cantidad_en_caja)
     {
+        $paquetes = (int) $paquetes;
         $cantidad_en_caja = max(1, (int) $cantidad_en_caja);
         $cantidad_digitos = calcular_digitos($cantidad_en_caja);
 
