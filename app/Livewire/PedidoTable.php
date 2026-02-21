@@ -690,10 +690,10 @@ class PedidoTable extends Component
         // SOLO evento (sin state)
         $this->dispatch('productos-cargados', productos: $productosPayload, lista_precio_id: (int) $lista_precio_id);
 
-        Log::info('Productos cargados (frontend cache)', [
-            'lista_precio_id' => $lista_precio_id,
-            'count' => count($productosPayload),
-        ]);
+        // Log::info('Productos cargados (frontend cache)', [
+        //     'lista_precio_id' => $lista_precio_id,
+        //     'count' => count($productosPayload),
+        // ]);
     }
 
     public function loadClientesOptions(): void
@@ -758,10 +758,10 @@ class PedidoTable extends Component
         // SOLO evento (sin state)
         $this->dispatch('clientes-cargados', clientes: $clientesPayload, vendedor_id: (int) $this->vendedor_id);
 
-        Log::info('Clientes cargados (frontend cache)', [
-            'vendedor_id' => $this->vendedor_id,
-            'count' => count($clientesPayload),
-        ]);
+        // Log::info('Clientes cargados (frontend cache)', [
+        //     'vendedor_id' => $this->vendedor_id,
+        //     'count' => count($clientesPayload),
+        // ]);
     }
 
 
