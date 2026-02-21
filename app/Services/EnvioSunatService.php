@@ -46,6 +46,7 @@ class EnvioSunatService
         $result = $see->send($invoice);
 
         if ($comprobante->tipoDoc === "09") {
+            /** @var \Greenter\Model\Response\SummaryResult $result */
             $ticket = $result->getTicket();
             $result = $see->getStatus($ticket);
             $response['xml'] = $see->getLastXml();

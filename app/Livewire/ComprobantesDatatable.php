@@ -363,6 +363,7 @@ class ComprobantesDatatable extends DataTableComponent
             Cache::lock('generar_nota', 15)->block(10, function () use ($id) {
                 DB::beginTransaction();
                 $tipoDoc = "07";
+                /** @var \App\Models\FComprobanteSunat $comprobante */
                 $comprobante = FComprobanteSunat::with('detalle')->find($id);
                 $serie = FSerie::where('f_sede_id', $comprobante->sede_id)->where('serie', 'like', substr($comprobante->serie, 0, 1) . "%")
                     ->whereHas('fTipoComprobante', function ($query) use ($tipoDoc) {
