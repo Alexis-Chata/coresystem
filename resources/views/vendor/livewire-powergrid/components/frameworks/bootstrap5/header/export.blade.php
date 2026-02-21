@@ -31,7 +31,7 @@
                         wire:click.prevent="exportToXLS"
                         href="#"
                     >
-                        <span class="export-count text-muted small">({{ $total }})</span>
+                        <span class="export-count text-muted small">({{ $this->total }})</span>
                         @if (count($enabledFilters) === 0)
                             @lang('livewire-powergrid::datatable.labels.all')
                         @else
@@ -43,6 +43,7 @@
                         <a
                             class="text-muted small"
                             wire:click.prevent="exportToXLS(true)"
+                            x-bind:disabled="countChecked.length === 0"
                             href="#"
                         >
                             (<span class="text-muted small" x-text="countChecked.length"></span>) @lang('livewire-powergrid::datatable.labels.selected')
@@ -60,7 +61,7 @@
                         wire:click.prevent="exportToCsv"
                         href="#"
                     >
-                        <span class="export-count text-muted small">({{ $total }})</span>
+                        <span class="export-count text-muted small">({{ $this->total }})</span>
                         @if (count($enabledFilters) === 0)
                             @lang('livewire-powergrid::datatable.labels.all')
                         @else

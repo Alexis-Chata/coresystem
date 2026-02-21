@@ -9,6 +9,19 @@
             'enabledFilters' => $enabledFilters,
         ])
     </div>
+
+    @if (config('livewire-powergrid.filter') === 'outside')
+        @php
+            $filtersFromColumns = $columns
+                ->filter(fn($column) => filled(data_get($column, 'filters')));
+        @endphp
+
+        @includeWhen(
+            $filtersFromColumns->count() > 0,
+            'livewire-powergrid::components.frameworks.bootstrap5.filter'
+        )
+    @endif
+
     <div
         class="{{ theme_style($theme, 'table.layout.div') }}"
     >
