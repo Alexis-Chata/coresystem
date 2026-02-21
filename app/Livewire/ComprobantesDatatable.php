@@ -215,7 +215,7 @@ class ComprobantesDatatable extends DataTableComponent
 
         // 3) Si no tengo CDR, lo consulto en SUNAT
         if ($comprobante->codigo_sunat !== null && $comprobante->codigo_sunat !== '') {
-            logger("cdr: aceptado sin CDR físico, consultando CDR en SUNAT");
+            logger("cdr: sin CDR físico, consultando CDR en SUNAT");
             $consulta_cdr = $this->consulta_cdr($id);
             logger("Resultado de consulta CDR", ['consulta_cdr' => $consulta_cdr]);
 
@@ -230,6 +230,7 @@ class ComprobantesDatatable extends DataTableComponent
         $envioSunat = new EnvioSunatService;
         $response = $envioSunat->send($comprobante);
         $comprobante->refresh();
+        //dd($comprobante, $response);
         Log::channel('respuesta_envio_sunat')->info('respuesta_sunat', $response['sunatResponse'] ?? []);
 
         // 5) Después de enviar, intento descargar CDR si ya se generó

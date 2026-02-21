@@ -13,7 +13,9 @@ class EnvioSunatService
     /**
      * Códigos de error de SUNAT que implican rechazo del comprobante.
      */
-    private const ERRORES_RECHAZO = ['1083', '2017', '2108', '2640', '2800'];
+    private const ERRORES_RECHAZO = ['2017', '2108', '2640', '2800'];
+    // En este código de error de SUNAT ['1083'] todavia se puede corregir el comprobante para su re-envio, por lo que no se considera rechazo definitivo.
+    // CDR (constancia de recepción), que es donde SUNAT informa si quedó aceptado o rechazado. Mientras el CDR no llegue, el estado del comprobante se mantiene en "pendiente".
 
     public function send(FComprobanteSunat|FGuiaSunat $comprobante)
     {
@@ -85,11 +87,10 @@ class EnvioSunatService
                 'xmlbase64'    => base64_encode((string) $response['xml']),
                 'hash'         => $response['hash'],
                 'codigo_sunat' => $response['sunatResponse']['error']['code'],
-                'mensaje_sunat' => $response['sunatResponse']['error']['message'],
+                'mensaje_sunat' => $response['sunatResponse']['error']['message'] . ' No se obtuvo CDR. SUNAT aún no ha generado/emitido el CDR para este comprobante. Estado: pendiente de reenvío.',
             ]);
         }
 
-        // 👇 Aquí llamas a tu nueva función
         $this->actualizarEstadoSegunRespuestaSunat($comprobante);
 
         return $response;
