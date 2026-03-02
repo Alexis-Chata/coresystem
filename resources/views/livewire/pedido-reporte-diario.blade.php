@@ -378,12 +378,7 @@
                                     <tr>
                                         <td>#{{ $detalle->producto_id }} - {{ $detalle->producto_name }}</td>
                                         <td>
-                                            @php
-                                                $producto = $detalle->producto;
-                                                $esPaqueteUnico = $producto->cantidad == 1;
-                                            @endphp
-
-                                            @if ($esPaqueteUnico)
+                                            @if ($detalle->producto_cantidad_caja == 1) {{-- Factor --}}
                                                 <input type="number" min="1"
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
@@ -391,8 +386,8 @@
                                                     class="px-2 py-1 w-20 text-sm rounded border" />
                                             @else
                                                 <input type="number"
-                                                    min="{{ convertir_a_cajas(1, $producto->cantidad) }}"
-                                                    step="{{ convertir_a_cajas(1, $producto->cantidad) }}"
+                                                    min="{{ convertir_a_cajas(1, $detalle->producto_cantidad_caja) }}"
+                                                    step="{{ convertir_a_cajas(1, $detalle->producto_cantidad_caja) }}"
                                                     value="{{ $detalle->cantidad }}"
                                                     wire:model.lazy="detallesEdit.{{ $detalle->id }}.cantidad"
                                                     wire:change="actualizarCantidadDetalle({{ $detalle->id }}, $event.target.value)"
