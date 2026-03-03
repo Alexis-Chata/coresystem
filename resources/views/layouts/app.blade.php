@@ -39,106 +39,134 @@
         scrollTop: false,
         ultimaUbicacion: parseInt(localStorage.getItem('ultimaUbicacion') || '0', 10),
 
-        solicitarUbicacion() {
-            const ahora = Date.now();
-            const diferencia = ahora - this.ultimaUbicacion;
+            solicitarUbicacion() {
+        const ahora = Date.now();
+        const diferencia = ahora - this.ultimaUbicacion;
 
-            // throttle: no pedir si fue hace < 15s
-            if (diferencia < 15000) {
-                console.log('Ya se solicitó ubicación recientemente. Hace:', diferencia, 'ms');
-                return;
-            }
-
-            if (!navigator.geolocation) {
-                console.warn('Tu navegador no soporta geolocalización.');
-                return;
-            }
-
-            // Primer intento: alta precisión
-            this.intentarUbicacion(true, false);
-        },
-
-        /**
-        * altaPrecision: true/false  => enableHighAccuracy
-        * yaReintento: evita reintentar más de una vez
-        */
-        intentarUbicacion(altaPrecision = true, yaReintento = false) {
-            const ahora = Date.now();
-
-            navigator.geolocation.getCurrentPosition(
-                // ÉXITO
-                (pos) => {
-                    const latitud = pos.coords.latitude;
-                    const longitud = pos.coords.longitude;
-
-                    // Guardar throttle solo si sí obtuvo ubicación
-                    this.ultimaUbicacion = ahora;
-                    localStorage.setItem('ultimaUbicacion', String(ahora));
-
-                    console.log(
-                        'Ubicación obtenida (' + (altaPrecision ? 'alta' : 'baja') + ' precisión):',
-                        latitud,
-                        longitud
-                    );
-
-                    fetch(@js(route('guardar.ubicacion')), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': @js(csrf_token()),
-                            },
-                            body: JSON.stringify({ latitud, longitud }),
-                        })
-                        .then(async (response) => {
-                            if (!response.ok) {
-                                // Si aquí cae un 302/401/419/500, lo vemos claro
-                                const text = await response.text();
-                                throw new Error('HTTP ' + response.status + ' - ' + text);
-                            }
-                            return response.json();
-                        })
-                        .then((data) => {
-                            if (data?.success) console.log('Ubicación guardada:', data);
-                            else console.warn('Respuesta inesperada:', data);
-                        })
-                        .catch((error) => console.error('Error al guardar ubicación:', error));
-                },
-
-                //  ERROR
-                (error) => {
-                    console.warn(
-                        'Error obteniendo ubicación (' + (altaPrecision ? 'alta' : 'baja') + ' precisión):',
-                        error
-                    );
-
-                    // Si el usuario negó permisos, NO tiene sentido reintentar
-                    if (error.code === error.PERMISSION_DENIED) {
-                        console.warn('El usuario negó los permisos de ubicación.');
-                        this.ultimaUbicacion = ahora;
-                        localStorage.setItem('ultimaUbicacion', String(ahora));
-                        return;
-                    }
-
-                    // Si falló con alta precisión y aún no reintentamos, probamos sin alta precisión
-                    if (altaPrecision && !yaReintento) {
-                        console.log('Reintentando sin alta precisión...');
-                        this.intentarUbicacion(false, true);
-                        return;
-                    }
-
-                    // Si ya reintentamos o ya estábamos en baja precisión, aplicamos cooldown para no spammear
-                    this.ultimaUbicacion = ahora;
-                    localStorage.setItem('ultimaUbicacion', String(ahora));
-                },
-
-                {
-                    enableHighAccuracy: altaPrecision,
-                    timeout: altaPrecision ? 20000 : 10000, // un poco menos exigente en el segundo intento
-                    maximumAge: 30000
-                }
-            );
+        // throttle: no pedir si fue hace < 15s
+        if (diferencia < 15000) {
+            console.log('Ya se solicitó ubicación recientemente. Hace:', diferencia, 'ms');
+            return;
         }
+
+        if (!navigator.geolocation) {
+            console.warn('Tu navegador no soporta geolocalización.');
+            return;
+        }
+
+        // Intento único con alta precisión (como pediste)
+        this.intentarUbicacion(false);
+    },
+
+    /**
+     * yaReintento: evita reintentar más de una vez
+     */
+    intentarUbicacion(yaReintento = false) {
+        const ahora = Date.now();
+
+        navigator.geolocation.getCurrentPosition(
+            // ÉXITO
+            (pos) => {
+                const latitud = pos.coords.latitude;
+                const longitud = pos.coords.longitude;
+                const precision = pos.coords.accuracy; // metros
+                const altitude = pos.coords.altitude ?? null;
+                const heading = pos.coords.heading ?? null;
+                const speed = pos.coords.speed ?? null;
+                const timestamp = pos.timestamp;
+
+                console.log('Ubicación obtenida (alta precisión):', latitud, longitud);
+                console.log('Precisión (m):', precision, 'Timestamp:', new Date(timestamp).toISOString());
+
+                // 🚨 Validación de precisión (ajusta el umbral a tu necesidad)
+                // Recomendado para asistencia: 100m - 200m como máximo
+                const UMBRAL_PRECISION = 200;
+
+                if (typeof precision === 'number' && precision > UMBRAL_PRECISION) {
+                    console.warn(
+                        `Ubicación muy imprecisa (${precision} m). No se guardará por ahora.`
+                    );
+
+                    // Reintentar una sola vez
+                    if (!yaReintento) {
+                        console.log('Reintentando ubicación por mala precisión...');
+                        this.intentarUbicacion(true);
+                        return;
+                    }
+
+                    // Si ya reintentó, aplicar cooldown para no spammear
+                    this.ultimaUbicacion = ahora;
+                    localStorage.setItem('ultimaUbicacion', String(ahora));
+                    return;
+                }
+
+                // Guardar throttle solo si sí obtuvo ubicación válida
+                this.ultimaUbicacion = ahora;
+                localStorage.setItem('ultimaUbicacion', String(ahora));
+
+                fetch(@js(route('guardar.ubicacion')), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': @js(csrf_token()),
+                        },
+                        body: JSON.stringify({
+                            latitud,
+                            longitud,
+                            precision,
+                            timestamp,
+                            altitude,
+                            heading,
+                            speed
+                        }),
+                    })
+                    .then(async (response) => {
+                        if (!response.ok) {
+                            const text = await response.text();
+                            throw new Error('HTTP ' + response.status + ' - ' + text);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        if (data?.success) {
+                            console.log('Ubicación guardada:', data);
+                        } else {
+                            console.warn('Respuesta inesperada:', data);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error al guardar ubicación:', error);
+                    });
+            },
+
+            // ERROR
+            (error) => {
+                console.warn('Error obteniendo ubicación (alta precisión):', error);
+
+                if (error.code === error.PERMISSION_DENIED) {
+                    console.warn('El usuario negó los permisos de ubicación.');
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    console.warn('La ubicación no está disponible en este momento.');
+                } else if (error.code === error.TIMEOUT) {
+                    console.warn('Tiempo de espera agotado.');
+                } else {
+                    console.warn('Error desconocido de geolocalización.');
+                }
+
+                // Aplicar cooldown para no spammear (incluso si falla)
+                this.ultimaUbicacion = ahora;
+                localStorage.setItem('ultimaUbicacion', String(ahora));
+            },
+
+            // Opciones exactas solicitadas
+            {
+                enableHighAccuracy: true,
+                timeout: Infinity,
+                maximumAge: 0
+            }
+        );
+    }
     }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
     $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
 
