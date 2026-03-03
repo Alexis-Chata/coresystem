@@ -30,7 +30,6 @@ final class AsignarConductorTable extends PowerGridComponent
     public $selectedConductor = "";
     public $conductores = [];
     public $fecha_reparto = null;
-    public $rutas_agrupadas = [];
 
     public $startDate = null;
     public $endDate = null;
@@ -40,9 +39,17 @@ final class AsignarConductorTable extends PowerGridComponent
     protected function initProperties(): void
     {
         //$this->startDate = Carbon::now()->subWeek()->format("Y-m-d");
-        $this->startDate = Carbon::now()->format("Y-m-d");
-        $this->endDate = Carbon::now()->format("Y-m-d");
-        $this->fecha_reparto = $this->init_fecha_reparto();
+        if (empty($this->startDate)) {
+            $this->startDate = now()->format("Y-m-d");
+        }
+
+        if (empty($this->endDate)) {
+            $this->endDate = now()->format("Y-m-d");
+        }
+
+        if (empty($this->fecha_reparto)) {
+            $this->fecha_reparto = $this->init_fecha_reparto();
+        }
     }
 
     public function init_fecha_reparto()
@@ -58,25 +65,30 @@ final class AsignarConductorTable extends PowerGridComponent
         return $fecha->format("Y-m-d");
     }
 
-
     public function updatedStartDate($value)
     {
-        $this->dispatch("pg:eventRefresh-" . $this->tableName);
+        $this->cargarPedidosFueraRango();
+        $this->cargarPedidosUltimoMes();
+        //$this->dispatch("pg:eventRefresh-" . $this->tableName);
     }
 
     public function updatedEndDate($value)
     {
-        $this->dispatch("pg:eventRefresh-" . $this->tableName);
+        $this->cargarPedidosFueraRango();
+        $this->cargarPedidosUltimoMes();
+        //$this->dispatch("pg:eventRefresh-" . $this->tableName);
     }
 
     public function setUp(): array
     {
         $this->conductores = $this->getConductores();
         $this->initProperties();
+        $this->cargarPedidosFueraRango();
+        $this->cargarPedidosUltimoMes();
         $this->showCheckBox();
         return [
             PowerGrid::header()->includeViewOnTop("components.date-range-filter"),
-            PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 25)->includeViewOnBottom("components.view-bottom"),
+            PowerGrid::footer()->showPerPage()->showRecordCount()->showPerPage(perPage: 50)->includeViewOnBottom("components.view-bottom"),
         ];
     }
 
@@ -128,73 +140,6 @@ final class AsignarConductorTable extends PowerGridComponent
                 "pedidos.ruta_id"
             );
         //dd($pedidos->get()[0]);
-
-        //$this->rutas_agrupadas = $pedidos->get()->groupBy("ruta_id");
-        $this->pedidosFueraRango = Pedido::query()
-            ->whereIn('estado', ['pendiente', 'asignado'])
-            ->when($this->startDate && $this->endDate, function ($query) {
-                return $query->where(function ($q) {
-                    $q->where("pedidos.fecha_emision", "<", $this->startDate . " 00:00:00")
-                        ->orWhere("pedidos.fecha_emision", ">", $this->endDate . " 23:59:59");
-                });
-            })
-            ->selectRaw('DATE(fecha_emision) as fecha, COUNT(*) as total')
-            ->groupBy('fecha')
-            ->orderBy('fecha')
-            ->get();
-
-        $rutaIds = $pedidos->pluck('ruta_id')->unique();
-
-        $gruposPorDia = Pedido::query()
-            ->whereNotIn('estado', ['pendiente', 'asignado'])
-            ->whereBetween('fecha_reparto', [
-                now()->subWeeks(2)->startOfDay(),
-                now()->endOfDay()
-            ])
-            ->whereIn('pedidos.ruta_id', $rutaIds)
-            ->selectRaw('DAYNAME(fecha_reparto) as dia_semana, DAYOFWEEK(fecha_reparto) as orden_semana, COUNT(DISTINCT CONCAT(ruta_id, "-", vendedor_id, "-", conductor_id)) as total_grupos')
-            ->groupBy('dia_semana', 'orden_semana')
-            ->orderByDesc('total_grupos')
-            ->first();
-
-        // Antes de la consulta (para traducir nombres de días a español)
-        DB::statement("SET lc_time_names = 'es_ES'");
-
-        $this->pedidosUltimoMes = Pedido::query()
-            ->whereNotIn('estado', ['pendiente', 'asignado'])
-            ->whereBetween('fecha_reparto', [
-                now()->subWeeks(2)->startOfDay(),
-                now()->endOfDay()
-            ])
-            ->whereIn('pedidos.ruta_id', $rutaIds)
-            ->when($gruposPorDia?->orden_semana, function ($query) use ($gruposPorDia) {
-                $query->whereRaw('DAYOFWEEK(fecha_reparto) = ?', [$gruposPorDia->orden_semana]);
-            })
-            ->join('rutas', 'pedidos.ruta_id', '=', 'rutas.id')
-            ->join('empleados as vendedores', 'pedidos.vendedor_id', '=', 'vendedores.id')
-            ->join('empleados as conductores', 'pedidos.conductor_id', '=', 'conductores.id')
-            ->selectRaw('
-                DAYNAME(pedidos.fecha_reparto) as dia_semana,
-                rutas.id as ruta_id,
-                rutas.name as ruta_nombre,
-                conductores.id as conductor_id,
-                conductores.name as conductor_nombre,
-                vendedores.id as vendedor_id,
-                vendedores.name as vendedor_nombre
-            ')
-            ->groupBy(
-                'dia_semana',
-                'rutas.id',
-                'ruta_nombre',
-                'conductores.id',
-                'conductores.name',
-                'vendedores.id',
-                'vendedores.name'
-            )
-            ->orderBy('conductor_id')
-            ->orderBy('vendedor_id')
-            ->orderBy('ruta_id')
-            ->get();
 
         return $pedidos;
     }
@@ -538,10 +483,112 @@ final class AsignarConductorTable extends PowerGridComponent
         if (empty($this->fecha_reparto)) {
             $this->fecha_reparto = $this->init_fecha_reparto();
         }
-        $this->datasource();
+
+        $this->cargarPedidosUltimoMes();
 
         foreach ($this->pedidosUltimoMes as $pedido) {
             $this->asignacion_sugerida($pedido->conductor_id, $pedido->ruta_id);
         }
+    }
+
+    protected function cargarPedidosFueraRango(): void
+    {
+        if (empty($this->startDate) || empty($this->endDate)) {
+            $this->pedidosFueraRango = collect();
+            return;
+        }
+
+        $inicio = Carbon::parse($this->startDate)->startOfDay();
+        $fin    = Carbon::parse($this->endDate)->endOfDay();
+
+        $this->pedidosFueraRango = Pedido::query()
+            ->whereIn('estado', ['pendiente', 'asignado'])
+            ->where(function ($q) use ($inicio, $fin) {
+                $q->where('fecha_emision', '<', $inicio)
+                    ->orWhere('fecha_emision', '>', $fin);
+            })
+            ->selectRaw('DATE(fecha_emision) as fecha, COUNT(*) as total')
+            ->groupBy('fecha')
+            ->orderBy('fecha')
+            ->get();
+    }
+
+    protected function cargarPedidosUltimoMes(): void
+    {
+        $this->pedidosUltimoMes = collect();
+
+        if (empty($this->startDate) || empty($this->endDate)) {
+            return;
+        }
+
+        $inicio = Carbon::parse($this->startDate)->startOfDay();
+        $fin    = Carbon::parse($this->endDate)->endOfDay();
+
+        // Rutas presentes en el rango actual (según pedidos pendientes/asignados)
+        $rutaIds = Pedido::query()
+            ->whereIn('estado', ['pendiente', 'asignado'])
+            ->whereBetween('fecha_emision', [$inicio, $fin])
+            ->pluck('ruta_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($rutaIds->isEmpty()) {
+            return;
+        }
+
+        $desde = now()->subWeeks(2)->startOfDay();
+        $hasta = now()->endOfDay();
+
+        // 👇 OJO: CONCAT devuelve NULL si algún campo es NULL.
+        // Por eso uso CONCAT_WS + IFNULL para que cuente grupos aunque conductor_id sea null.
+        $gruposPorDia = Pedido::query()
+            ->whereNotIn('estado', ['pendiente', 'asignado'])
+            ->whereBetween('fecha_reparto', [$desde, $hasta])
+            ->whereIn('ruta_id', $rutaIds)
+            ->selectRaw('
+            DAYOFWEEK(fecha_reparto) as orden_semana,
+            COUNT(DISTINCT CONCAT_WS("-", ruta_id, vendedor_id, IFNULL(conductor_id, 0))) as total_grupos
+        ')
+            ->groupBy('orden_semana')
+            ->orderByDesc('total_grupos')
+            ->first();
+
+        if (!$gruposPorDia?->orden_semana) {
+            return;
+        }
+
+        DB::statement("SET lc_time_names = 'es_ES'");
+
+        $this->pedidosUltimoMes = Pedido::query()
+            ->whereNotIn('estado', ['pendiente', 'asignado'])
+            ->whereBetween('fecha_reparto', [$desde, $hasta])
+            ->whereIn('pedidos.ruta_id', $rutaIds)
+            ->whereRaw('DAYOFWEEK(fecha_reparto) = ?', [$gruposPorDia->orden_semana])
+            ->join('rutas', 'pedidos.ruta_id', '=', 'rutas.id')
+            ->join('empleados as vendedores', 'pedidos.vendedor_id', '=', 'vendedores.id')
+            ->join('empleados as conductores', 'pedidos.conductor_id', '=', 'conductores.id')
+            ->selectRaw('
+            DAYNAME(pedidos.fecha_reparto) as dia_semana,
+            rutas.id as ruta_id,
+            rutas.name as ruta_nombre,
+            conductores.id as conductor_id,
+            conductores.name as conductor_nombre,
+            vendedores.id as vendedor_id,
+            vendedores.name as vendedor_nombre
+        ')
+            ->groupBy(
+                'dia_semana',
+                'rutas.id',
+                'ruta_nombre',
+                'conductores.id',
+                'conductores.name',
+                'vendedores.id',
+                'vendedores.name'
+            )
+            ->orderBy('conductor_id')
+            ->orderBy('vendedor_id')
+            ->orderBy('ruta_id')
+            ->get();
     }
 }
