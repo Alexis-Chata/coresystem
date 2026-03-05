@@ -1,8 +1,7 @@
 <div>
     <div class="flex flex-wrap justify-center sm:flex-row items-center gap-2 sm:gap-4 mb-5.5 pt-2 text-[8px] text-sm">
         <button wire:click="report_pedido_detalle"
-            class="px-3 py-2 bg-green-600 hover:bg-green-800 text-white rounded-lg transition-colors duration-200 ease-in-out">Reporte
-            Pedido Detalle</button>
+            class="px-3 py-2 bg-green-600 hover:bg-green-800 text-white rounded-lg transition-colors duration-200 ease-in-out">Verificacion Importe</button>
         <div class="relative sm:w-auto">
             <input type="date" wire:model.live="startDate"
                 class="block px-2 pb-2.5 pt-4 text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer">
