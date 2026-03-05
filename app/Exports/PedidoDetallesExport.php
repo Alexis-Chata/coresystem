@@ -12,11 +12,13 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
 {
     private $fecha_inicio;
     private $fecha_fin;
+    private $solo_diferencias;
 
-    public function __construct($fecha_inicio = null, $fecha_fin = null)
+    public function __construct($fecha_inicio = null, $fecha_fin = null, $solo_diferencias = true)
     {
         $this->fecha_inicio = $fecha_inicio;
         $this->fecha_fin = $fecha_fin;
+        $this->solo_diferencias = $solo_diferencias;
     }
     /**
      * @return \Illuminate\Support\Collection
@@ -25,6 +27,7 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
     {
         $fechaInicio = $this->fecha_inicio ?? now()->toDateString();
         $fechaFin = $this->fecha_fin ?? now()->toDateString();
+        $solo_diferencias = $this->solo_diferencias; // Cambia a false si quieres incluir todos los registros
 
         //ini_set('memory_limit', '512M');
         //$producto_lista_precio = ProductoListaPrecio::withTrashed()->get();
@@ -55,7 +58,11 @@ class PedidoDetallesExport implements FromCollection, WithHeadings, ShouldAutoSi
             ->selectRaw("CASE WHEN ROUND(((pedido_detalles.producto_precio * pedido_detalles.cantidad_unidades) / pedido_detalles.producto_cantidad_caja) + 0.0001, 2) = pedido_detalles.importe THEN 'COINCIDE' ELSE 'DIFERENTE' END as verificacion_importe")
             ->selectRaw("CASE WHEN pedido_detalles.producto_precio = producto_lista_precios.precio THEN 'COINCIDE' ELSE 'DIFERENTE' END as verificacion_precio") // Nueva comparación de precios
             ->whereBetween('pedidos.fecha_emision', [$fechaInicio, $fechaFin])
-            ->havingRaw("verificacion_importe = 'DIFERENTE' OR verificacion_precio = 'DIFERENTE'") // Filtra solo los casos donde hay diferencias
+            //->havingRaw("verificacion_importe = 'DIFERENTE' OR verificacion_precio = 'DIFERENTE'") // Filtra solo los casos donde hay diferencias
+            ->when($solo_diferencias, function ($q) {
+                $q->having('verificacion_importe', 'DIFERENTE')
+                    ->orHaving('verificacion_precio', 'DIFERENTE');
+            })
             ->orderBy('pedido_detalles.id', 'asc')
             ->get();
 

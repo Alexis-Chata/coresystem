@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-C7IbQl_9.css",
+    "file": "assets/app-BAOD11wS.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,7 +9,7 @@
     ]
   },
   "resources/css/tailadmin.css": {
-    "file": "assets/tailadmin-C-cE5eqG.css",
+    "file": "assets/tailadmin-1RVSRsTc.css",
     "src": "resources/css/tailadmin.css",
     "isEntry": true,
     "name": "tailadmin",
@@ -158,7 +158,7 @@
     "isEntry": true
   },
   "resources/js/tailadmin.js": {
-    "file": "assets/tailadmin-C7yIHTUc.js",
+    "file": "assets/tailadmin-k_fXHZJ3.js",
     "name": "tailadmin",
     "src": "resources/js/tailadmin.js",
     "isEntry": true,

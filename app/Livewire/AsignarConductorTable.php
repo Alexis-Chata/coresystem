@@ -395,11 +395,11 @@ final class AsignarConductorTable extends PowerGridComponent
         );
     }
 
-    public function report_pedido_detalle()
+    public function report_pedido_detalle($solo_diferencias = true)
     {
         $inicio = $this->startDate;
         $fin = $this->endDate;
-        return Excel::download(new PedidoDetallesExport($inicio, $fin), 'pedido_detalles_report_' . now() . '.xlsx');
+        return Excel::download(new PedidoDetallesExport($inicio, $fin, $solo_diferencias), 'pedido_detalles_report_' . now() . '.xlsx');
     }
 
     public function cerrar_sessiones()
