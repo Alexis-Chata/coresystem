@@ -14,6 +14,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use ParseError;
 
@@ -266,6 +267,24 @@ class Movimiento extends Component
 
     public function guardarMovimiento()
     {
+        $this->resetErrorBag("detalles");
+        // validación general
+        $this->validate([
+            'detalles.*.cantidad' => 'required|numeric|min:0',
+        ], [
+            'detalles.*.cantidad.min' => 'No se permite cantidad negativa.',
+        ]);
+
+        // además: si por formato viene como '' o string raro, fuerza a float aquí también
+        foreach ($this->detalles as $i => $d) {
+            $cantidad = $d['cantidad'];
+            if ($cantidad < 0) {
+                throw ValidationException::withMessages([
+                    "detalles.$i.cantidad" => "La cantidad no puede ser negativa.",
+                ]);
+            }
+        }
+
         $array_validate = [
             "almacen_id" => "required|exists:almacens,id",
             "tipo_movimiento_id" => "required|exists:tipo_movimientos,id",
@@ -303,7 +322,10 @@ class Movimiento extends Component
         } catch (Exception $e) {
             // Manejar la excepción
             Log::error("No se pudo generar movimiento" . $e->getMessage());
-            throw new Exception("No se pudo generar movimiento" . $e->getMessage());
+            //throw new Exception("No se pudo generar movimiento" . $e->getMessage());
+            throw ValidationException::withMessages([
+                'detalles' => $e->getMessage(), // o el mensaje que ya construiste
+            ]);
         }
     }
 
@@ -316,6 +338,21 @@ class Movimiento extends Component
     public function ajustarCantidad($index)
     {
         $detalle = $this->detalles[$index];
+
+        // no negativos
+        if ($detalle['cantidad'] === null || $detalle['cantidad'] === '' || $detalle['cantidad'] < 0) {
+            $detalle['cantidad'] = 0.0;
+            // opción A: bloquear con error (recomendado)
+            throw ValidationException::withMessages([
+                "detalles.$index.cantidad" => "La cantidad no valida.",
+            ]);
+
+            // opción B: o corregir automáticamente a 0
+            // $detalle['cantidad'] = 0;
+        }
+        // limpia error si ya estaba
+        $this->resetErrorBag("detalles.$index.cantidad");
+
         $digitos = calcular_digitos($detalle['factor']);
         $cantidad = number_format($detalle['cantidad'], $digitos, '.', '');
 

@@ -116,9 +116,10 @@
                                             <div class="text-xs text-gray-500 dark:text-gray-400">
                                                 Marca: {{ $producto->marca->name ?? 'N/A' }} |
                                                 Precio: S/. {{ number_format($precio, 2) }} |
-                                                Stock disp.: {{ number_format($producto->almacenProductos->sum("stock_disponible"), 2) }}
+                                                Stock disp.:
+                                                {{ number_format($producto->almacenProductos->sum('stock_disponible'), 2) }}
                                                 @if ($producto->deleted_at)
-                                                <x-svg_circle_equis />
+                                                    <x-svg_circle_equis />
                                                 @endif
                                             </div>
                                         </div>
@@ -142,12 +143,18 @@
                                     <td class="p-3 border-b border-gray-600">{{ $detalle['producto_id'] }} -
                                         {{ $detalle['producto_name'] }}</td>
                                     <td class="p-3 border-b border-gray-600">
-                                        <input type="number" min="{{ convertir_a_cajas(1, $detalle['factor']) }}" step="{{ convertir_a_cajas(1, $detalle['factor']) }}"
+                                        <input type="number" min="{{ convertir_a_cajas(1, $detalle['factor']) }}"
+                                            step="{{ convertir_a_cajas(1, $detalle['factor']) }}"
                                             wire:model.lazy="detalles.{{ $index }}.cantidad"
                                             wire:change="ajustarCantidad({{ $index }})"
-                                            class="w-20 px-2 py-1 text-sm border rounded text-right text-black" />
+                                            class="w-20 px-2 py-1 text-sm border rounded text-right text-black"
+                                            required />
+                                        @error("detalles.$index.cantidad")
+                                            <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                                        @enderror
                                     </td>
-                                    <td class="p-3 border-b border-gray-600">{{ number_format($detalle['precio_venta_total'], 2) }}</td>
+                                    <td class="p-3 border-b border-gray-600">
+                                        {{ number_format($detalle['precio_venta_total'], 2) }}</td>
                                     <td class="p-3 border-b border-gray-600 grid justify-items-center">
                                         <button type="button" wire:click="eliminarDetalle({{ $index }})"
                                             class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-semibold shadow-md">
@@ -192,7 +199,7 @@
                     <div class="text-sm">
                     </div>
                     @error('detalles')
-                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                        <span class="text-red-500 text-xs px-2 py-1 bg-gray-700 rounded">{{ $message }}</span>
                     @enderror
                 </div>
             </div>
