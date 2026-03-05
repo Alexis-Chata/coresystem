@@ -147,7 +147,7 @@
                                             wire:change="ajustarCantidad({{ $index }})"
                                             class="w-20 px-2 py-1 text-sm border rounded text-right text-black" />
                                     </td>
-                                    <td class="p-3 border-b border-gray-600">{{ $detalle['precio_venta_total'] }}</td>
+                                    <td class="p-3 border-b border-gray-600">{{ number_format($detalle['precio_venta_total'], 2) }}</td>
                                     <td class="p-3 border-b border-gray-600 grid justify-items-center">
                                         <button type="button" wire:click="eliminarDetalle({{ $index }})"
                                             class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-semibold shadow-md">
