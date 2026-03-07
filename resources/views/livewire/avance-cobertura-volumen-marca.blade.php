@@ -23,8 +23,8 @@
                 <label class="mb-2 block text-sm font-medium text-slate-700">Campo fecha</label>
                 <select wire:model.live="dateField"
                     class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="f_comprobante_sunats.pedido_fecha_factuacion">Pedido fecha facturación</option>
-                    <option value="f_comprobante_sunats.fechaEmision">Fecha emisión</option>
+                    <option value="f_comprobante_sunats.pedido_fecha_factuacion">Fecha Preventa</option>
+                    <option value="f_comprobante_sunats.fechaEmision">Fecha Reparto</option>
                 </select>
             </div>
         </div>
