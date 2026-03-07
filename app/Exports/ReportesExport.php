@@ -6,7 +6,6 @@ use App\Models\Producto;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithCustomChunkSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ReportesExport implements FromCollection, WithHeadings
@@ -124,7 +123,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when(
                 $needProductos,
                 fn($q) =>
-                $q->join('productos', 'f_comprobante_sunat_detalles.codProducto', '=', 'productos.id')
+                $q->join('productos', DB::raw('CAST(TRIM(f_comprobante_sunat_detalles.codProducto) AS UNSIGNED)'), '=', 'productos.id')
             )
             ->when(
                 $needMarcas,
@@ -134,7 +133,7 @@ class ReportesExport implements FromCollection, WithHeadings
             ->when(
                 $needEmpleados,
                 fn($q) =>
-                $q->join('empleados', 'f_comprobante_sunats.vendedor_id', '=', 'empleados.id')
+                $q->join('empleados', DB::raw('CAST(TRIM(f_comprobante_sunats.vendedor_id) AS UNSIGNED)'), '=', 'empleados.id')
             )
             ->when(
                 $needRutas,
@@ -212,7 +211,7 @@ class ReportesExport implements FromCollection, WithHeadings
             // Opcional: indexar productos por id para no hacer find() en cada vuelta
             $productosById = $productos->keyBy('id');
             $reporte = $reporte->map(function ($item) use ($productosById, $producto_factor) {
-                if($producto_factor){
+                if ($producto_factor) {
                     $item->cantidad_unidades = $item->detalle_cantidad;
                 }
                 $item->importe = $item->importe == 0.00 ? "0" : $item->importe;
