@@ -55,15 +55,16 @@ Route::middleware([
 
     Route::get('/avancexitems', function () {
         return view('avance-ventas-items');
-    })->middleware(['permission:view avance|admin avance'])->name('avancexitems.view');
+    })->middleware(['permission:items avance'])->name('avancexitems.view');
+
+    Route::get('/avancexmarcas', function () {
+        return view('avance-ventas-marcas');
+    })->middleware(['permission:marcas avance'])->name('avancexmarcas.view');
 
     Route::get('/dashboard', function () {
         $role = Role::findOrCreate('admin');
-        Permission::findOrCreate('view liquidacion')->assignRole($role);
-        Permission::findOrCreate('view avance')->assignRole($role);
-        Permission::findOrCreate('admin avance')->assignRole($role);
-        Permission::findOrCreate('precio producto')->assignRole($role);
-        Permission::findOrCreate('descarga_all cliente')->assignRole($role);
+        Permission::findOrCreate('items avance')->assignRole($role);
+        Permission::findOrCreate('marcas avance')->assignRole($role);
         return view('dashboard');
     })->name('dashboard');
 
