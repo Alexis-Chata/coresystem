@@ -48,13 +48,25 @@
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-200 px-6 py-4">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
             <h3 class="text-base font-semibold text-slate-800">
                 Matriz de ventas
             </h3>
+
+            <div class="flex gap-2">
+                <button type="button" onclick="descargarTablaReporte()"
+                    class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                    Descargar PNG
+                </button>
+
+                <button type="button" onclick="compartirTablaReporte()"
+                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                    Compartir
+                </button>
+            </div>
         </div>
 
-        <div class="p-6">
+        <div id="tabla-reporte-compartible" class="p-6">
             <div class="overflow-x-auto">
                 <table class="min-w-max border-collapse text-sm">
                     <thead>
@@ -137,3 +149,88 @@
         </div>
     </div>
 </div>
+@once
+    @push('scripts')
+        <script>
+            async function generarBlobTablaReporte() {
+                const element = document.getElementById('tabla-reporte-compartible');
+
+                if (!element) {
+                    throw new Error('No se encontró la tabla del reporte.');
+                }
+
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                await new Promise(resolve => requestAnimationFrame(resolve));
+
+                const canvas = await window.html2canvas(element, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    useCORS: true,
+                });
+
+                return await new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('No se pudo generar la imagen del reporte.'));
+                        }
+                    }, 'image/png');
+                });
+            }
+
+            async function descargarTablaReporte() {
+                try {
+                    const blob = await generarBlobTablaReporte();
+                    const url = URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `reporte-ventas-marcas-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message ?? 'No se pudo descargar la tabla.');
+                }
+            }
+
+            async function compartirTablaReporte() {
+                try {
+                    const blob = await generarBlobTablaReporte();
+                    const file = new File([blob], 'reporte-ventas-marcas.png', {
+                        type: 'image/png'
+                    });
+
+                    if (navigator.canShare && navigator.canShare({
+                            files: [file]
+                        })) {
+                        await navigator.share({
+                            title: 'Reporte de ventas por vendedor y marca',
+                            text: 'Comparto el reporte de ventas por vendedor y marca.',
+                            files: [file],
+                        });
+                        return;
+                    }
+
+                    await descargarTablaReporte();
+                    alert(
+                        'Tu navegador no permite compartir archivos directamente. Se descargó el PNG para que lo adjuntes manualmente.'
+                    );
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error(error);
+                        alert(error.message ?? 'No se pudo compartir la tabla.');
+                    }
+                }
+            }
+        </script>
+    @endpush
+@endonce
