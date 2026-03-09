@@ -102,6 +102,13 @@
                         'name' => 'Pedido',
                     ],
                     [
+                        'link_descripcion' => 'Promociones', //opcional
+                        'permission' => 'view promociones',
+                        'route' => 'promociones.view',
+                        'icon' => 'svg_tecla', // icono es un componente blade simple <x-svg_user />
+                        'name' => 'Promociones', // titulo del enlace que se muestra en el menú
+                    ],
+                    [
                         'link_descripcion' => 'Categoría', //opcional
                         'permission' => 'view categoria',
                         'route' => 'categoria.index',
