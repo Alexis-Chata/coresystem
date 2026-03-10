@@ -49,6 +49,10 @@ Route::middleware([
     'verified',
 ])->group(function () {
 
+    Route::get('/promociones', function () {
+        return view('lista-promociones');
+    })->middleware(['permission:view promociones'])->name('promociones.view');
+
     Route::get('/avance', function () {
         return view('avance-ventas');
     })->middleware(['permission:view avance|admin avance'])->name('avance.view');
@@ -65,6 +69,7 @@ Route::middleware([
         $role = Role::findOrCreate('admin');
         Permission::findOrCreate('items avance')->assignRole($role);
         Permission::findOrCreate('marcas avance')->assignRole($role);
+        Permission::findOrCreate('view promociones')->assignRole($role);
         return view('dashboard');
     })->name('dashboard');
 
