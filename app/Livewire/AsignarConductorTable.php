@@ -95,6 +95,7 @@ final class AsignarConductorTable extends PowerGridComponent
     public function filters(): array
     {
         return [
+            // Filtro existente para Ruta
             Filter::select("ruta_nombre", "pedidos.ruta_id")
                 ->dataSource(
                     Ruta::query()
@@ -111,6 +112,29 @@ final class AsignarConductorTable extends PowerGridComponent
                             return [
                                 "id" => $ruta->id,
                                 "name" => $ruta->id . " - " . $ruta->name,
+                            ];
+                        })
+                )
+                ->optionLabel("name")
+                ->optionValue("id"),
+
+            // NUEVO FILTRO PARA VENDEDOR
+            Filter::select("vendedor_nombre", "pedidos.vendedor_id")
+                ->dataSource(
+                    Empleado::query()
+                        ->whereIn("id", function ($query) {
+                            $query
+                                ->select("vendedor_id")
+                                ->from("pedidos")
+                                ->whereIn("estado", ["asignado", "pendiente"])
+                                ->distinct();
+                        })
+                        ->select(["id", "name"])
+                        ->get()
+                        ->map(function ($vendedor) {
+                            return [
+                                "id" => $vendedor->id,
+                                "name" => $vendedor->id . " - " . $vendedor->name,
                             ];
                         })
                 )
@@ -454,7 +478,7 @@ final class AsignarConductorTable extends PowerGridComponent
             return;
         }
 
-        // 👉 si pasa validación limpio los errores
+        // si pasa validación limpio los errores
         $this->resetErrorBag();
 
         // Construir query
@@ -540,7 +564,7 @@ final class AsignarConductorTable extends PowerGridComponent
         $desde = now()->subWeeks(2)->startOfDay();
         $hasta = now()->endOfDay();
 
-        // 👇 OJO: CONCAT devuelve NULL si algún campo es NULL.
+        // OJO: CONCAT devuelve NULL si algún campo es NULL.
         // Por eso uso CONCAT_WS + IFNULL para que cuente grupos aunque conductor_id sea null.
         $gruposPorDia = Pedido::query()
             ->whereNotIn('estado', ['pendiente', 'asignado'])
