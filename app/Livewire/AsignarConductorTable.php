@@ -16,6 +16,7 @@ use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -33,8 +34,8 @@ final class AsignarConductorTable extends PowerGridComponent
 
     public $startDate = null;
     public $endDate = null;
-    public $pedidosFueraRango = [];
-    public $pedidosUltimoMes = [];
+    public Collection $pedidosFueraRango;
+    public Collection $pedidosUltimoMes;
 
     protected function initProperties(): void
     {
@@ -510,7 +511,11 @@ final class AsignarConductorTable extends PowerGridComponent
 
         $this->cargarPedidosUltimoMes();
 
-        foreach ($this->pedidosUltimoMes as $pedido) {
+        $pedidosOrdenados = collect($this->pedidosUltimoMes)
+            ->sortByDesc('conductor_id')
+            ->values();
+
+        foreach ($pedidosOrdenados as $pedido) {
             $this->asignacion_sugerida($pedido->conductor_id, $pedido->ruta_id);
         }
     }
