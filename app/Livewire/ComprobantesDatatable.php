@@ -54,32 +54,32 @@ class ComprobantesDatatable extends DataTableComponent
     public $fecha_emision_fin;
     public $buscar_search;
     public $estado_envio;
-    public $tipoDoc;
     public $tipo_comprobante;
 
     public function builder(): Builder
     {
 
-        $return =  FComprobanteSunat::query()
-            ->when($this->tipoDoc, function ($query, $tipo_doc) {
-                $query->where("tipoDoc", $tipo_doc); // Siempre filtra por tipoDoc primero
+        $return = FComprobanteSunat::query()
+            ->when(filled($this->tipo_comprobante), function ($query) {
+                $query->where('tipoDoc', $this->tipo_comprobante); // Siempre filtra por tipoDoc primero
             })
             ->when($this->fecha_emision, function ($query) {
-                $query->whereBetween("fechaEmision", [$this->fecha_emision . ' 00:00:00', $this->fecha_emision_fin . ' 23:59:59']);
+                $query->whereBetween('fechaEmision', [
+                    $this->fecha_emision . ' 00:00:00',
+                    $this->fecha_emision_fin . ' 23:59:59'
+                ]);
             })
-            ->when($this->estado_envio, function ($query) {
-                $query->where(function ($q) { // Aplicar condición dentro de un subquery
-                    $estado = in_array($this->estado_envio, ['aceptado', 'rechazado'])
-                        ? $this->estado_envio
-                        : 'pendiente';
+            ->when(filled($this->estado_envio), function ($query) {
+                $estado = in_array($this->estado_envio, ['aceptado', 'rechazado'])
+                    ? $this->estado_envio
+                    : 'pendiente';
 
-                    $q->where("estado_cpe_sunat", $estado);
-                });
+                $query->where('estado_cpe_sunat', $estado);
             })
-            ->when($this->buscar_search, function ($query) {
+            ->when(filled($this->buscar_search), function ($query) {
                 $query->where(function ($q) {
-                    $q->orWhere("correlativo", 'like', '%' . $this->buscar_search . '%')
-                        ->orWhere("cliente_id", 'like', '%' . $this->buscar_search . '%');
+                    $q->where('correlativo', 'like', '%' . $this->buscar_search . '%')
+                        ->orWhere('cliente_id', 'like', '%' . $this->buscar_search . '%');
                 });
             });
         $sql = vsprintf(str_replace('?', "'%s'", $return->toSql()), $return->getBindings());
